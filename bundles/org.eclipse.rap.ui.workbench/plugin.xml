@@ -32,4 +32,41 @@
          id="org.eclipse.ui.themes.CssTheme"
          label="%Other.defined.by.css.label"/>
    </extension>
+   
+   <!-- RAP -->
+   <!-- The following extension point contribution adds handlers for existing workbench commands. 
+   Since in the 3.X API these commands are implemented with Actions, org.eclipse.rap.ui does not 
+   provide their default handlers. They are registered here. -->
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.eclipse.ui.internal.handlers.SaveHandler"
+            commandId="org.eclipse.ui.file.save">
+      </handler>
+      <handler
+            class="org.eclipse.ui.internal.handlers.SaveAsHandler"
+            commandId="org.eclipse.ui.file.saveAs">
+      </handler>
+      <handler
+            class="org.eclipse.ui.internal.handlers.SaveAllHandler"
+            commandId="org.eclipse.ui.file.saveAll">
+      </handler>
+      <handler
+            class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:cut"
+            commandId="org.eclipse.ui.edit.cut">
+      </handler>
+      <handler
+            class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:copy"
+            commandId="org.eclipse.ui.edit.copy">
+      </handler>
+      <handler
+            class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:paste"
+            commandId="org.eclipse.ui.edit.paste">
+      </handler>
+      <handler
+            class="org.eclipse.ui.internal.handlers.SelectAllHandler"
+            commandId="org.eclipse.ui.edit.selectAll">
+      </handler>
+   </extension>
+   <!-- RAPEND -->
 </plugin>
