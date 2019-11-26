@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+  <name>
+    RAP E4 Compatibility Layer Workbench (E4CLW)
+  </name>
+  <maintainer>
+    David Marina
+  </maintainer>
+  <description>
+    <p>
+      Modification of org.eclipse.rap.ui.workbench to provide compatibility for E3.X and E4 in RAP
+    </p>
+  </description>
+</component>
