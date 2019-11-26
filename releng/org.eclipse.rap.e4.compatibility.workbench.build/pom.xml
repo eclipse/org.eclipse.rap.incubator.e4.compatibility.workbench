@@ -23,7 +23,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<platform-repo.url>http://download.eclipse.org/eclipse/updates/4.6/</platform-repo.url>
+		<platform-repo.url>https://download.eclipse.org/eclipse/updates/4.10/R-4.10-201812060815/</platform-repo.url>
 		<rap-repository>https://download.eclipse.org/rt/rap/3.9/R-20190612-1720/</rap-repository>
 		<rap-e4-repository>https://download.eclipse.org/rt/rap/3.9/e4/R-20190612-1720/</rap-e4-repository>
 		<download-publish-path>/shared/rt/rap/incubator/nightly/e4/target</download-publish-path>
