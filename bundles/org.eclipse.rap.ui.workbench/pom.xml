@@ -18,7 +18,7 @@
     <groupId>org.eclipse.rap.incubator</groupId>
     <artifactId>org.eclipse.rap.ui.workbench.build</artifactId>
     <version>0.1.0-SNAPSHOT</version>
-    <relativePath>../../releng/org.eclipse.rap.e4clw.build</relativePath>
+    <relativePath>../../releng/org.eclipse.rap.e4.compatibility.workbench.build</relativePath>
   </parent>
 
   <artifactId>org.eclipse.rap.ui.workbench</artifactId>
