@@ -25,7 +25,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<platform-repo.url>http://download.eclipse.org/eclipse/updates/4.6/</platform-repo.url>
 		<rap-repository>https://download.eclipse.org/rt/rap/3.4/SR2-20180404-2010/</rap-repository>
-		<rap-e4-repo.url>https://download.eclipse.org/rt/rap/3.4/e4/SR2-20180404-2010/</rap-e4-repo.url>
+		<rap-e4-repository>https://download.eclipse.org/rt/rap/3.4/e4/SR2-20180404-2010/</rap-e4-repository>
 		<download-publish-path>/shared/rt/rap/incubator/nightly/e4/target</download-publish-path>
 	</properties>
 
@@ -38,12 +38,12 @@
 		<repository>
 			<id>rap-repo</id>
 			<layout>p2</layout>
-			<url>${rap-repo.url}</url>
+			<url>${rap-repository}</url>
 		</repository>
 		<repository>
 			<id>rap-e4-repo</id>
 			<layout>p2</layout>
-			<url>${rap-e4-repo.url}</url>
+			<url>${rap-e4-repository}</url>
 		</repository>
 	</repositories>
 
