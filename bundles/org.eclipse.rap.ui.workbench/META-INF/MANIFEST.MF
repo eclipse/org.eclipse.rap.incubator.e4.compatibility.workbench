@@ -153,7 +153,7 @@ Export-Package: org.eclipse.e4.ui.workbench.addons.perspectiveswitcher,
  org.eclipse.ui.views,
  org.eclipse.ui.wizards
 Bundle-Name: %pluginName
-Bundle-Version: 3.4.9.E4CL-qualifier
+Bundle-Version: 3.4.9.qualifier
 Bundle-ClassPath: .
 Bundle-Localization: plugin
 Bundle-Activator: org.eclipse.ui.internal.WorkbenchPlugin

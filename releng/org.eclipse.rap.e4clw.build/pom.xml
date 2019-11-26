@@ -1,32 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Copyright (C) 2012 EclipseSource and others.
-  All rights reserved. This program and the accompanying materials
-  are made available under the terms of the Eclipse Public License v1.0
-  which accompanies this distribution, and is available at
-  http://www.eclipse.org/legal/epl-v10.html
-
-  Contributors:
-     EclipseSource - initial implementation
--->
+<!-- Copyright (C) 2012 EclipseSource and others. All rights reserved. This 
+	program and the accompanying materials are made available under the terms 
+	of the Eclipse Public License v1.0 which accompanies this distribution, and 
+	is available at http://www.eclipse.org/legal/epl-v10.html Contributors: EclipseSource 
+	- initial implementation -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.eclipse.rap.incubator</groupId>
-    <artifactId>org.eclipse.rap.incubator-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
-    <relativePath>../../../org.eclipse.rap.incubator.releng/releng/org.eclipse.rap.incubator.releng/parent</relativePath>
-  </parent>
+	<parent>
+		<groupId>org.eclipse.rap.incubator</groupId>
+		<artifactId>org.eclipse.rap.incubator-parent</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+		<relativePath>../../../org.eclipse.rap.incubator.releng/releng/org.eclipse.rap.incubator.releng/parent</relativePath>
+	</parent>
 
-  <artifactId>org.eclipse.rap.gef.build</artifactId>
-  <packaging>pom</packaging>
+	<artifactId>org.eclipse.rap.ui.workbench.build</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-  <modules>
-    <module>../../bundles/org.eclipse.rap.ui.workbench</module>
-    <module>repository</module>
-  </modules>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<target>
+						<artifact>
+							<groupId>org.eclipse.rap.incubator</groupId>
+							<artifactId>E4_TP_RAP</artifactId>
+							<version>0.1.0</version>
+						</artifact>
+					</target>
+					<environments>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-packaging-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<archiveSite>true</archiveSite>
+					<!-- UNCOMMENT the following line and update the release date when building 
+						an OFFICIAL FULL RELEASE -->
+					<forceContextQualifier>E4CLW-v20191126-1037</forceContextQualifier>
+					<!-- FOR F*** SAKE we want to be _compliant_ with Eclipse version format 
+						convention, thank you very much! -->
+					<!-- format>'v'yyyyMMdd'-'HHmm</format -->
+					<strictVersions>true</strictVersions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<modules>
+		<module>../target</module>
+		<module>../../bundles/org.eclipse.rap.ui.workbench</module>
+		<module>../../features/org.eclipse.rap.e4clw.feature</module>
+		<module>repository</module>
+	</modules>
 
 </project>
