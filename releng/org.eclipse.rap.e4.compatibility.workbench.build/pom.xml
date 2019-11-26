@@ -31,7 +31,8 @@
 						<artifact>
 							<groupId>org.eclipse.rap.incubator</groupId>
 							<artifactId>E4_TP_RAP</artifactId>
-							<version>0.1.0</version>
+							<relativePath>../target</relativePath>
+							<version>0.1.0-SNAPSHOT</version>
 						</artifact>
 					</target>
 					<environments>
