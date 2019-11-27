@@ -17,6 +17,7 @@
 	<properties>
     	<maven.build.timestamp.format>'v'yyyyMMdd'-'HHmm</maven.build.timestamp.format>
         <project.scm.url>https://sdereps.esa.int/svn/eud20</project.scm.url>
+        <tycho-version>1.4.0</tycho-version>
     </properties>
     
    <scm>
