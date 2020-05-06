@@ -30,9 +30,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.6.0,4.0.0)",
 Bundle-ManifestVersion: 2
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Eclipse-SourceReferences: scm:git:git://git.eclipse.org/gitroot/platfo
- rm/eclipse.platform.ui.git;path="bundles/org.eclipse.ui.workbench";ta
- g="M20170705-0505";commitId=96dc559f38ef55ccbf69f0b4a8ec9ad9c1349da4
+Eclipse-SourceReferences: scm:git:https://git.eclipse.org/r/rap/incubator/org.eclipse.rap.incubator.e4.compatibility.workbench;path="bundles/org.eclipse.rap.ui.workbench";ta
+ g=3.4
 Bundle-Vendor: %providerName
 Import-Package: com.ibm.icu.text,
  com.ibm.icu.util,
@@ -159,3 +158,4 @@ Bundle-Localization: plugin
 Bundle-Activator: org.eclipse.ui.internal.WorkbenchPlugin
 Created-By: Apache Maven 3.3.3
 Build-Jdk: 1.8.0_121
+
