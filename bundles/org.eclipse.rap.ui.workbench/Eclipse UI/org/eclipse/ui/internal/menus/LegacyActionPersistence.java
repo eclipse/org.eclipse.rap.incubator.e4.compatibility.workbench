@@ -133,26 +133,28 @@ public final class LegacyActionPersistence extends RegistryPersistence {
 	 * Deactivates all of the activations made by this class, and then clears
 	 * the collection. This should be called before every read.
 	 */
-	private void clearActivations() {
-		final IHandlerService service = window
-				.getService(IHandlerService.class);
-		if (service == null) {
-			handlerActivations.clear();
-			return;
-		}
-		service.deactivateHandlers(handlerActivations);
-		final Iterator activationItr = handlerActivations.iterator();
-		while (activationItr.hasNext()) {
-			final IHandlerActivation activation = (IHandlerActivation) activationItr
-					.next();
-			final IHandler handler = activation.getHandler();
-			if (handler != null) {
-				handler.dispose();
-			}
-		}
-		handlerActivations.clear();
-	}
-
+    private final void clearActivations() {
+      // RAP [dm]:
+//    final IHandlerService service = window
+//            .getService(IHandlerService.class);
+//    if (service == null) {
+          handlerActivations.clear();
+          return;
+//    }
+//    service.deactivateHandlers(handlerActivations);
+//    final Iterator activationItr = handlerActivations.iterator();
+//    while (activationItr.hasNext()) {
+//        final IHandlerActivation activation = (IHandlerActivation) activationItr
+//                .next();
+//        final IHandler handler = activation.getHandler();
+//        if (handler != null) {
+//            handler.dispose();
+//        }
+//    }
+//    handlerActivations.clear();
+      // RAPEND: [dm]
+  }
+	
 	/**
 	 * Removes all of the image bindings made by this class, and then clears the
 	 * collection. This should be called before every read.

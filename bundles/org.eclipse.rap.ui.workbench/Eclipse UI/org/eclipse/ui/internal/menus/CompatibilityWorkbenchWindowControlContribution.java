@@ -16,6 +16,7 @@ package org.eclipse.ui.internal.menus;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
@@ -24,6 +25,7 @@ import org.eclipse.e4.ui.model.application.ui.menu.MToolControl;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.internal.util.Util;
 import org.eclipse.ui.menus.IWorkbenchContribution;
@@ -35,8 +37,10 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
  */
 public class CompatibilityWorkbenchWindowControlContribution {
 
-	public static final String CONTROL_CONTRIBUTION_URI = "bundleclass://org.eclipse.ui.workbench/org.eclipse.ui.internal.menus.CompatibilityWorkbenchWindowControlContribution"; //$NON-NLS-1$
-
+    // RAP [DM]:
+    public static final String CONTROL_CONTRIBUTION_URI = "bundleclass://" + PlatformUI.PLUGIN_ID + "/org.eclipse.ui.internal.menus.CompatibilityWorkbenchWindowControlContribution"; //$NON-NLS-1$
+    // RAPEND: [DM]
+    
 	private WorkbenchWindowControlContribution contribution;
 
 	/**
