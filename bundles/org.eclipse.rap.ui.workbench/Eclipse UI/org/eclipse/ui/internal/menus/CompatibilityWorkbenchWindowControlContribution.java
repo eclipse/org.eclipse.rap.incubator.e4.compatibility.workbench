@@ -38,7 +38,7 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 public class CompatibilityWorkbenchWindowControlContribution {
 
     // RAP [DM]:
-    public static final String CONTROL_CONTRIBUTION_URI = "bundleclass://" + PlatformUI.PLUGIN_ID + "/org.eclipse.ui.internal.menus.CompatibilityWorkbenchWindowControlContribution"; //$NON-NLS-1$
+    public static final String CONTROL_CONTRIBUTION_URI = "bundleclass://" + PlatformUI.PLUGIN_ID + ".workbench" + "/org.eclipse.ui.internal.menus.CompatibilityWorkbenchWindowControlContribution"; //$NON-NLS-1$
     // RAPEND: [DM]
     
 	private WorkbenchWindowControlContribution contribution;
