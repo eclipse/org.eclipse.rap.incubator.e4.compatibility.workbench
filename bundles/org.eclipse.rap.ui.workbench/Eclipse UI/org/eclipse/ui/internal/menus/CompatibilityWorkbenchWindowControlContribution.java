@@ -62,6 +62,14 @@ public class CompatibilityWorkbenchWindowControlContribution {
 					configurationElement, IWorkbenchRegistryConstants.ATT_CLASS,
 					WorkbenchWindowControlContribution.class);
 			if (contribution != null) {
+			    // RAP [DM]:
+			    // Restore the contribution ID from the old Eclipse 3.x API
+			    String id = configurationElement.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
+			    if (id != null && !id.trim().isEmpty())
+			    {
+			        contribution.setId(id);
+			    }
+			    // RAPEND [DM]:
 				IWorkbenchWindow workbenchWindow = window.getContext().get(IWorkbenchWindow.class);
 				contribution.setWorkbenchWindow(workbenchWindow);
 
