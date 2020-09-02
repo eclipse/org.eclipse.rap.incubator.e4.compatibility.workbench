@@ -36,6 +36,18 @@
           <compress>true</compress>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>
+          <baselineRepositories>
+            <repository>
+              <url>${baseline-repository}</url>
+            </repository>
+          </baselineRepositories>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

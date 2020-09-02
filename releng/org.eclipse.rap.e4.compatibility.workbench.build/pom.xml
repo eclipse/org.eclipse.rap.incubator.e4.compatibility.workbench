@@ -29,6 +29,8 @@
 		<download-publish-path>/shared/rt/rap/incubator/nightly/e4/target</download-publish-path>
 		<tycho-version>1.4.0</tycho-version>
 		<orbit-dependencies-repository>https://download.eclipse.org/tools/orbit/downloads/drops/R20190226160451/repository/</orbit-dependencies-repository>
+		<rap-incubator-repository>http://download.eclipse.org/rt/rap/incubator/nightly/</rap-incubator-repository>
+		<baseline-repository>${rap-incubator-repository}</baseline-repository>
 	</properties>
 
 	<repositories>
