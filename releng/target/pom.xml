@@ -4,9 +4,9 @@
 
     <parent>
     <groupId>org.eclipse.rap.incubator</groupId>
-    <artifactId>org.eclipse.rap.incubator-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
-    <relativePath>../../../org.eclipse.rap.incubator.releng/releng/org.eclipse.rap.incubator.releng/parent</relativePath>
+    <artifactId>org.eclipse.rap.ui.compatibility.workbench.build</artifactId>
+    <version>0.1.1-SNAPSHOT</version>
+    <relativePath>../org.eclipse.rap.e4.compatibility.workbench.build</relativePath>
   </parent>
 
     <groupId>org.eclipse.rap.incubator</groupId>
