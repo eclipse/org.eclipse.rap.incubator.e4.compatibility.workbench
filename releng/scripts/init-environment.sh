@@ -33,7 +33,7 @@ echo "RAP Runtime p2 repository: ${RAP_REPOSITORY}"
 export REPOSITORY_BASE_PATH=${REPOSITORY_BASE_PATH:-"/shared/rt/rap/incubator/nightly"}
 echo "p2 repository base path: ${REPOSITORY_BASE_PATH}"
 
-export INCUBATOR_REPOSITORY_BASE_PATH=${REPOSITORY_BASE_PATH:-"/home/data/httpd/download.eclipse.org/rt/rap/incubator/nightly"}
+export INCUBATOR_REPOSITORY_BASE_PATH=${INCUBATOR_REPOSITORY_BASE_PATH:-"/home/data/httpd/download.eclipse.org/rt/rap/incubator/nightly"}
 echo "Incubator p2 repository base path: ${INCUBATOR_REPOSITORY_BASE_PATH}"
 
 export NUM_TO_KEEP=${NUM_TO_KEEP:-"5"}
