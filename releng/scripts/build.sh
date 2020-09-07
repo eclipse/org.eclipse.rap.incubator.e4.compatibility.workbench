@@ -103,7 +103,7 @@ test -n "${VERSION}" || exit 1
 test -n "${TIMESTAMP}" || exit 1
 ######################################################################
 # copy repository to target location if new version available
-COMPONENT_DIRECTORY=${REPOSITORY_BASE_PATH}/${COMPONENT_NAME}
+COMPONENT_DIRECTORY=${INCUBATOR_REPOSITORY_BASE_PATH}/${COMPONENT_NAME}
 echo "Copy new ${TIMESTAMP} repository of ${COMPONENT_NAME} to ${COMPONENT_DIRECTORY}" 
 if [ -d "${COMPONENT_DIRECTORY}/${TIMESTAMP}" ] ; then
   echo "Build already exists in ${COMPONENT_DIRECTORY}. Nothing to do."
