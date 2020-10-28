@@ -61,6 +61,11 @@ public class WorkaroundDragPartSource extends DragSource {
   private boolean ignoreEvents = false;
 
   /**
+   * The reference to the thread pool executor
+   */
+  private ScheduledThreadPoolExecutor executor;
+  
+  /**
    * Creates a new WorkaroundDragPartSource
    * 
    * @param control
@@ -99,6 +104,10 @@ public class WorkaroundDragPartSource extends DragSource {
       this.ctf.addListener( SWT.MouseUp, listener );
       this.ctf.setData( "DragWorkaroundListener", listener );
     }
+
+    this.executor = new ScheduledThreadPoolExecutor( 1 );
+    
+    this.ctf.getDisplay().disposeExec(() -> { this.executor.shutdown(); this.executor = null; });
   }
 
   /**
@@ -165,8 +174,8 @@ public class WorkaroundDragPartSource extends DragSource {
    */
   public void ignoreEvents() {
     this.ignoreEvents = true;
-    final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1 );
-    executor.schedule( ( ) -> {
+    
+    this.executor.schedule( ( ) -> {
       this.ignoreEvents = false;
     }, 500, TimeUnit.MILLISECONDS );
   }

@@ -1601,11 +1601,24 @@ public final class Workbench extends EventManager implements IWorkbench,
 	 */
 	/* package */
 	boolean close(int returnCode, final boolean force) {
-		this.returnCode = returnCode;
-		final boolean[] ret = new boolean[1];
-		BusyIndicator.showWhile(null, () -> ret[0] = busyClose(force));
-		return ret[0];
-	}
+// RAP [fappel]: take care of the started flag
+//      this.returnCode = returnCode;
+//      final boolean[] ret = new boolean[1];
+//      BusyIndicator.showWhile(null, () -> ret[0] = busyClose(force));
+//      return ret[0];
+        try {
+            this.returnCode = returnCode;
+            final boolean[] ret = new boolean[1];
+            BusyIndicator.showWhile(null, new Runnable() {
+                public void run() {
+                    ret[0] = busyClose(force);
+                }
+            });
+            return ret[0];
+        } finally {
+            started = false;
+        }
+    }
 
 	@Override
 	public IWorkbenchWindow getActiveWorkbenchWindow() {
@@ -1772,6 +1785,8 @@ public final class Workbench extends EventManager implements IWorkbench,
 	 * @return true if init succeeded.
 	 */
 	private boolean init() {
+	 // RAP [fappel]: take care of the started flag
+        started = true;
 		// setup debug mode if required.
 		if (WorkbenchPlugin.getDefault().isDebugging()) {
 			WorkbenchPlugin.DEBUG = true;

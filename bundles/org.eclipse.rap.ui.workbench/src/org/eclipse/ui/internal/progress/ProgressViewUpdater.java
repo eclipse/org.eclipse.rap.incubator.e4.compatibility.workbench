@@ -14,87 +14,111 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import org.eclipse.rap.rwt.SingletonUtil;
+import org.eclipse.rap.rwt.internal.lifecycle.LifeCycleUtil;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.util.PrefUtil;
 
 /**
  * The ProgressViewUpdater is the singleton that updates viewers.
  */
-class ProgressViewUpdater implements IJobProgressManagerListener {
+//RAP [fappel]: ProgressViewUpdater needs to be a singleton per session
+//class ProgressViewUpdater implements IJobProgressManagerListener {
+//
+// private static ProgressViewUpdater singleton;
+public class ProgressViewUpdater implements IJobProgressManagerListener {
 
-    private static ProgressViewUpdater singleton;
+	// RAP [fappel]: This class will be instanciated using the
+	// SessionSingletonUtil#getInstance(class) method to have a
+	// replacement for the class variable holding the singleton in
+	// RCP.
+	public final static class ProgressViewUpdaterHolder {
+		private ProgressViewUpdaterHolder() {
+			// prevent from instance creation
+		}
 
-    private IProgressUpdateCollector[] collectors;
+		// this is the reference to the actual session singleton instance
+		public ProgressViewUpdater singleton;
+	}
+
+	private Set<IProgressUpdateCollector> collectors;
 
     UpdatesInfo currentInfo = new UpdatesInfo();
 
     boolean debug;
 
-	Throttler throttledUpdate = new Throttler(PlatformUI.getWorkbench().getDisplay(), Duration.ofMillis(100),
-			this::update);
+    // RAP [fappel]:
+    private Display display;
+
+	Throttler throttledUpdate;
 
     /**
      * The UpdatesInfo is a private class for keeping track of the updates
      * required.
      */
-    class UpdatesInfo {
+	static class UpdatesInfo {
 
-        Collection additions = new HashSet();
+		Collection<JobTreeElement> additions = new LinkedHashSet<>();
 
-        Collection deletions = new HashSet();
+		Collection<JobTreeElement> deletions = new LinkedHashSet<>();
 
-        Collection refreshes = new HashSet();
+		Collection<JobTreeElement> refreshes = new LinkedHashSet<>();
 
-        boolean updateAll = false;
+		volatile boolean updateAll;
 
         private UpdatesInfo() {
             //Create a new instance of the info
         }
 
         /**
-         * Add an add update
-         *
-         * @param addition
-         */
-        void add(JobTreeElement addition) {
+		 * Add an add update
+		 *
+		 * @param addition
+		 */
+		synchronized void add(JobTreeElement addition) {
             additions.add(addition);
         }
 
         /**
-         * Add a remove update
-         *
-         * @param removal
-         */
-        void remove(JobTreeElement removal) {
+		 * Add a remove update
+		 *
+		 * @param removal
+		 */
+		synchronized void remove(JobTreeElement removal) {
             deletions.add(removal);
         }
 
         /**
-         * Add a refresh update
-         *
-         * @param refresh
-         */
-        void refresh(JobTreeElement refresh) {
+		 * Add a refresh update
+		 *
+		 * @param refresh
+		 */
+		synchronized void refresh(JobTreeElement refresh) {
             refreshes.add(refresh);
         }
 
         /**
          * Reset the caches after completion of an update.
          */
-        void reset() {
+		synchronized void reset() {
             additions.clear();
             deletions.clear();
             refreshes.clear();
             updateAll = false;
         }
 
-        void processForUpdate() {
-            HashSet staleAdditions = new HashSet();
+		/**
+		 * @return array containing updated, added and deleted items
+		 */
+		synchronized JobTreeElement[][] processForUpdate() {
+			HashSet<JobTreeElement> staleAdditions = new HashSet<>();
 
-            Iterator additionsIterator = additions.iterator();
+			Iterator<JobTreeElement> additionsIterator = additions.iterator();
             while (additionsIterator.hasNext()) {
-                JobTreeElement treeElement = (JobTreeElement) additionsIterator
+				JobTreeElement treeElement = additionsIterator
                         .next();
                 if (!treeElement.isActive()) {
                     if (deletions.contains(treeElement)) {
@@ -105,11 +129,8 @@ class ProgressViewUpdater implements IJobProgressManagerListener {
 
             additions.removeAll(staleAdditions);
 
-            HashSet obsoleteRefresh = new HashSet();
-            Iterator refreshIterator = refreshes.iterator();
-            while (refreshIterator.hasNext()) {
-                JobTreeElement treeElement = (JobTreeElement) refreshIterator
-                        .next();
+			HashSet<JobTreeElement> obsoleteRefresh = new HashSet<>();
+			for (JobTreeElement treeElement : refreshes) {
                 if (deletions.contains(treeElement)
                         || additions.contains(treeElement)) {
 					obsoleteRefresh.add(treeElement);
@@ -131,7 +152,12 @@ class ProgressViewUpdater implements IJobProgressManagerListener {
 
             refreshes.removeAll(obsoleteRefresh);
 
-        }
+			JobTreeElement[] updateItems = refreshes.toArray(new JobTreeElement[0]);
+			JobTreeElement[] additionItems = additions.toArray(new JobTreeElement[0]);
+			JobTreeElement[] deletionItems = deletions.toArray(new JobTreeElement[0]);
+			return new JobTreeElement[][] { updateItems, additionItems, deletionItems };
+		}
+
     }
 
     /**
@@ -139,79 +165,88 @@ class ProgressViewUpdater implements IJobProgressManagerListener {
      *
      * @return ProgressViewUpdater
      */
-   static ProgressViewUpdater getSingleton() {
-        if (singleton == null) {
-			singleton = new ProgressViewUpdater();
-		}
-        return singleton;
+    static ProgressViewUpdater getSingleton() {
+// RAP [fappel]: session aware implementation
+//        if (singleton == null) {
+//			singleton = new ProgressViewUpdater();
+//		}
+//        return singleton;
+      ProgressViewUpdaterHolder singletonHolder = getSingletonHolder();
+      if( singletonHolder.singleton == null ) {
+        singletonHolder.singleton = new ProgressViewUpdater();
+        singletonHolder.singleton.display = LifeCycleUtil.getSessionDisplay();
+			singletonHolder.singleton.throttledUpdate = new Throttler(getSingleton().display, Duration.ofMillis(100),
+					singletonHolder.singleton::update);
+      }
+      return singletonHolder.singleton;
+    }
+
+    private static ProgressViewUpdaterHolder getSingletonHolder() {
+		return SingletonUtil.getSessionInstance(ProgressViewUpdaterHolder.class);
     }
 
     /**
-     * Return whether or not there is a singleton for updates to avoid creating
-     * extra listeners.
-     *
-     * @return boolean <code>true</code> if there is already
-     * a singleton
-     */
+	 * Return whether or not there is a singleton for updates to avoid creating
+	 * extra listeners.
+	 *
+	 * @return boolean <code>true</code> if there is already a singleton
+	 */
     static boolean hasSingleton() {
-        return singleton != null;
+// RAP [fappel]:
+//      return singleton != null;
+		return getSingletonHolder().singleton != null;
     }
 
     static void clearSingleton() {
-        if (singleton != null) {
-			ProgressManager.getInstance().removeListener(singleton);
-		}
-        singleton = null;
+// RAP [fappel]:
+//        if (singleton != null) {
+//			ProgressManager.getInstance().removeListener(singleton);
+//		}
+//        singleton = null;
+      if( hasSingleton() ) {
+        ProgressManager.getInstance().removeListener(getSingleton());
+        getSingletonHolder().singleton.display = null;
+      }
+      getSingletonHolder().singleton = null;
     }
 
     /**
      * Create a new instance of the receiver.
      */
     private ProgressViewUpdater() {
-        collectors = new IProgressUpdateCollector[0];
+		collectors = new LinkedHashSet<>();
         ProgressManager.getInstance().addListener(this);
-        debug =
+		debug =
         	PrefUtil.getAPIPreferenceStore().
         		getBoolean(IWorkbenchPreferenceConstants.SHOW_SYSTEM_JOBS);
     }
 
     /**
-     * Add the new collector to the list of collectors.
-     *
-     * @param newCollector
-     */
+	 * Add the new collector to the list of collectors.
+	 *
+	 * @param newCollector
+	 */
     void addCollector(IProgressUpdateCollector newCollector) {
-        IProgressUpdateCollector[] newCollectors = new IProgressUpdateCollector[collectors.length + 1];
-        System.arraycopy(collectors, 0, newCollectors, 0, collectors.length);
-        newCollectors[collectors.length] = newCollector;
-        collectors = newCollectors;
+		collectors.add(newCollector);
     }
 
     /**
-     * Remove the collector from the list of collectors.
-     *
-     * @param provider
-     */
+	 * Remove the collector from the list of collectors.
+	 *
+	 * @param provider
+	 */
     void removeCollector(IProgressUpdateCollector provider) {
-        HashSet newCollectors = new HashSet();
-        for (int i = 0; i < collectors.length; i++) {
-            if (!collectors[i].equals(provider)) {
-				newCollectors.add(collectors[i]);
-			}
-        }
-        IProgressUpdateCollector[] newArray = new IProgressUpdateCollector[newCollectors
-                .size()];
-        newCollectors.toArray(newArray);
-        collectors = newArray;
+		collectors.remove(provider);
         //Remove ourselves if there is nothing to update
-        if (collectors.length == 0) {
+		if (collectors.isEmpty()) {
 			clearSingleton();
 		}
     }
 
+	/** Running in UI thread by throttledUpdate */
 	private void update() {
 		// Abort the update if there isn't anything
-		if (collectors.length == 0) {
+		if (collectors.isEmpty()) {
 			return;
 		}
 
@@ -222,15 +257,11 @@ class ProgressViewUpdater implements IJobProgressManagerListener {
 			}
 
 		} else {
-			// Lock while getting local copies of the caches.
-			Object[] updateItems;
-			Object[] additionItems;
-			Object[] deletionItems;
-			currentInfo.processForUpdate();
+			JobTreeElement[][] elements = currentInfo.processForUpdate();
 
-			updateItems = currentInfo.refreshes.toArray();
-			additionItems = currentInfo.additions.toArray();
-			deletionItems = currentInfo.deletions.toArray();
+			JobTreeElement[] updateItems = elements[0];
+			JobTreeElement[] additionItems = elements[1];
+			JobTreeElement[] deletionItems = elements[2];
 
 			currentInfo.reset();
 
@@ -248,31 +279,7 @@ class ProgressViewUpdater implements IJobProgressManagerListener {
 		}
 	}
 
-    /**
-     * Get the updates info that we are using in the receiver.
-     *
-     * @return Returns the currentInfo.
-     */
-    UpdatesInfo getCurrentInfo() {
-        return currentInfo;
-    }
-
-    /**
-     * Refresh the supplied JobInfo.
-     * @param info
-     */
-    public void refresh(JobInfo info) {
-		currentInfo.refresh(info);
-		GroupInfo group = info.getGroupInfo();
-		if (group != null) {
-			currentInfo.refresh(group);
-		}
-        //Add in a 100ms delay so as to keep priority low
-		throttledUpdate.throttledExec();
-
-    }
-
-    @Override
+	@Override
 	public void refreshJobInfo(JobInfo info) {
 		currentInfo.refresh(info);
         //Add in a 100ms delay so as to keep priority low
@@ -280,33 +287,28 @@ class ProgressViewUpdater implements IJobProgressManagerListener {
 
     }
 
-    @Override
+	@Override
 	public void refreshGroup(GroupInfo info) {
 		currentInfo.refresh(info);
         //Add in a 100ms delay so as to keep priority low
 		throttledUpdate.throttledExec();
-
     }
 
-    @Override
+	@Override
 	public void addGroup(GroupInfo info) {
-
 		currentInfo.add(info);
 		throttledUpdate.throttledExec();
-
     }
 
-    @Override
+	@Override
 	public void refreshAll() {
-
 		currentInfo.updateAll = true;
 
         //Add in a 100ms delay so as to keep priority low
 		throttledUpdate.throttledExec();
-
     }
 
-    @Override
+	@Override
 	public void addJob(JobInfo info) {
 		GroupInfo group = info.getGroupInfo();
 
@@ -316,10 +318,9 @@ class ProgressViewUpdater implements IJobProgressManagerListener {
 			currentInfo.refresh(group);
         }
 		throttledUpdate.throttledExec();
-
     }
 
-    @Override
+	@Override
 	public void removeJob(JobInfo info) {
 		GroupInfo group = info.getGroupInfo();
 		if (group == null) {
@@ -330,14 +331,13 @@ class ProgressViewUpdater implements IJobProgressManagerListener {
 		throttledUpdate.throttledExec();
     }
 
-    @Override
+	@Override
 	public void removeGroup(GroupInfo group) {
 		currentInfo.remove(group);
 		throttledUpdate.throttledExec();
-
     }
 
-    @Override
+	@Override
 	public boolean showsDebug() {
         return debug;
     }

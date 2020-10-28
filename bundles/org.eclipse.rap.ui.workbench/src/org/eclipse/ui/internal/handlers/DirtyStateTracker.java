@@ -31,19 +31,21 @@ import org.eclipse.ui.services.IEvaluationService;
  */
 public class DirtyStateTracker implements IPartListener, IWindowListener, IPropertyListener {
 
-	private final IWorkbench workbench;
+// RAP [dm]:
+//  private final IWorkbench workbench;
 
-	public DirtyStateTracker() {
-		workbench = Workbench.getInstance();
-		workbench.addWindowListener(this);
-		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-		register(window);
-	}
+    public DirtyStateTracker() {
+//      workbench = Workbench.getInstance();
+        Workbench.getInstance().addWindowListener(this);
+        IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
+        register(window);
+    }
 
-	public void update() {
-		IEvaluationService service = workbench.getService(IEvaluationService.class);
-		service.requestEvaluation(ISources.ACTIVE_PART_NAME);
-	}
+    public void update() {
+        IEvaluationService service = Workbench.getInstance().getService(IEvaluationService.class);
+        service.requestEvaluation(ISources.ACTIVE_PART_NAME);
+    }
+// RAPEND: [dm]
 
 	private void register(IWorkbenchWindow window) {
 		if (window == null) {
