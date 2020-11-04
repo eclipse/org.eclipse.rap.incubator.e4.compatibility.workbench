@@ -21,6 +21,7 @@ import org.eclipse.e4.ui.model.application.ui.menu.MToolControl;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.internal.util.Util;
 import org.eclipse.ui.menus.IWorkbenchContribution;
@@ -32,7 +33,9 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
  */
 public class CompatibilityWorkbenchWindowControlContribution {
 
-	public static final String CONTROL_CONTRIBUTION_URI = "bundleclass://org.eclipse.ui.workbench/org.eclipse.ui.internal.menus.CompatibilityWorkbenchWindowControlContribution"; //$NON-NLS-1$
+ // RAP [DM]:
+    public static final String CONTROL_CONTRIBUTION_URI = "bundleclass://" + PlatformUI.PLUGIN_ID + ".workbench" + "/org.eclipse.ui.internal.menus.CompatibilityWorkbenchWindowControlContribution"; //$NON-NLS-1$
+    // RAPEND: [DM]
 
 	private WorkbenchWindowControlContribution contribution;
 
@@ -55,6 +58,14 @@ public class CompatibilityWorkbenchWindowControlContribution {
 					configurationElement, IWorkbenchRegistryConstants.ATT_CLASS,
 					WorkbenchWindowControlContribution.class);
 			if (contribution != null) {
+			    // RAP [DM]:
+                // Restore the contribution ID from the old Eclipse 3.x API
+                String id = configurationElement.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
+                if (id != null && !id.trim().isEmpty())
+                {
+                    contribution.setId(id);
+                }
+                // RAPEND [DM]:
 				IWorkbenchWindow workbenchWindow = window.getContext().get(IWorkbenchWindow.class);
 				contribution.setWorkbenchWindow(workbenchWindow);
 
