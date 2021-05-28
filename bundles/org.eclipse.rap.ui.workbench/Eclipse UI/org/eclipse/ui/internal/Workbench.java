@@ -1252,6 +1252,16 @@ public final class Workbench extends EventManager implements IWorkbench,
 		if (!force && !isClosing) {
 			return false;
 		}
+		
+		 // save any open editors if they are dirty
+        // RAP [bm]: added session condition
+        if(!sessionInvalidated) {
+        // RAPEND: [bm]
+            isClosing = saveAllEditors(!force);
+            if (!force && !isClosing) {
+                return false;
+            }
+        }
 
 		// save any open editors if they are dirty
 		isClosing = saveAllEditors(!force, true);
@@ -1327,10 +1337,12 @@ public final class Workbench extends EventManager implements IWorkbench,
 		// Bug 520926: This event must be fired after all veto chances have passed:
 		UIEvents.publishEvent(UIEvents.UILifeCycle.APP_SHUTDOWN_STARTED, application);
 
-		shutdown();
-
+		// RAP [DM]:
 		IPresentationEngine engine = application.getContext().get(IPresentationEngine.class);
 		engine.stop();
+		shutdown();
+		// RAPEND: [DM]
+
 
 		runEventLoop = false;
 		return true;
