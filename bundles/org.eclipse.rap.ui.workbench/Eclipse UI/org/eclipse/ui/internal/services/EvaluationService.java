@@ -33,6 +33,7 @@ import org.eclipse.e4.core.commands.ExpressionContext;
 import org.eclipse.e4.core.contexts.ContextFunction;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.contexts.RunAndTrack;
+import org.eclipse.e4.core.internal.contexts.EclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.UIEvents;
@@ -197,7 +198,14 @@ public final class EvaluationService implements IEvaluationService {
 			invalidate(ref, false);
 		}
 		refs.clear();
+		// RAP [DM]:
 		serviceListeners.clear();
+		ratContext.dispose();
+		context.dispose();
+		eventBroker = null;
+		ratContext = null;
+		sourceProviders = null;
+		// RAPEND [DM]
 	}
 
 	@Override
