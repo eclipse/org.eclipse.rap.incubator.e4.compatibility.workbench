@@ -174,6 +174,7 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.eclipse.ui.internal.e4.compatibility.ModeledPageLayout;
 import org.eclipse.ui.internal.e4.compatibility.SelectionService;
 import org.eclipse.ui.internal.handlers.ActionCommandMappingService;
+import org.eclipse.ui.internal.handlers.DirtyStateTracker;
 import org.eclipse.ui.internal.handlers.IActionCommandMappingService;
 import org.eclipse.ui.internal.handlers.LegacyHandlerService;
 import org.eclipse.ui.internal.menus.ActionSet;
@@ -817,6 +818,9 @@ public class WorkbenchWindow implements IWorkbenchWindow {
 			mainMenu = null;
 		}
 		renderer = null;
+		// RAP [DM]:
+		HandlerServiceImpl.handlerGenerator = null;
+		// RAPEND: [DM]
 	}
 
 	private void configureShell(Shell shell, IEclipseContext context) {
@@ -2838,6 +2842,10 @@ STATUS_LINE_ID, model);
 		IMenuService parent = getWorkbench().getService(IMenuService.class);
 		IMenuService msvs = new SlaveMenuService(parent, model);
 		serviceLocator.registerService(IMenuService.class, msvs);
+		
+		// RAP [DM]:  Singleton initialization moved from AbstractSaveHandler.java
+		windowContext.set(DirtyStateTracker.class, new DirtyStateTracker());
+		// RAPEND: [DM]
 	}
 
 	@Override

@@ -40,14 +40,25 @@ import org.eclipse.ui.internal.commands.CommandPersistence;
  */
 public class CommandToModelProcessor {
 
-	private Map<String, MCategory> categories = new HashMap<>();
-
-	private Map<String, MCommand> commands = new HashMap<>();
+ // RAP [DM]:  
+    
+//  private Map<String, MCategory> categories = new HashMap<>();
+//
+//  private Map<String, MCommand> commands = new HashMap<>();
+    
+ // RAPEND: [DM]
 
 	private EModelService modelService;
 
 	@Execute
 	void process(MApplication application, final IEclipseContext context, EModelService modelService) {
+	    
+	    // RAP [DM]:  
+	    Map<String, MCategory> categories = new HashMap<>();
+
+	    Map<String, MCommand> commands = new HashMap<>();
+	    // RAPEND: [DM]
+	    
 		this.modelService = modelService;
 		for (MCategory catModel : application.getCategories()) {
 			categories.put(catModel.getElementId(), catModel);
@@ -77,16 +88,22 @@ public class CommandToModelProcessor {
 		CommandPersistence cp = new CommandPersistence(commandManager);
 		ContextInjectionFactory.inject(cp, context);
 		cp.reRead();
-		generateCategories(application, commandManager);
-		generateCommands(application, commandManager);
+		
+		 // RAP [DM]:  
+//	      generateCategories(application, commandManager);
+//        generateCommands(application, commandManager);
+		generateCategories(application, commandManager, categories);
+		generateCommands(application, commandManager, commands, categories);
 		cp.dispose();
 	}
 
 	/**
 	 * @param application
 	 * @param commandManager
+	 * @param commands 
+	 * @param categories 
 	 */
-	private void generateCommands(MApplication application, CommandManager commandManager) {
+	private void generateCommands(MApplication application, CommandManager commandManager, Map<String, MCommand> commands, Map<String, MCategory> categories) {
 		for (Command cmd : commandManager.getDefinedCommands()) {
 			final MCommand mCommand = commands.get(cmd.getId());
 			if (mCommand != null) {
@@ -122,8 +139,9 @@ public class CommandToModelProcessor {
 
 	/**
 	 * @param commandManager
+	 * @param categories 
 	 */
-	private void generateCategories(MApplication application, CommandManager commandManager) {
+	private void generateCategories(MApplication application, CommandManager commandManager, Map<String, MCategory> categories) {
 		for (Category cat : commandManager.getDefinedCategories()) {
 			if (categories.containsKey(cat.getId())) {
 				continue;

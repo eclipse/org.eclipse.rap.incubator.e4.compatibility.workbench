@@ -48,6 +48,8 @@ import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.EventManager;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.commands.contexts.ContextManager;
+import org.eclipse.core.commands.contexts.ContextManagerEvent;
+import org.eclipse.core.commands.contexts.IContextManagerListener;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
@@ -126,6 +128,7 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.OpenStrategy;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.window.IShellProvider;
@@ -451,6 +454,8 @@ public final class Workbench extends EventManager implements IWorkbench,
 	private WorkbenchWindow windowBeingCreated = null;
 
 	private Listener backForwardListener;
+	
+	private IContextManagerListener contextManagerListener;
 
 	@Inject
 	@Optional
@@ -784,8 +789,11 @@ public final class Workbench extends EventManager implements IWorkbench,
 //						WorkbenchPlugin.getDefault().removeBundleListener(bundleListener);
 //					}
 					e4Workbench.createAndRunUI(e4Workbench.getApplication());
-					IMenuService wms = e4Workbench.getContext().get(IMenuService.class);
-					wms.dispose();
+					
+					// RAP [DM]: This is already disposed and nullified in shutdown method
+//					IMenuService wms = e4Workbench.getContext().get(IMenuService.class);
+//                    wms.dispose();
+					// RAPEND [DM]
 				}
 				if (returnCode[0] != PlatformUI.RETURN_UNSTARTABLE) {
 					setSearchContribution(appModel, false);
@@ -2063,20 +2071,27 @@ public final class Workbench extends EventManager implements IWorkbench,
 		// track the workbench preference and update the eclipse context with
 		// the new value
 		IPreferenceStore preferenceStore = PrefUtil.getAPIPreferenceStore();
-		preferenceStore.addPropertyChangeListener(event -> {
-			if (IWorkbenchPreferenceConstants.ENABLE_ANIMATIONS.equals(event.getProperty())) {
-				Object o = event.getNewValue();
-				if (o instanceof Boolean) {
-					// Boolean if notified after the preference page has
-					// been closed
-					e4Context.set(IPresentationEngine.ANIMATIONS_ENABLED, o);
-				} else if (o instanceof String) {
-					// String if notified via an import of the preference
-					e4Context.set(IPresentationEngine.ANIMATIONS_ENABLED,
-							Boolean.parseBoolean((String) event.getNewValue()));
-				}
-			}
-		});
+		this.enableAnimationsListener = new IPropertyChangeListener()
+        {
+            /** {@inheritDoc} */
+            @Override
+            public void propertyChange(PropertyChangeEvent event)
+            {
+            	if (IWorkbenchPreferenceConstants.ENABLE_ANIMATIONS.equals(event.getProperty())) {
+            		Object o = event.getNewValue();
+            		if (o instanceof Boolean) {
+            			// Boolean if notified after the preference page has
+            			// been closed
+            			e4Context.set(IPresentationEngine.ANIMATIONS_ENABLED, o);
+            		} else if (o instanceof String) {
+            			// String if notified via an import of the preference
+            			e4Context.set(IPresentationEngine.ANIMATIONS_ENABLED,
+            					Boolean.parseBoolean((String) event.getNewValue()));
+            		}
+            	}
+            }
+        };
+        preferenceStore.addPropertyChangeListener(this.enableAnimationsListener);
 
 		childrenEventHandler = new EventHandler() {
 
@@ -2485,16 +2500,25 @@ public final class Workbench extends EventManager implements IWorkbench,
 
 		StartupThreading.runWithoutExceptions(new StartupRunnable() {
 
-			@Override
+			
+
+            @Override
 			public void runWithException() {
-				contextManager.addContextManagerListener(contextManagerEvent -> {
-					if (contextManagerEvent.isContextChanged()) {
-						String id = contextManagerEvent.getContextId();
-						if (id != null) {
-							defineBindingTable(id);
-						}
-					}
-				});
+				contextManagerListener = new IContextManagerListener()
+                {
+                    /** {@inheritDoc} */
+                    @Override
+                    public void contextManagerChanged(ContextManagerEvent contextManagerEvent)
+                    {
+                    	if (contextManagerEvent.isContextChanged()) {
+                    		String id = contextManagerEvent.getContextId();
+                    		if (id != null) {
+                    			defineBindingTable(id);
+                    		}
+                    	}
+                    }
+                };
+                contextManager.addContextManagerListener(contextManagerListener);
 				EContextService ecs = e4Context.get(EContextService.class);
 				ecs.activateContext(IContextService.CONTEXT_ID_DIALOG_AND_WINDOW);
 			}
@@ -3230,8 +3254,10 @@ public final class Workbench extends EventManager implements IWorkbench,
 
 		((GrabFocus) Tweaklets.get(GrabFocus.KEY)).dispose();
 
-		// Bring down all of the services.
-		serviceLocator.dispose();
+		// RAP [DM]: This has to be disposed later in this method
+//		// Bring down all of the services.
+//		serviceLocator.dispose();
+		// RAPEND [DM]
 		application.getCommands().removeAll(commandsToRemove);
 		application.getCategories().removeAll(categoriesToRemove);
 		getDisplay().removeFilter(SWT.MouseDown, backForwardListener);
@@ -3258,12 +3284,35 @@ public final class Workbench extends EventManager implements IWorkbench,
 		  eventBroker.unsubscribe( toBeRenderedEventHandler );
 		  eventBroker.unsubscribe( children2EventHandler );
 		  eventBroker.unsubscribe( uiModelTopicBaseEventHandler );
+	// RAP [DM]:
+		  IMenuService wms = e4Workbench.getContext().get(IMenuService.class);
+		  wms.dispose();
 		  e4Context.dispose();
+		  
+		  contextManager.removeContextManagerListener(this.contextManagerListener);
+		  contextManager.removeContextManagerListener(bindingManager);
+		  
+		  // Bring down all of the services.
+		  serviceLocator.dispose();
 		  clearListeners();
+		  clearE4Listeners();
+		  Job.getJobManager().setLockListener(null);
 		  this.synchronizer = null;
+		  e4Workbench.close();
 	}
 
 	/**
+     * Clear several listeners during disposal
+     */
+    private void clearE4Listeners()
+    {
+        IPreferenceStore preferenceStore = PrefUtil.getAPIPreferenceStore();
+        preferenceStore.removePropertyChangeListener(this.enableAnimationsListener);
+        this.bindingManager.removeBindingManagerListener(this.bindingManagerListener);
+    }
+    // RAPEND [DM]
+    
+    /**
 	 * Cancels the early startup job, if it's still running.
 	 */
 	private void cancelEarlyStartup() {
@@ -3672,6 +3721,8 @@ public final class Workbench extends EventManager implements IWorkbench,
   private EventHandler uiModelTopicBaseEventHandler;
 
   private UISynchronizer synchronizer;
+
+  private IPropertyChangeListener enableAnimationsListener;
 
 	/**
 	 * Adds the ids of a menu that is now showing to the menu source provider.

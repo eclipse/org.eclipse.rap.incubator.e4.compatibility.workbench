@@ -57,6 +57,7 @@ import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
+import org.eclipse.e4.core.contexts.ContextFunction;
 import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
@@ -1949,9 +1950,9 @@ public class WorkbenchPage implements IWorkbenchPage {
 		//
 		// stickyViewMan.clear();
 		//
-		// if (tracker != null) {
-		// tracker.close();
-		// }
+//		 if (tracker != null) {
+//		 tracker.close();
+//		 }
 		//
 		// // if we're destroying a window in a non-shutdown situation then we
 		// should
@@ -4658,10 +4659,13 @@ public class WorkbenchPage implements IWorkbenchPage {
 
 	@Override
 	public IExtensionTracker getExtensionTracker() {
-		if (tracker == null) {
-			tracker = new UIExtensionTracker(getWorkbenchWindow().getWorkbench().getDisplay());
-		}
-		return tracker;
+	 // RAP [DM]:
+//	    if (tracker == null) {
+//            tracker = new UIExtensionTracker(getWorkbenchWindow().getWorkbench().getDisplay());
+//        }
+//        return tracker;
+	    return (IExtensionTracker) window.getContext().get(IExtensionTracker.class.getName());
+	 // RAPEND [DM]
 	}
 
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];

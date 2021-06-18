@@ -19,6 +19,7 @@
 package org.eclipse.ui.internal.menus;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -108,6 +109,10 @@ public class MenuAdditionCacheEntry {
 
 		IWorkbench workbench = application.getContext().get(IWorkbench.class);
 		activityManager = workbench.getActivitySupport().getActivityManager();
+		
+		// RAP [DM]: 
+		this.registeredIdentifiers = new ArrayList<IIdentifier>();
+		// RAPEND [DM] 
 	}
 
 	private boolean inToolbar() {
@@ -310,6 +315,8 @@ public class MenuAdditionCacheEntry {
 
 	private IdListener idUpdater = new IdListener();
 
+    private List<IIdentifier> registeredIdentifiers;
+
 	private void createIdentifierTracker(MApplicationElement item) {
 		if (item.getElementId() != null && item.getElementId().length() > 0) {
 			String id = namespaceIdentifier + "/" + item.getElementId(); //$NON-NLS-1$
@@ -318,6 +325,9 @@ public class MenuAdditionCacheEntry {
 			if (identifier != null) {
 				application.getContext().set(identifier.getId(), identifier.isEnabled());
 				identifier.addIdentifierListener(idUpdater);
+				// RAP [DM]:
+				registeredIdentifiers.add(identifier);
+				// RAPEND [DM]
 			}
 		}
 	}
@@ -581,5 +591,20 @@ public class MenuAdditionCacheEntry {
 		return "MenuAdditionCacheEntry [id=" + MenuHelper.getId(configElement) //$NON-NLS-1$
 				+ ", namespaceId=" + namespaceIdentifier + ", location=" + location + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
+
+	// RAP [DM]:
+    /**
+     * Dispose the instance of this MenuAdditonCacheEntry.java
+     */
+    public void dispose()
+    {
+        for (IIdentifier identifier : registeredIdentifiers)
+        {
+            identifier.removeIdentifierListener(this.idUpdater);
+        }
+        this.registeredIdentifiers = null;
+        
+    }
+    // RAPEND [DM]
 
 }

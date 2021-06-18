@@ -59,8 +59,6 @@ import org.eclipse.ui.views.IViewDescriptor;
  */
 public class DetachPartProvider implements IPartListener2 {
 
-  /** The reference to the user singleton for this listener */
-  public static final DetachPartProvider INSTANCE = SingletonUtil.getSessionInstance( DetachPartProvider.class );
   /** Tag for shell_detach_parts_menu */
   private static final String SHELL_DETACH_PARTS_MENU = "shell_detach_parts_menu"; //$NON-NLS-1$
   /** Tag for stack_selected_part */
@@ -73,6 +71,16 @@ public class DetachPartProvider implements IPartListener2 {
    */
   private DetachPartProvider() {
   }
+  
+    /**
+     * Retrieves the DetachPartProvider session instance
+     * 
+     * @return the DetachPartProvider session instance
+     * @since 4.1.7
+     */
+  public static DetachPartProvider getInstance(){
+      return SingletonUtil.getSessionInstance( DetachPartProvider.class );
+  }
 
   /**
    * Applies this listener to the given workbench page
@@ -80,7 +88,7 @@ public class DetachPartProvider implements IPartListener2 {
    * @param page the reference to the workbench page where this listener will be applied
    */
   public static void applyListenerTo( IWorkbenchPage page ) {
-    page.addPartListener( INSTANCE );
+    page.addPartListener( getInstance() );
   }
 
   /** {@inheritDoc} */
@@ -532,7 +540,7 @@ public class DetachPartProvider implements IPartListener2 {
    * @return the first {@link MPartSashContainer} in the given perspective where all the elements
    *         are visible
    */
-  private MPartSashContainer findDisplayedPartShashContainer( MPerspective persp ) {
+  private static MPartSashContainer findDisplayedPartShashContainer( MPerspective persp ) {
     MElementContainer< ? > parentElem = ( MElementContainer< ? > )persp.getChildren().get( 0 );
     MPartSashContainer ret = null;
     while( ret == null && parentElem != null ) {
@@ -561,7 +569,7 @@ public class DetachPartProvider implements IPartListener2 {
    * @return <code>true</code> if the part is a ViewPart and its descriptor allows multiple
    *         instances of the view; <code>false</code> otherwise
    */
-  private boolean isPartSingleton( MPart part ) {
+  private static boolean isPartSingleton( MPart part ) {
     boolean ret = false;
     IWorkbenchPart workbenchPpart = part.getContext().get( IWorkbenchPart.class );
     IViewDescriptor desctiptor = workbenchPpart.getSite()
