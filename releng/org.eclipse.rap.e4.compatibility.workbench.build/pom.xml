@@ -136,7 +136,7 @@
 					<archiveSite>true</archiveSite>
 					<!-- UNCOMMENT the following line and update the release date when building 
 						an OFFICIAL FULL RELEASE -->
-					<forceContextQualifier>E4CLW-v20200828-1045</forceContextQualifier>
+					<forceContextQualifier>E4CLW-v20210618-1652</forceContextQualifier>
 					<!-- FOR F*** SAKE we want to be _compliant_ with Eclipse version format 
 						convention, thank you very much! -->
 					<!-- format>'v'yyyyMMdd'-'HHmm</format -->
