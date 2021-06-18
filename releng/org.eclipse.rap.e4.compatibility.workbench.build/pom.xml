@@ -28,7 +28,7 @@
 		<rap-repository>https://download.eclipse.org/rt/rap/3.9/R-20190612-1720/</rap-repository>
 		<rap-e4-repository>https://download.eclipse.org/rt/rap/3.9/e4/R-20190612-1720/</rap-e4-repository>
 		<download-publish-path>/shared/rt/rap/incubator/nightly/e4/target</download-publish-path>
-		<tycho-version>1.4.0</tycho-version>
+		<tycho-version>2.3.0</tycho-version>
 		<orbit-dependencies-repository>https://download.eclipse.org/tools/orbit/downloads/drops/R20190226160451/repository/</orbit-dependencies-repository>
 		<rap-incubator-repository>http://download.eclipse.org/rt/rap/incubator/nightly/</rap-incubator-repository>
 		<baseline-repository>${rap-incubator-repository}</baseline-repository>
@@ -75,6 +75,16 @@
 
 	<build>
 		<plugins>
+		
+		<plugin>
+    		<groupId>org.apache.maven.plugins</groupId>
+   			 <artifactId>maven-compiler-plugin</artifactId>
+  			  <version>3.8.1</version>
+   			 <configuration>
+    		    <release>11</release>  <!--or <release>10</release>-->
+  			  </configuration>
+		</plugin>
+
 			<plugin>
       		 	 <groupId>org.eclipse.tycho</groupId>
       			  <artifactId>tycho-maven-plugin</artifactId>
