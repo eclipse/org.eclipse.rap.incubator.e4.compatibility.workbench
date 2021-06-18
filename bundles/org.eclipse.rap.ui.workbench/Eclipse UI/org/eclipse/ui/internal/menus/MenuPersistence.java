@@ -79,6 +79,9 @@ final public class MenuPersistence extends RegistryPersistence {
 		application.getToolBarContributions().removeAll(toolBarContributions);
 		application.getTrimContributions().removeAll(trimContributions);
 		menuContributions.clear();
+		// RAP [DM]:
+		cacheEntries.forEach(e -> e.dispose());
+		// RAPEND [DM]
 		cacheEntries.clear();
 		super.dispose();
 	}

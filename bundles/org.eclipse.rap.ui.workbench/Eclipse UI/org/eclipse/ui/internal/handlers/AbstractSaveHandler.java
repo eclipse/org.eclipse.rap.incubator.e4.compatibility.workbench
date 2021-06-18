@@ -33,15 +33,17 @@ import org.eclipse.ui.internal.SaveableHelper;
  */
 public abstract class AbstractSaveHandler extends AbstractEvaluationHandler {
 
-	protected static DirtyStateTracker dirtyStateTracker;
+    // RAP [DM]:  Singleton initialization moved to WorkbenchWindow.java
+//	protected static DirtyStateTracker dirtyStateTracker;
 	private Expression enabledWhen;
 
 	public AbstractSaveHandler() {
-		if (dirtyStateTracker == null) {
-			dirtyStateTracker = new DirtyStateTracker();
-		}
+//		if (dirtyStateTracker == null) {
+//			dirtyStateTracker = new DirtyStateTracker();
+//		}
 	}
-
+	// RAPEND: [DM]
+	
 	@Override
 	protected Expression getEnabledWhenExpression() {
 		if (enabledWhen == null) {
