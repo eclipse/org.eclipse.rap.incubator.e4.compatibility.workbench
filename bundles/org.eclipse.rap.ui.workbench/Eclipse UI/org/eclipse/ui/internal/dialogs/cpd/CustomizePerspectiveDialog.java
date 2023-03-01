@@ -146,10 +146,10 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
  */
 public class CustomizePerspectiveDialog extends TrayDialog {
 
-	private static final String TOOLBAR_ICON = "$nl$/icons/full/obj16/toolbar.png"; //$NON-NLS-1$
-	private static final String SUBMENU_ICON = "$nl$/icons/full/obj16/submenu.png"; //$NON-NLS-1$
-	private static final String MENU_ICON = "$nl$/icons/full/obj16/menu.png"; //$NON-NLS-1$
-	private static final String WARNING_ICON = "$nl$/icons/full/obj16/warn_tsk.png"; //$NON-NLS-1$
+	private static final String TOOLBAR_ICON = "$nl$/icons/full/obj16/toolbar.gif"; //$NON-NLS-1$
+	private static final String SUBMENU_ICON = "$nl$/icons/full/obj16/submenu.gif"; //$NON-NLS-1$
+	private static final String MENU_ICON = "$nl$/icons/full/obj16/menu.gif"; //$NON-NLS-1$
+	private static final String WARNING_ICON = "$nl$/icons/full/obj16/warn_tsk.gif"; //$NON-NLS-1$
 
 	private static final String SHORTCUT_CONTRIBUTION_ITEM_ID_OPEN_PERSPECTIVE = "openPerspective"; //$NON-NLS-1$
 	private static final String SHORTCUT_CONTRIBUTION_ITEM_ID_SHOW_VIEW = "showView"; //$NON-NLS-1$

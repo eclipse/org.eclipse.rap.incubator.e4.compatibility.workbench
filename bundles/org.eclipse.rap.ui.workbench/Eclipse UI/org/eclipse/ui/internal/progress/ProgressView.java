@@ -250,12 +250,12 @@ public class ProgressView extends ViewPart {
 		clearAllAction
 				.setToolTipText(ProgressMessages.get().NewProgressView_RemoveAllJobsToolTip);
 		ImageDescriptor id = WorkbenchImages
-				.getWorkbenchImageDescriptor("/elcl16/progress_remall.png"); //$NON-NLS-1$
+				.getWorkbenchImageDescriptor("/elcl16/progress_remall.gif"); //$NON-NLS-1$
 		if (id != null) {
 			clearAllAction.setImageDescriptor(id);
 		}
 		id = WorkbenchImages
-				.getWorkbenchImageDescriptor("/dlcl16/progress_remall.png"); //$NON-NLS-1$
+				.getWorkbenchImageDescriptor("/dlcl16/progress_remall.gif"); //$NON-NLS-1$
 		if (id != null) {
 			clearAllAction.setDisabledImageDescriptor(id);
 		}
