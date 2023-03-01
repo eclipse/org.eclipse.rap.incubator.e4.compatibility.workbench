@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.rap.e4clw.feature"
       label="RAP E4 Compatibility Layer Workbench Feature"
-      version="0.1.1.qualifier">
+      version="0.1.3.qualifier">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]
