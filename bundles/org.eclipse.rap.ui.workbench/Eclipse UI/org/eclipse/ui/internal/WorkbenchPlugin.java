@@ -16,7 +16,6 @@
 
 package org.eclipse.ui.internal;
 
-import com.ibm.icu.text.MessageFormat;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -24,6 +23,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Locale;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
@@ -44,7 +44,9 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.debug.DebugOptions;
 import org.eclipse.osgi.service.localization.LocaleProvider;
 import org.eclipse.rap.rwt.RWT;
+import org.eclipse.rap.rwt.SingletonUtil;
 import org.eclipse.rap.rwt.internal.RWTProperties;
+import org.eclipse.rap.rwt.service.UISession;
 import org.eclipse.rap.ui.internal.SessionLocaleProvider;
 import org.eclipse.rap.ui.internal.progress.JobManagerAdapter;
 import org.eclipse.rap.ui.internal.servlet.HttpServiceTracker;
@@ -95,6 +97,8 @@ import org.osgi.framework.BundleListener;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.ServiceTracker;
 
+import com.ibm.icu.text.MessageFormat;
+
 /**
  * This class represents the TOP of the workbench UI world A plugin class is
  * effectively an application wrapper for a plugin & its classes. This class
@@ -113,6 +117,10 @@ import org.osgi.util.tracker.ServiceTracker;
  */
 public class WorkbenchPlugin extends AbstractUIPlugin {
 
+    // RAP [rh] SessionStore key to indicate whether the session-scoped
+    // PerspectiveRegistry is initialized
+    private static final String PERSP_REGISTRY_INITIALIZED = PerspectiveRegistry.class + "#initialized";
+    
 	// RAP [rst] System property to disable workbench autostart
 	private static final String PROP_WORKBENCH_AUTOSTART = "org.eclipse.rap.workbenchAutostart";
 
@@ -147,15 +155,115 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 
 	// Manager for the DecoratorManager
 	private DecoratorManager decoratorManager;
+	
+	// TODO [bm]: turn into real session scoped manager
+    // RAP [rs]:
+    private final static class DecoratorManagerStore {
+        private final DecoratorManager decoratorManager;
+
+        private DecoratorManagerStore() {
+            decoratorManager = new DecoratorManager();
+        }
+
+        public static DecoratorManagerStore getInstance() {
+            return SingletonUtil.getSessionInstance( DecoratorManagerStore.class );
+        }
+
+        public DecoratorManager getDecoratorManager() {
+            return decoratorManager;
+        }
+    }
+    // RAPEND]
 
 	// Theme registry
-	private ThemeRegistry themeRegistry;
+//	private ThemeRegistry themeRegistry;
+	
+	// RAP [rh] session-singleton-wrapper for getThemeRegistry
+    private final static class ThemeRegistryStore {
+      private final ThemeRegistry themeRegistry;
 
+      static ThemeRegistryStore getInstance() {
+        return SingletonUtil.getSessionInstance( ThemeRegistryStore.class );
+      }
+
+      public ThemeRegistryStore() {
+        // RAP [rh] ThemeRegistry initialization code, copied from getThemeRegistry()
+      themeRegistry = new ThemeRegistry();
+      ThemeRegistryReader reader = new ThemeRegistryReader();
+      reader.readThemes( Platform.getExtensionRegistry(), themeRegistry );
+      }
+      
+      public IThemeRegistry getThemeRegistry() {
+        return themeRegistry;
+      }
+    }
+    
+ // RAP [rh] session-singleton-wrapper for getWorkingSetManager()    
+    private final static class WorkingSetManagerStore {
+      private WorkingSetManager workingSetManager;
+
+      static WorkingSetManagerStore getInstance() {
+        return SingletonUtil.getSessionInstance( WorkingSetManagerStore.class );
+      }
+
+      public IWorkingSetManager getWorkingSetManager( BundleContext context ) {
+  // RAP [rh] WorkingSetManager initialization code, copied from getWorkingSetManager()
+        if( workingSetManager == null ) {
+          workingSetManager = new WorkingSetManager( context );
+          workingSetManager.restoreState();
+        }
+        return workingSetManager;
+      }
+    }
+    
+  //RAP [rh] session-singleton-wrapper for getWorkingSetRegistry()  
+    private final static class WorkingSetRegistryStore {
+      private WorkingSetRegistry workingSetRegistry;
+
+      static WorkingSetRegistryStore getInstance() {
+        return SingletonUtil.getSessionInstance( WorkingSetRegistryStore.class );
+      }
+
+      public WorkingSetRegistryStore() {
+  // RAP [rh] WorkingSetRegistry initialization code, copied from getWorkingSetRegistry()
+        workingSetRegistry = new WorkingSetRegistry();
+        workingSetRegistry.load();
+      }
+
+      public WorkingSetRegistry getWorkingSetRegistry() {
+        return workingSetRegistry;
+      }
+    }
+    
+  // RAP [rh] session-singleton-wrapper for PreferenceManager
+    private final static class PreferenceManagerStore {
+      private final WorkbenchPreferenceManager preferenceManager;
+
+      static PreferenceManagerStore getInstance() {
+        return SingletonUtil.getSessionInstance( PreferenceManagerStore.class );
+      }
+
+      public PreferenceManagerStore() {
+  // RAP [rh] PreferenceManager initialization code, copied from getPreferenceManager()
+        preferenceManager = new WorkbenchPreferenceManager( PREFERENCE_PAGE_CATEGORY_SEPARATOR );
+        // Get the pages from the registry
+        PreferencePageRegistryReader registryReader = new PreferencePageRegistryReader( PlatformUI.getWorkbench() );
+        registryReader.loadFromRegistry( Platform.getExtensionRegistry() );
+        preferenceManager.addPages( registryReader.getTopLevelNodes() );
+      }
+      
+      public PreferenceManager getPreferenceManager() {
+        return preferenceManager;
+      }
+    }
+
+    // RAP [bm] workingSetManager field unneeded, replaced by session-singleton 
 	// Manager for working sets (IWorkingSet)
-	private WorkingSetManager workingSetManager;
+ //	private WorkingSetManager workingSetManager;
 
+    // RAP [rh] workingSetRegistry field unneeded, replaced by session-singleton
 	// Working set registry, stores working set dialogs
-	private WorkingSetRegistry workingSetRegistry;
+//	private WorkingSetRegistry workingSetRegistry;
 
 	// The context within which this plugin was started.
 	private BundleContext bundleContext;
@@ -186,7 +294,7 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 	public static char PREFERENCE_PAGE_CATEGORY_SEPARATOR = '/';
 
 	// Other data.
-	private WorkbenchPreferenceManager preferenceManager;
+//	private WorkbenchPreferenceManager preferenceManager;
 
 //    private PerspectiveRegistry perspRegistry;
 
@@ -202,7 +310,7 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 	 */
 	private ProductInfo productInfo = null;
 
-	private IntroRegistry introRegistry;
+//	private IntroRegistry introRegistry;
 
 	private WorkbenchOperationSupport operationSupport;
 	private BundleListener bundleListener;
@@ -246,14 +354,14 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 
 		ProgressManager.shutdownProgressManager();
 
-		themeRegistry = null;
-		if (workingSetManager != null) {
-			workingSetManager.dispose();
-			workingSetManager = null;
-		}
-		workingSetRegistry = null;
-
-		preferenceManager = null;
+//		themeRegistry = null;
+//		if (workingSetManager != null) {
+//			workingSetManager.dispose();
+//			workingSetManager = null;
+//		}
+//		workingSetRegistry = null;
+//
+//		preferenceManager = null;
 //        if (viewRegistry != null) {
 //			// nothing to dispose for viewRegistry
 //            viewRegistry = null;
@@ -267,7 +375,7 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 		sharedImages = null;
 
 		productInfo = null;
-		introRegistry = null;
+//		introRegistry = null;
 
 		helpService = null;
 		commandHelpService = null;
@@ -1101,6 +1209,17 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 			testableTracker.close();
 			testableTracker = null;
 		}
+		
+		// RAP [rh]: clean up RAP-specific resouces
+        if( httpServiceTracker != null ) {
+            httpServiceTracker.close();
+            httpServiceTracker = null;
+        }
+        // RAPEND 
+		
+		// RAP [rh] unregister multi-session-aware LocaleProvider service
+        localeProviderService.unregister();
+		
 		super.stop(context);
 	}
 
@@ -1293,10 +1412,25 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
-				if (this.perspRegistry == null) {
-					this.perspRegistry = ContextInjectionFactory.make(PerspectiveRegistry.class, e4Context);
-				}
-				return this.perspRegistry;
+			 // RAP [rh]: PerspectiveRegistry has session scope
+		        UISession uiSession = RWT.getUISession();
+		        Boolean initialized
+		          = ( Boolean )uiSession.getAttribute( PERSP_REGISTRY_INITIALIZED );
+		        if( initialized == null ) {
+		            final PerspectiveRegistry perspRegistry = ContextInjectionFactory.make(PerspectiveRegistry.class, e4Context);
+		            uiSession.setAttribute( PERSP_REGISTRY_INITIALIZED, Boolean.TRUE );    
+		            uiSession.setAttribute(PerspectiveRegistry.class.getCanonicalName(), perspRegistry);
+		            return perspRegistry;
+		        }
+		        else
+		        {
+		            return uiSession.getAttribute(PerspectiveRegistry.class.getCanonicalName());
+		        }
+		// ENDRAP
+//				if (this.perspRegistry == null) {
+//					this.perspRegistry = ContextInjectionFactory.make(PerspectiveRegistry.class, e4Context);
+//				}
+//				return this.perspRegistry;
 			}
 		});
 		e4Context.set(IViewRegistry.class.getName(), new ContextFunction() {
@@ -1316,10 +1450,14 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 		context.set(IDecoratorManager.class.getName(), new ContextFunction() {
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
-				if (decoratorManager == null) {
-					decoratorManager = new DecoratorManager();
-				}
-				return decoratorManager;
+			    
+			    // RAP [rs]: 
+//			    if (this.decoratorManager == null) {
+//			        this.decoratorManager = new DecoratorManager();
+//			    }
+//			    return decoratorManager;
+			    return DecoratorManagerStore.getInstance().getDecoratorManager();
+			    // RAPEND: [rs] 
 			}
 		});
 		context.set(ExportWizardRegistry.class.getName(), new ContextFunction() {
@@ -1337,10 +1475,12 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 		context.set(IIntroRegistry.class.getName(), new ContextFunction() {
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
-				if (introRegistry == null) {
-					introRegistry = new IntroRegistry();
-				}
-				return introRegistry;
+			 // RAP [bm]: IntroRegistry must be a session-singleton
+//		        if (introRegistry == null) {
+//		            introRegistry = new IntroRegistry();
+//		        }
+//		        return introRegistry;
+		        return SingletonUtil.getSessionInstance( IntroRegistry.class );
 			}
 		});
 		context.set(NewWizardRegistry.class.getName(), new ContextFunction() {
@@ -1361,16 +1501,21 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 		context.set(PreferenceManager.class.getName(), new ContextFunction() {
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
-				if (preferenceManager == null) {
-					preferenceManager = new WorkbenchPreferenceManager(PREFERENCE_PAGE_CATEGORY_SEPARATOR);
-
-					// Get the pages from the registry
-					PreferencePageRegistryReader registryReader = new PreferencePageRegistryReader(getWorkbench());
-					registryReader.loadFromRegistry(Platform.getExtensionRegistry());
-					preferenceManager.addPages(registryReader.getTopLevelNodes());
-
-				}
-				return preferenceManager;
+				// RAP [rh] PreferenceManager must be a session-singleton
+//		        if (preferenceManager == null) {
+//		            preferenceManager = new WorkbenchPreferenceManager(
+//		                    PREFERENCE_PAGE_CATEGORY_SEPARATOR);
+		//
+//		            //Get the pages from the registry
+//		            PreferencePageRegistryReader registryReader = new PreferencePageRegistryReader(
+//		                    getWorkbench());
+//		            registryReader
+//		                    .loadFromRegistry(Platform.getExtensionRegistry());
+//		            preferenceManager.addPages(registryReader.getTopLevelNodes());
+//		           
+//		        }
+//		        return preferenceManager;
+		      return PreferenceManagerStore.getInstance().getPreferenceManager();
 			}
 		});
 		context.set(ISharedImages.class.getName(), new ContextFunction() {
@@ -1386,32 +1531,39 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 		context.set(IThemeRegistry.class.getName(), new ContextFunction() {
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
-				if (themeRegistry == null) {
-					themeRegistry = new ThemeRegistry();
-					ThemeRegistryReader reader = new ThemeRegistryReader();
-					reader.readThemes(Platform.getExtensionRegistry(), themeRegistry);
-				}
-				return themeRegistry;
+			 // RAP [rh] ThemeRegistry must be a session-singleton       
+//		        if (themeRegistry == null) {
+//		            themeRegistry = new ThemeRegistry();
+//		            ThemeRegistryReader reader = new ThemeRegistryReader();
+//		            reader.readThemes(Platform.getExtensionRegistry(),
+//		                    themeRegistry);
+//		        }
+//		        return themeRegistry;
+		      return ThemeRegistryStore.getInstance().getThemeRegistry();
 			}
 		});
 		context.set(IWorkingSetManager.class.getName(), new ContextFunction() {
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
-				if (workingSetManager == null) {
-					workingSetManager = new WorkingSetManager(bundleContext);
-					workingSetManager.restoreState();
-				}
-				return workingSetManager;
+			 // RAP [rh] WorkingSetManager must be a session-singleton
+//		        if (workingSetManager == null) {
+//		            workingSetManager = new WorkingSetManager(bundleContext);
+//		            workingSetManager.restoreState();
+//		        }
+//		        return workingSetManager;
+		      return WorkingSetManagerStore.getInstance().getWorkingSetManager( bundleContext );
 			}
 		});
 		context.set(WorkingSetRegistry.class.getName(), new ContextFunction() {
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
-				if (workingSetRegistry == null) {
-					workingSetRegistry = new WorkingSetRegistry();
-					workingSetRegistry.load();
-				}
-				return workingSetRegistry;
+			 // RAP [rh] WorkingSetRegistry must be a session-singleton      
+//		        if (workingSetRegistry == null) {
+//		            workingSetRegistry = new WorkingSetRegistry();
+//		            workingSetRegistry.load();
+//		        }
+//		        return workingSetRegistry;
+		      return WorkingSetRegistryStore.getInstance().getWorkingSetRegistry();
 			}
 		});
 		context.set(IEditorRegistry.class.getName(), new ContextFunction() {
