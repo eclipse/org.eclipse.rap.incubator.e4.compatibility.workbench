@@ -64,6 +64,14 @@
             class="org.eclipse.ui.internal.handlers.SelectAllHandler"
             commandId="org.eclipse.ui.edit.selectAll">
       </handler>
+      <handler
+            class="org.eclipse.ui.internal.handlers.ResetPerspectiveHandler"
+            commandId="org.eclipse.ui.window.resetPerspective">
+      </handler>
+      <handler
+            class="org.eclipse.ui.internal.handlers.SavePerspectiveHandler"
+            commandId="org.eclipse.ui.window.savePerspective">
+      </handler>
    </extension>
    <!-- RAPEND -->
 </plugin>
