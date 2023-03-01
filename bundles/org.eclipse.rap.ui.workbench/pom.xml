@@ -17,12 +17,12 @@
   <parent>
     <groupId>org.eclipse.rap.incubator</groupId>
     <artifactId>org.eclipse.rap.ui.compatibility.workbench.build</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.1.3-SNAPSHOT</version>
     <relativePath>../../releng/org.eclipse.rap.e4.compatibility.workbench.build</relativePath>
   </parent>
 
   <artifactId>org.eclipse.rap.ui.workbench</artifactId>
-  <version>3.9.12-SNAPSHOT</version>
+  <version>3.9.13-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
   
 </project>
