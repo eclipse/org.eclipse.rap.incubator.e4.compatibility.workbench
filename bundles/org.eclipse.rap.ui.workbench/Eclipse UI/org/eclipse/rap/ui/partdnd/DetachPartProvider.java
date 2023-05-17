@@ -22,7 +22,6 @@ import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.rap.rwt.SingletonUtil;
 import org.eclipse.rap.ui.partdnd.internal.PartTransfer;
-import org.eclipse.rap.ui.partdnd.internal.WorkaroundDragPartSource;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -168,7 +167,7 @@ public class DetachPartProvider implements IPartListener2 {
       return;
     }
     this.modelService = part.getContext().get( EModelService.class );
-    DragSource ds = new WorkaroundDragPartSource( ctf, DND.DROP_COPY | DND.DROP_MOVE );
+    DragSource ds = new DragSource( ctf, DND.DROP_COPY | DND.DROP_MOVE );
     ds.setTransfer( new Transfer[] {
       PartTransfer.INSTANCE
     } );
@@ -493,7 +492,7 @@ public class DetachPartProvider implements IPartListener2 {
    */
   private void moveBeside( MPart partToBeMoved, MPart destinationRefPart, int position ) {
     MWindow window = partToBeMoved.getContext().get( MWindow.class );
-    MWindow destWindow = destinationRefPart.getContext().get( MWindow.class );
+    MWindow destWindow = this.modelService.getTopLevelWindowFor(destinationRefPart);
     if( ( !window.equals( destWindow ) && isPartSingleton( partToBeMoved ) ) ) {
       // Do not allow singleton views to be moved to different windows
       return;
