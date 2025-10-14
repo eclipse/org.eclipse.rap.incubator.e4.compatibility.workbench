@@ -690,6 +690,12 @@ public final class Workbench extends EventManager implements IWorkbench,
 			System.setProperty(org.eclipse.e4.ui.workbench.IWorkbench.XMI_URI_ARG,
 					"org.eclipse.rap.ui.workbench/LegacyIDE.e4xmi"); //$NON-NLS-1$
 			Object obj = getApplication(Platform.getCommandLineArgs());
+			
+			String schema = getSchema(Platform.getCommandLineArgs());
+			if (schema == null)
+			{
+			    schema  = "org.eclipse.rap.ui.workbench/LegacyIDE.e4xmi";
+			}
 
 			IPreferenceStore store = WorkbenchPlugin.getDefault().getPreferenceStore();
 			if (!store.isDefault(IPreferenceConstants.LAYOUT_DIRECTION)) {
@@ -708,7 +714,7 @@ public final class Workbench extends EventManager implements IWorkbench,
 
 				E4Workbench e4Workbench = e4app.createE4Workbench(
 						getApplicationContext(
-								E4ApplicationConfig.create("org.eclipse.rap.ui.workbench/LegacyIDE.e4xmi", true)),
+								E4ApplicationConfig.create(schema, true)),
 						display);
 				workbench.e4Workbench = e4Workbench;
 				workbench.application = e4Workbench.getApplication();
@@ -813,7 +819,7 @@ public final class Workbench extends EventManager implements IWorkbench,
 		return returnCode[0];
 	}
 
-	private static WorkbenchMigrationProcessor rune3WorkbenchMigration(IEclipseContext context) {
+    private static WorkbenchMigrationProcessor rune3WorkbenchMigration(IEclipseContext context) {
 		WorkbenchMigrationProcessor migrationProcessor = null;
 		try {
 			migrationProcessor = ContextInjectionFactory.make(WorkbenchMigrationProcessor.class, context);
@@ -886,6 +892,40 @@ public final class Workbench extends EventManager implements IWorkbench,
 		return null;
 	}
 
+    static String getSchema(String[] commandLineArgs)
+    {
+        String productId = null;
+        for (int i = 0; i < commandLineArgs.length -1; i++)
+        {
+            if (commandLineArgs[i].equals("-product"))
+            {
+                productId = commandLineArgs[i+1];
+                break;
+            }
+        }
+        if (productId == null)
+        {
+            return null;
+        }
+        IConfigurationElement[] el = Platform.getExtensionRegistry().getConfigurationElementsFor("org.eclipse.core.runtime.products");
+        for (IConfigurationElement e : el)
+        {
+            String elementProductId = e.getNamespaceIdentifier() + "." + e.getName();
+            if (productId.equals(elementProductId))
+            {
+                if (e.getChildren().length > 0)
+                {
+                    IConfigurationElement child = e.getChildren()[0];
+                    if (child.getAttribute("name").equals("applicationXMI"))
+                    {
+                        return e.getContributor().getName() + "/" + child.getAttribute("value");
+                    }
+                }
+            }
+        }
+        return null;
+    }
+	
 	/**
 	 * Creates the <code>Display</code> to be used by the workbench.
 	 *
