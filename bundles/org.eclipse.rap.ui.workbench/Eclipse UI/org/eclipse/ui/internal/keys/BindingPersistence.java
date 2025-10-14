@@ -1230,29 +1230,29 @@ public class BindingPersistence extends PreferencePersistence {
 	public boolean bindingsNeedUpdating(final IRegistryChangeEvent event) {
 		final IExtensionDelta[] acceleratorConfigurationDeltas = event
 				.getExtensionDeltas(
-						PlatformUI.PLUGIN_ID,
+						PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 						IWorkbenchRegistryConstants.PL_ACCELERATOR_CONFIGURATIONS);
 		if (acceleratorConfigurationDeltas.length == 0) {
 			final IExtensionDelta[] bindingDeltas = event.getExtensionDeltas(
-					PlatformUI.PLUGIN_ID,
+					PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 					IWorkbenchRegistryConstants.PL_BINDINGS);
 			if (bindingDeltas.length == 0) {
 				final IExtensionDelta[] commandDeltas = event
-						.getExtensionDeltas(PlatformUI.PLUGIN_ID,
+						.getExtensionDeltas(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 								IWorkbenchRegistryConstants.PL_COMMANDS);
 				if (commandDeltas.length == 0) {
 					final IExtensionDelta[] acceleratorScopeDeltas = event
 							.getExtensionDeltas(
-									PlatformUI.PLUGIN_ID,
+									PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 									IWorkbenchRegistryConstants.PL_ACCELERATOR_SCOPES);
 					if (acceleratorScopeDeltas.length == 0) {
 						final IExtensionDelta[] contextDeltas = event
-								.getExtensionDeltas(PlatformUI.PLUGIN_ID,
+								.getExtensionDeltas(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 										IWorkbenchRegistryConstants.PL_CONTEXTS);
 						if (contextDeltas.length == 0) {
 							final IExtensionDelta[] actionDefinitionDeltas = event
 									.getExtensionDeltas(
-											PlatformUI.PLUGIN_ID,
+											PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 											IWorkbenchRegistryConstants.PL_ACTION_DEFINITIONS);
 							if (actionDefinitionDeltas.length == 0) {
 								return false;

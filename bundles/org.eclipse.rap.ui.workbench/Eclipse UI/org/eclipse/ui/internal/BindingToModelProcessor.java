@@ -65,7 +65,7 @@ public class BindingToModelProcessor {
 		BindingManager bindingManager = new BindingManager(contextManager, commandManager);
 		context.set(BindingManager.class, bindingManager);
 		BindingPersistence persistence = new BindingPersistence(bindingManager, commandManager);
-//		persistence.read();
+		persistence.read();
 
 		// we'll make this available, although I doubt we have a use for it
 //		application.getTags().add(
