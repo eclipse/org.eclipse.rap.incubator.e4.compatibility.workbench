@@ -27,37 +27,32 @@ import org.eclipse.ui.internal.util.Util;
  *
  * @since 3.1
  */
-public final class OpenPerspectiveAction extends Action implements
-        IPluginContribution {
+public final class OpenPerspectiveAction extends Action implements IPluginContribution {
 
     /**
      * The perspective menu that will handle the execution of this action. This
-     * allows subclasses of <code>PerspectiveMenu</code> to define custom
-     * behaviour for these actions. This value should not be <code>null</code>.
+	 * allows subclasses of <code>PerspectiveMenu</code> to define custom behaviour
+	 * for these actions. This value should not be <code>null</code>.
      */
     private final PerspectiveMenu callback;
 
     /**
-     * The descriptor for the perspective that this action should open. This
-     * value is never <code>null</code>.
+	 * The descriptor for the perspective that this action should open. This value
+	 * is never <code>null</code>.
      */
     private final IPerspectiveDescriptor descriptor;
 
     /**
      * Constructs a new instance of <code>OpenPerspectiveAction</code>
      *
-     * @param window
-     *            The workbench window in which this action is created; should
-     *            not be <code>null</code>.
-     * @param descriptor
-     *            The descriptor for the perspective that this action should
+	 * @param window     The workbench window in which this action is created;
+	 *                   should not be <code>null</code>.
+	 * @param descriptor The descriptor for the perspective that this action should
      *            open; must not be <code>null</code>.
-     * @param callback
-     *            The perspective menu who will handle the actual execution of
-     *            this action; should not be <code>null</code>.
+	 * @param callback   The perspective menu who will handle the actual execution
+	 *                   of this action; should not be <code>null</code>.
      */
-    public OpenPerspectiveAction(final IWorkbenchWindow window,
-            final IPerspectiveDescriptor descriptor,
+	public OpenPerspectiveAction(final IWorkbenchWindow window, final IPerspectiveDescriptor descriptor,
             final PerspectiveMenu callback) {
         super(Util.ZERO_LENGTH_STRING);
 
@@ -69,10 +64,8 @@ public final class OpenPerspectiveAction extends Action implements
         setToolTipText(label);
         setImageDescriptor(descriptor.getImageDescriptor());
 
-        window.getWorkbench().getHelpSystem().setHelp(this,
-                IWorkbenchHelpContextIds.OPEN_PERSPECTIVE_ACTION);
+		window.getWorkbench().getHelpSystem().setHelp(this, IWorkbenchHelpContextIds.OPEN_PERSPECTIVE_ACTION);
     }
-
 
     @Override
 	public void runWithEvent(final Event event) {
@@ -86,8 +79,6 @@ public final class OpenPerspectiveAction extends Action implements
 
     @Override
 	public String getPluginId() {
-        return descriptor instanceof IPluginContribution ? ((IPluginContribution) descriptor)
-                .getPluginId()
-                : null;
+		return descriptor instanceof IPluginContribution i ? i.getPluginId() : null;
     }
 }

@@ -1,13 +1,10 @@
 // RAP [bm]: disabled due to IWorkbench#restart
 ///*******************************************************************************
-// * Copyright (c) 2006, 2015 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2006, 2008 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     Manuel Selva <manuel.selva@st.com> - Bug 197922
@@ -25,10 +22,14 @@
 // */
 //public class RestartWorkbenchHandler extends AbstractHandler {
 //
-//	@Override
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+//	 */
 //	public Object execute(ExecutionEvent event){
 //
-//		PlatformUI.getWorkbench().restart(true);
+//		PlatformUI.getWorkbench().restart();
 //		return null;
 //	}
 //}

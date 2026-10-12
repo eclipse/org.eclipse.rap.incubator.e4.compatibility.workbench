@@ -17,7 +17,7 @@ package org.eclipse.ui.internal.e4.migration;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.ui.model.application.MAddon;

@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2017 Patrik Suzzi.
  *
- * This program
- * and the accompanying materials are made available under the terms of the
- * Eclipse Public License 2.0 which accompanies this distribution, and is
-t https://www.eclipse.org/legal/epl-2.0/
-t
-t SPDX-License-Identifier: EPL-2.0
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * 	Patrik Suzzi <psuzzi@gmail.com> - initial API and implementation;
@@ -32,13 +32,11 @@ import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.services.IWorkbenchLocationService;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.services.IServiceScopes;
-import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 
 /**
  * Toggle the visibility of the status bar. Implementation of the
  * {@code org.eclipse.ui.window.togglestatusbar} command.
- *
  */
 public class ToggleStatusBarHandler extends AbstractHandler implements IElementUpdater {
 
@@ -48,14 +46,15 @@ public class ToggleStatusBarHandler extends AbstractHandler implements IElementU
 	private static final String BOTTOM_TRIM_ID = "org.eclipse.ui.trim.status"; //$NON-NLS-1$
 
 	// keep references of event handlers and brokers per each window
-	private HashMap<IWorkbenchWindow, EventHandler> eventHandlers = new HashMap<>();
-	private HashMap<IWorkbenchWindow, IEventBroker> eventBrokers = new HashMap<>();
+	private final HashMap<IWorkbenchWindow, EventHandler> eventHandlers = new HashMap<>();
+	private final HashMap<IWorkbenchWindow, IEventBroker> eventBrokers = new HashMap<>();
 
 	@Override
 	public Object execute(ExecutionEvent event) {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-		if (!(window instanceof WorkbenchWindow))
+		if (!(window instanceof WorkbenchWindow)) {
 			return null;
+		}
 		// initialize event handler
 		if (!eventHandlers.containsKey(window)) {
 			initializeEventHandler(window);
@@ -69,15 +68,10 @@ public class ToggleStatusBarHandler extends AbstractHandler implements IElementU
 		return null;
 	}
 
-	/**
-	 * @param window
-	 */
 	private void initializeEventHandler(IWorkbenchWindow window) {
 		final IEventBroker eventBroker = window.getService(IEventBroker.class);
 		eventBrokers.put(window, eventBroker);
-		EventHandler eventHandler = new EventHandler() {
-			@Override
-			public void handleEvent(Event event) {
+		EventHandler eventHandler = event -> {
 				Object element = event.getProperty(UIEvents.EventTags.ELEMENT);
 				// if the current-window trim is the event element
 				if (element != null && element == getTrimStatus((WorkbenchWindow) window)) {
@@ -86,7 +80,6 @@ public class ToggleStatusBarHandler extends AbstractHandler implements IElementU
 					Map<String, WorkbenchWindow> filter = new HashMap<>();
 					filter.put(IServiceScopes.WINDOW_SCOPE, (WorkbenchWindow) window);
 					commandService.refreshElements(COMMAND_ID_TOGGLE_STATUSBAR, filter);
-				}
 			}
 		};
 		eventHandlers.put(window, eventHandler);
@@ -110,12 +103,11 @@ public class ToggleStatusBarHandler extends AbstractHandler implements IElementU
 	 */
 	@Override
 	public void updateElement(UIElement element, Map parameters) {
-		IWorkbenchLocationService wls = element
-				.getServiceLocator()
-				.getService(IWorkbenchLocationService.class);
+		IWorkbenchLocationService wls = element.getServiceLocator().getService(IWorkbenchLocationService.class);
 		IWorkbenchWindow window = wls.getWorkbenchWindow();
-		if (!(window instanceof WorkbenchWindow))
+		if (!(window instanceof WorkbenchWindow)) {
 			return;
+		}
 		MUIElement trimStatus = getTrimStatus((WorkbenchWindow) window);
 		if(trimStatus != null) {
 			element.setText(trimStatus.isVisible() ? WorkbenchMessages.get().ToggleStatusBarVisibilityAction_hide_text

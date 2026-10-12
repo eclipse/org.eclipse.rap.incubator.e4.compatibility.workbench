@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -14,6 +11,8 @@
 package org.eclipse.ui.internal.keys;
 
 import org.eclipse.rap.rwt.RWT;
+
+//import org.eclipse.osgi.util.NLS;
 
 
 
@@ -27,8 +26,8 @@ import org.eclipse.rap.rwt.RWT;
 public class KeyAssistMessages {
 	private static final String BUNDLE_NAME = "org.eclipse.ui.internal.keys.KeyAssistDialog";//$NON-NLS-1$
 
-	public static String NoMatches_Message;
-	public static String openPreferencePage;
+	public String NoMatches_Message;
+	public String openPreferencePage;
 
 // RAP [if]: need session aware NLS
 //		static {
@@ -38,7 +37,6 @@ public class KeyAssistMessages {
 
 	/**
 	 * Load message values from bundle file
-	 * 
 	 * @return localized message
 	 */
 	public static KeyAssistMessages get() {

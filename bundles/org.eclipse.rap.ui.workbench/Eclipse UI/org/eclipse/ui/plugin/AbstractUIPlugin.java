@@ -1,37 +1,28 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2019 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Lars Vogel <Lars.Vogel@vogella.com> - Bug 481319, 481318
- *     Philipp Kunz <philipp.kunz@paratix.ch> - Bug 297922
+ *     EclipseSource - adaptation for RAP
  *******************************************************************************/
 package org.eclipse.ui.plugin;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -45,13 +36,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WWinPluginAction;
-import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.util.BundleUtility;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
+import org.osgi.framework.SynchronousBundleListener;
 
 /**
  * Abstract base class for plug-ins that integrate with the Eclipse platform UI.
@@ -132,19 +123,11 @@ public abstract class AbstractUIPlugin extends Plugin {
      */
     private static final String FN_DIALOG_SETTINGS = "dialog_settings.xml"; //$NON-NLS-1$
 
-	/**
-	 * Key used to allow dialog_settings.xml customization. The value is the root
-	 * url of the parent directory containing settings for different plug-ins. Each
-	 * plug-in dialog_settings.xml file should reside in the directory with the
-	 * plug-in name.
-	 */
-	private static final String KEY_DEFAULT_DIALOG_SETTINGS_ROOTURL = "default_dialog_settings_rootUrl"; //$NON-NLS-1$
-
     /**
      * Storage for dialog and wizard data; <code>null</code> if not yet
      * initialized.
      */
-	private IDialogSettings dialogSettings;
+    private IDialogSettings dialogSettings = null;
 
     /**
      * Storage for preferences.
@@ -191,6 +174,7 @@ public abstract class AbstractUIPlugin extends Plugin {
      *
      * @return ImageRegistry the resulting registry.
      * @see #getImageRegistry
+     * @since 1.1
      */
     protected ImageRegistry createImageRegistry() {
 
@@ -295,7 +279,8 @@ public abstract class AbstractUIPlugin extends Plugin {
 		// Create the preference store lazily.
 		if (preferenceStore == null) {
 			String pluginId = getBundle().getSymbolicName();
-			preferenceStore = new ScopedPreferenceStore(new SessionScope(), pluginId);
+        preferenceStore 
+          = new ScopedPreferenceStore( new SessionScope(), pluginId );
 		}
 		return preferenceStore;
     }
@@ -335,7 +320,6 @@ public abstract class AbstractUIPlugin extends Plugin {
      * @deprecated this is only called if the runtime compatibility layer is
      *             present. See {@link #initializeDefaultPluginPreferences}.
      */
-    @Deprecated
 	protected void initializeDefaultPreferences(IPreferenceStore store) {
         // spec'ed to do nothing
     }
@@ -361,8 +345,6 @@ public abstract class AbstractUIPlugin extends Plugin {
      * @see #initializeDefaultPreferences
      * @since 2.0
      */
-    @Deprecated
-	@Override
 	protected void initializeDefaultPluginPreferences() {
         // N.B. by the time this method is called, the plug-in has a
         // core runtime preference store (no default values)
@@ -400,122 +382,64 @@ public abstract class AbstractUIPlugin extends Plugin {
     }
 
     /**
-	 * Loads the dialog settings for this plug-in. The default implementation first
-	 * looks for a standard named file in the plug-in's read/write state area; if no
-	 * such file exists, default product dialog settings directory (specified by
-	 * org.eclipse.ui/default_dialog_settings_rootUrl property) is checked to see if
-	 * there is a file with default plug-in dialog settings exists; if no such file
-	 * exists, the plug-in's install directory is checked to see if one was
-	 * installed with some default settings; if no file is found in either place, a
-	 * new empty dialog settings is created. If a problem occurs, an empty settings
-	 * is silently used.
+     * Loads the dialog settings for this plug-in.
+     * The default implementation first looks for a standard named file in the 
+     * plug-in's read/write state area; if no such file exists, the plug-in's
+     * install directory is checked to see if one was installed with some default
+     * settings; if no file is found in either place, a new empty dialog settings
+     * is created. If a problem occurs, an empty settings is silently used.
 	 * <p>
 	 * This framework method may be overridden, although this is typically
 	 * unnecessary.
 	 * </p>
 	 */
     protected void loadDialogSettings() {
-    	dialogSettings = createEmptySettings();
-		boolean loaded = loadDialogSettingsFromWorkspace();
-		// otherwise look for product custom dialog settings
-		if (!loaded) {
-			loaded = loadDefaultDialogSettingsFromProduct();
-		}
-		// otherwise look for bundle specific dialog settings
-		if (!loaded) {
-			loadDefaultDialogSettingsFromBundle();
-		}
-	}
+        dialogSettings = new DialogSettings("Workbench"); //$NON-NLS-1$
 
-	/**
-	 * @return true if the product specific settings file was successfully read
-	 */
-	private boolean loadDefaultDialogSettingsFromProduct() {
-		String rootUrl = PlatformUI.getPreferenceStore().getString(KEY_DEFAULT_DIALOG_SETTINGS_ROOTURL);
-		if (rootUrl == null || rootUrl.isEmpty()) {
-			return false;
-		}
-		String bundlePart = getBundle().getSymbolicName() + "/" + FN_DIALOG_SETTINGS; //$NON-NLS-1$
-		String fullUrl = rootUrl.endsWith("/") ? rootUrl + bundlePart : rootUrl + "/" + bundlePart; //$NON-NLS-1$//$NON-NLS-2$
-		URL url;
-		try {
-			url = new URL(fullUrl);
-		} catch (MalformedURLException e) {
-			getLog().log(new Status(IStatus.ERROR, getBundle().getSymbolicName(),
-					"Failed to load dialog settings from: " + fullUrl, e)); //$NON-NLS-1$
-			return false;
-		}
-
-		try {
-			url = FileLocator.resolve(url);
-		} catch (IOException e) {
-			if (WorkbenchPlugin.DEBUG) {
-				getLog().log(new Status(IStatus.ERROR, getBundle().getSymbolicName(),
-						"Failed to load dialog settings from: " + fullUrl, e)); //$NON-NLS-1$
-			}
-			return false;
-		}
-
-		try (BufferedReader reader = new BufferedReader(
-				new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
-			dialogSettings.load(reader);
-			return true;
-		} catch (IOException e) {
-			// load failed so ensure we have an empty settings
-			dialogSettings = createEmptySettings();
-			getLog().log(new Status(IStatus.ERROR, getBundle().getSymbolicName(),
-					"Failed to load dialog settings from: " + url, e)); //$NON-NLS-1$
-		}
-		return false;
-	}
-
-	/**
-	 * @return true if the workspace settings file was successfully read
-	 */
-	private boolean loadDialogSettingsFromWorkspace() {
-        IPath dataLocation = getStateLocationOrNull();
-		if (dataLocation == null) {
 			// bug 69387: The instance area should not be created (in the call to
 			// #getStateLocation) if -data @none or -data @noDefault was used
-			return false;
-		}
+        IPath dataLocation = getStateLocationOrNull();
+        if (dataLocation != null) {
 		// try r/w state area in the local file system
-		String readWritePath = dataLocation.append(FN_DIALOG_SETTINGS).toOSString();
+	        String readWritePath = dataLocation.append(FN_DIALOG_SETTINGS)
+	                .toOSString();
 		File settingsFile = new File(readWritePath);
 		if (settingsFile.exists()) {
 			try {
 				dialogSettings.load(readWritePath);
 			} catch (IOException e) {
 				// load failed so ensure we have an empty settings
-				dialogSettings = createEmptySettings();
-				getLog().log(new Status(IStatus.ERROR, getBundle().getSymbolicName(),
-						"Failed to load dialog settings from: " + settingsFile, e)); //$NON-NLS-1$
+	                dialogSettings = new DialogSettings("Workbench"); //$NON-NLS-1$
 			}
-			return true;
+	            
+	            return;
 		}
-		return false;
     }
 
-	private void loadDefaultDialogSettingsFromBundle() {
-		Bundle bundle = getBundle();
-		URL dsURL = BundleUtility.find(bundle, FN_DIALOG_SETTINGS);
+        // otherwise look for bundle specific dialog settings
+        URL dsURL = BundleUtility.find(getBundle(), FN_DIALOG_SETTINGS);
 		if (dsURL == null) {
-			// no bundle defaults
 			return;
 		}
-		try (BufferedReader reader = new BufferedReader(
-				new InputStreamReader(dsURL.openStream(), StandardCharsets.UTF_8))) {
+
+        InputStream is = null;
+        try {
+            is = dsURL.openStream();
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(is, "utf-8")); //$NON-NLS-1$
 			dialogSettings.load(reader);
 		} catch (IOException e) {
-			getLog().log(new Status(IStatus.ERROR, bundle.getSymbolicName(),
-					"Failed to load dialog settings from: " + dsURL, e)); //$NON-NLS-1$
 			// load failed so ensure we have an empty settings
-			dialogSettings = createEmptySettings();
+            dialogSettings = new DialogSettings("Workbench"); //$NON-NLS-1$
+        } finally {
+            try {
+                if (is != null) {
+					is.close();
+				}
+            } catch (IOException e) {
+                // do nothing
 		}
 	}
-
-	private DialogSettings createEmptySettings() {
-		return new DialogSettings("Workbench"); //$NON-NLS-1$
 	}
 
     /**
@@ -534,7 +458,6 @@ public abstract class AbstractUIPlugin extends Plugin {
      * The plug-ins preferences are loaded from the file regardless of what
      * this method does.
      */
-    @Deprecated
 	protected void loadPreferenceStore() {
         // do nothing by default
     }
@@ -556,7 +479,11 @@ public abstract class AbstractUIPlugin extends Plugin {
         // startup() is not guaranteed to be called in the UI thread,
         // but refreshPluginActions must run in the UI thread,
         // so use asyncExec.  See bug 6623 for more details.
-        Display.getDefault().asyncExec(() -> WWinPluginAction.refreshActionList());
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+                WWinPluginAction.refreshActionList();
+            }
+        });
     }
 
     /**
@@ -593,20 +520,28 @@ public abstract class AbstractUIPlugin extends Plugin {
      * This method now calls <code>savePluginPreferences</code>, and exists only for
      * backwards compatibility.
      */
-    @Deprecated
 	protected void savePreferenceStore() {
         savePluginPreferences();
     }
 
     /**
-	 * The startup method was called
-	 * only for plug-ins which explicitly require the
-	 * org.eclipse.core.runtime.compatibility plug-in.
-	 *
-	 * It is not called anymore as Eclipse 4.6 removed this plug-in.
+     * The <code>AbstractUIPlugin</code> implementation of this <code>Plugin</code>
+     * method does nothing.  Subclasses may extend this method, but must send
+     * super first.
+     * <p>
+     * WARNING: Plug-ins may not be started in the UI thread.
+     * The <code>startup()</code> method should not assume that its code runs in
+     * the UI thread, otherwise SWT thread exceptions may occur on startup.'
+     * @deprecated 
+     * In Eclipse 3.0, <code>startup</code> has been replaced by {@link Plugin#start(BundleContext context)}.
+     * Implementations of <code>startup</code> should be changed to extend
+     * <code>start(BundleContext context)</code> and call <code>super.start(context)</code>
+     * instead of <code>super.startup()</code>. Like <code>super.startup()</code>,
+     * <code>super.stop(context)</code> must be called as the very first thing.
+     * The <code>startup</code> method is called only for plug-ins which explicitly require the 
+     * org.eclipse.core.runtime.compatibility plug-in; in contrast,
+     * the <code>start</code> method is always called.
 	 */
-    @Deprecated
-	@Override
 	public void startup() throws CoreException {
         // this method no longer does anything
         // the code that used to be here in 2.1 has moved to start(BundleContext)
@@ -628,8 +563,6 @@ public abstract class AbstractUIPlugin extends Plugin {
      * org.eclipse.core.runtime.compatibility plug-in;
      * in contrast, the <code>stop</code> method is always called.
      */
-    @Deprecated
-	@Override
 	public void shutdown() throws CoreException {
         // this method no longer does anything interesting
         // the code that used to be here in 2.1 has moved to stop(BundleContext),
@@ -646,7 +579,6 @@ public abstract class AbstractUIPlugin extends Plugin {
      *
      * @since 3.0
      */
-    @Override
 	public void start(BundleContext context) throws Exception {
         super.start(context);
 		final BundleContext fc = context;
@@ -657,27 +589,23 @@ public abstract class AbstractUIPlugin extends Plugin {
         // Also, if the start throws an exception, the bundle will be shut down.
         // We don't want to have created any delegates if this happens.
         // See bug 63324 for more details.
-        bundleListener = new BundleListener() {
-            @Override
+		bundleListener = new SynchronousBundleListener() {
 			public void bundleChanged(BundleEvent event) {
                 if (event.getBundle() == getBundle()) {
                     if (event.getType() == BundleEvent.STARTED) {
                         // We're getting notified that the bundle has been started.
                         // Make sure it's still active.  It may have been shut down between
-                        // the time this event was dispatched and now.
+                        // the time this event was queued and now.
                         if (getBundle().getState() == Bundle.ACTIVE) {
                             refreshPluginActions();
                         }
-                        try {
                             fc.removeBundleListener(this);
-                        } catch (IllegalStateException ex) {
-                            // bundleListener is removed in stop(BundleContext)
-                        }
                     }
                 }
             }
         };
         context.addBundleListener(bundleListener);
+        // bundleListener is removed in stop(BundleContext)
     }
 
     /**
@@ -691,7 +619,6 @@ public abstract class AbstractUIPlugin extends Plugin {
      *
      * @since 3.0
      */
-    @Override
 	public void stop(BundleContext context) throws Exception {
         try {
             if (bundleListener != null) {
@@ -719,8 +646,8 @@ public abstract class AbstractUIPlugin extends Plugin {
 	 * is relative to the root of the plug-in, and takes into account files
 	 * coming from plug-in fragments. The path may include $arg$ elements.
 	 * However, the path must not have a leading "." or path separator. Clients
-	 * should use a path like "icons/mysample.png" rather than
-	 * "./icons/mysample.png" or "/icons/mysample.png".
+	 * should use a path like "icons/mysample.gif" rather than
+	 * "./icons/mysample.gif" or "/icons/mysample.gif".
 	 * </p>
 	 *
 	 * @param pluginId
@@ -751,34 +678,17 @@ public abstract class AbstractUIPlugin extends Plugin {
 			return null;
 		}
 
-		// Don't resolve the URL here, but create a URL using the
-		// "platform:/plugin" protocol, which also supports fragments.
-		// Caveat: The resulting URL may contain $nl$ etc., which is not
-		// directly supported by PlatformURLConnection and needs to go through
-		// FileLocator#find(URL), see bug 250432.
-		IPath uriPath = new Path("/plugin").append(pluginId).append(imageFilePath); //$NON-NLS-1$
-		URL url;
-		try {
-			URI uri = new URI("platform", null, uriPath.toString(), null); //$NON-NLS-1$
-			url = uri.toURL();
-		} catch (MalformedURLException | URISyntaxException e) {
-			return null;
-		}
-
-		// look for the image
-		URL fullPathString = FileLocator.find(url);
-		url = fullPathString;
+        // look for the image (this will check both the plugin and fragment folders
+        URL fullPathString = BundleUtility.find(bundle, imageFilePath);
 		if (fullPathString == null) {
-			// If not found, reinterpret imageFilePath as full URL.
-			// This is unspecified, but apparently widely-used, see bug 395126.
 			try {
-				url = new URL(imageFilePath);
+                fullPathString = new URL(imageFilePath);
 			} catch (MalformedURLException e) {
 				return null;
 			}
 		}
-		// create image descriptor with the platform:/ URL
-		return ImageDescriptor.createFromURL(url);
+
+        return ImageDescriptor.createFromURL(fullPathString);
     }
 
     /**

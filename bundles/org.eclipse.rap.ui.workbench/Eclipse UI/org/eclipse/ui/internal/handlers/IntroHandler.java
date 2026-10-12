@@ -28,12 +28,11 @@ import org.eclipse.ui.internal.intro.IntroMessages;
  * @author Prakash G.R.
  *
  * @since 3.7
- *
  */
 public class IntroHandler extends AbstractHandler {
 
-	private Workbench workbench;
-	private IntroDescriptor introDescriptor;
+	private final Workbench workbench;
+	private final IntroDescriptor introDescriptor;
 
 	public IntroHandler() {
 		workbench = (Workbench) PlatformUI.getWorkbench();
@@ -44,8 +43,8 @@ public class IntroHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) {
 
 		if (introDescriptor == null) {
-				MessageDialog.openWarning(HandlerUtil.getActiveShell(event),
-					IntroMessages.get().Intro_missing_product_title, IntroMessages.get().Intro_missing_product_message);
+			MessageDialog.openWarning(HandlerUtil.getActiveShell(event), IntroMessages.get().Intro_missing_product_title,
+					IntroMessages.get().Intro_missing_product_message);
 		} else {
 				IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 				workbench.getIntroManager().showIntro(window, false);

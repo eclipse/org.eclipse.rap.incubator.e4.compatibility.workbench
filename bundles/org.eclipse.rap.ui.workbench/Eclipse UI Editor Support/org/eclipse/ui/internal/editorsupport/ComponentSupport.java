@@ -24,14 +24,13 @@ import org.eclipse.ui.internal.util.PrefUtil;
 import org.osgi.framework.Bundle;
 
 /**
- * This class provides an OS independent interface to the
- * components available on the platform
+ * This class provides an OS independent interface to the components available
+ * on the platform
  */
 public final class ComponentSupport {
 
     /**
-     * Returns whether the current platform has support
-     * for system in-place editor.
+	 * Returns whether the current platform has support for system in-place editor.
      */
     public static boolean inPlaceEditorSupported() {
     	// check preference
@@ -43,8 +42,8 @@ public final class ComponentSupport {
     }
 
     /**
-     * Return the default system in-place editor part
-     * or <code>null</code> if not support by platform.
+	 * Return the default system in-place editor part or <code>null</code> if not
+	 * support by platform.
      */
     public static IEditorPart getSystemInPlaceEditor() {
         if (inPlaceEditorSupported()) {
@@ -54,8 +53,7 @@ public final class ComponentSupport {
     }
 
     /**
-     * Returns whether an in-place editor is available to
-     * edit the file.
+	 * Returns whether an in-place editor is available to edit the file.
      *
      * @param filename the file name in the system
      */
@@ -68,13 +66,15 @@ public final class ComponentSupport {
 
     /**
      * Get a new OLEEditor
+	 *
      * @return IEditorPart
      */
     private static IEditorPart getOleEditor() {
         // @issue currently assumes OLE editor is provided by IDE plug-in
         // IDE plug-in is not on prereq chain of generic wb plug-in
         // hence: IContributorResourceAdapter.class won't compile
-        // and Class.forName("org.eclipse.ui.internal.editorsupport.win32.OleEditor") won't find it
+		// and Class.forName("org.eclipse.ui.internal.editorsupport.win32.OleEditor")
+		// won't find it
         // need to be trickier...
         Bundle bundle = Platform.getBundle("org.eclipse.ui.ide"); //$NON-NLS-1$
 
@@ -84,12 +84,10 @@ public final class ComponentSupport {
 		}
 
         try {
-            Class<?> c = bundle
-                    .loadClass("org.eclipse.ui.internal.editorsupport.win32.OleEditor"); //$NON-NLS-1$
+			Class<?> c = bundle.loadClass("org.eclipse.ui.internal.editorsupport.win32.OleEditor"); //$NON-NLS-1$
 			return (IEditorPart) c.getDeclaredConstructor().newInstance();
-		} catch (SecurityException | ClassNotFoundException | NoSuchMethodException
-				| InvocationTargetException | IllegalArgumentException | InstantiationException
-				| IllegalAccessException exception) {
+		} catch (SecurityException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException
+				| IllegalArgumentException | InstantiationException | IllegalAccessException exception) {
             return null;
 		}
     }
@@ -105,15 +103,7 @@ public final class ComponentSupport {
 				if (!strName.isEmpty()) {
 					return true;
 				}
-            } catch (ClassNotFoundException exception) {
-                //Couldn't ask so return false
-                return false;
-            } catch (NoSuchMethodException exception) {
-                //Couldn't find the method so return false
-                return false;
-            } catch (IllegalAccessException exception) {
-                return false;
-            } catch (InvocationTargetException exception) {
+			} catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
                 return false;
             }
 

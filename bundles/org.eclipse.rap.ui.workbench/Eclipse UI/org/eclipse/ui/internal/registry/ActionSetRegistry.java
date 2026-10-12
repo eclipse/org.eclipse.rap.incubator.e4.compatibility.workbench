@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.dynamichelpers.ExtensionTracker;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionChangeHandler;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
-import org.eclipse.rap.rwt.SingletonUtil;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.internal.WorkbenchPlugin;
@@ -41,56 +40,33 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
      * @since 3.1
      */
 	private static class ActionSetPartAssociation {
-        /**
-         * @param partId
-         * @param actionSetId
-         */
         public ActionSetPartAssociation(String partId, String actionSetId) {
             this.partId = partId;
             this.actionSetId = actionSetId;
         }
 
-
         String partId;
         String actionSetId;
     }
 
-    private ArrayList children = new ArrayList();
+	private final ArrayList<ActionSetDescriptor> children = new ArrayList<>();
 
-    private Map mapPartToActionSetIds = new HashMap();
+	private final Map<String, ArrayList<String>> mapPartToActionSetIds = new HashMap<>();
 
-    private Map mapPartToActionSets = new HashMap();
+	private final Map<String, ArrayList<IActionSetDescriptor>> mapPartToActionSets = new HashMap<>();
 
-	private IContextService contextService;
+	private final IContextService contextService;
 
     /**
      * Creates the action set registry.
      */
-	// RAP [if]: see getInstance
-//  public ActionSetRegistry() {
-	private ActionSetRegistry() {
-		// RAPEND: [if]
-    	contextService = PlatformUI
-				.getWorkbench().getService(IContextService.class);
-		PlatformUI.getWorkbench().getExtensionTracker().registerHandler(
-                this,
-                ExtensionTracker
-                        .createExtensionPointFilter(new IExtensionPoint[] {
-                                getActionSetExtensionPoint(),
+	public ActionSetRegistry() {
+		contextService = PlatformUI.getWorkbench().getService(IContextService.class);
+		PlatformUI.getWorkbench().getExtensionTracker().registerHandler(this,
+				ExtensionTracker.createExtensionPointFilter(new IExtensionPoint[] { getActionSetExtensionPoint(),
                                 getActionSetPartAssociationExtensionPoint() }));
         readFromRegistry();
     }
-
-	// RAP [if]:
-	/**
-	 * Returns a session scoped ActionSetRegistry
-	 * 
-	 * @return the session singleton instance
-	 */
-	public static ActionSetRegistry getInstance() {
-		return SingletonUtil.getSessionInstance(ActionSetRegistry.class);
-	}
-	// RAPEND: [if]
 
     /**
      * Return the action set part association extension point.
@@ -99,9 +75,7 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
      * @since 3.1
      */
     private IExtensionPoint getActionSetPartAssociationExtensionPoint() {
-        return Platform
-        .getExtensionRegistry().getExtensionPoint(
-                PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
+		return Platform.getExtensionRegistry().getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
                 IWorkbenchRegistryConstants.PL_ACTION_SET_PART_ASSOCIATIONS);
     }
 
@@ -112,29 +86,23 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
      * @since 3.1
      */
     private IExtensionPoint getActionSetExtensionPoint() {
-        return Platform
-                .getExtensionRegistry().getExtensionPoint(
-                        PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
+		return Platform.getExtensionRegistry().getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
                         IWorkbenchRegistryConstants.PL_ACTION_SETS);
     }
 
     /**
      * Adds an action set.
-     * @param desc
      */
     private void addActionSet(ActionSetDescriptor desc) {
 		children.add(desc);
 		Context actionSetContext = contextService.getContext(desc.getId());
 		if (!actionSetContext.isDefined()) {
-			actionSetContext.define(desc.getLabel(), desc.getDescription(),
-					"org.eclipse.ui.contexts.actionSet"); //$NON-NLS-1$
+			actionSetContext.define(desc.getLabel(), desc.getDescription(), "org.eclipse.ui.contexts.actionSet"); //$NON-NLS-1$
 		}
 	}
 
 	/**
 	 * Remove the action set.
-	 *
-	 * @param desc
 	 */
 	private void removeActionSet(IActionSetDescriptor desc) {
 		Context actionSetContext = contextService.getContext(desc.getId());
@@ -149,15 +117,14 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
      */
     private Object addAssociation(String actionSetId, String partId) {
         // get the action set ids for this part
-        ArrayList actionSets = (ArrayList) mapPartToActionSetIds.get(partId);
+		ArrayList<String> actionSets = mapPartToActionSetIds.get(partId);
         if (actionSets == null) {
-            actionSets = new ArrayList();
+			actionSets = new ArrayList<>();
             mapPartToActionSetIds.put(partId, actionSets);
         }
         actionSets.add(actionSetId);
 
-        ActionSetPartAssociation association = new ActionSetPartAssociation(partId, actionSetId);
-        return association;
+		return new ActionSetPartAssociation(partId, actionSetId);
     }
 
     /**
@@ -168,9 +135,8 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
      * @see IActionSetDescriptor#getId
      */
     public IActionSetDescriptor findActionSet(String id) {
-        Iterator i = children.iterator();
-        while (i.hasNext()) {
-            IActionSetDescriptor desc = (IActionSetDescriptor) i.next();
+
+		for (IActionSetDescriptor desc : children) {
             if (desc.getId().equals(id)) {
 				return desc;
 			}
@@ -184,7 +150,7 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
      * @return a list of action sets
      */
     public IActionSetDescriptor[] getActionSets() {
-        return (IActionSetDescriptor []) children.toArray(new IActionSetDescriptor [children.size()]);
+		return children.toArray(new IActionSetDescriptor[children.size()]);
     }
 
     /**
@@ -195,22 +161,22 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
      */
     public IActionSetDescriptor[] getActionSetsFor(String partId) {
         // check the resolved map first
-        ArrayList actionSets = (ArrayList) mapPartToActionSets.get(partId);
+		ArrayList<IActionSetDescriptor> actionSets = mapPartToActionSets.get(partId);
         if (actionSets != null) {
-            return (IActionSetDescriptor[]) actionSets
-                    .toArray(new IActionSetDescriptor[actionSets.size()]);
+			return actionSets.toArray(new IActionSetDescriptor[actionSets.size()]);
         }
 
         // get the action set ids for this part
-        ArrayList actionSetIds = (ArrayList) mapPartToActionSetIds.get(partId);
+		ArrayList<String> actionSetIds = mapPartToActionSetIds.get(partId);
         if (actionSetIds == null) {
 			return new IActionSetDescriptor[0];
 		}
 
         // resolve to action sets
-        actionSets = new ArrayList(actionSetIds.size());
-        for (Iterator i = actionSetIds.iterator(); i.hasNext();) {
-            String actionSetId = (String) i.next();
+		actionSets = new ArrayList<>(actionSetIds.size());
+
+		for (String actionSetId : actionSetIds) {
+
             IActionSetDescriptor actionSet = findActionSet(actionSetId);
             if (actionSet != null) {
 				actionSets.add(actionSet);
@@ -222,8 +188,7 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
 
         mapPartToActionSets.put(partId, actionSets);
 
-        return (IActionSetDescriptor[]) actionSets
-                .toArray(new IActionSetDescriptor[actionSets.size()]);
+		return actionSets.toArray(new IActionSetDescriptor[actionSets.size()]);
     }
 
     /**
@@ -244,16 +209,12 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
         String extensionPointUniqueIdentifier = extension.getExtensionPointUniqueIdentifier();
         if (extensionPointUniqueIdentifier.equals(getActionSetExtensionPoint().getUniqueIdentifier())) {
             addActionSets(tracker, extension);
-        }
-        else if (extensionPointUniqueIdentifier.equals(getActionSetPartAssociationExtensionPoint().getUniqueIdentifier())){
+		} else if (extensionPointUniqueIdentifier
+				.equals(getActionSetPartAssociationExtensionPoint().getUniqueIdentifier())) {
             addActionSetPartAssociations(tracker, extension);
         }
     }
 
-    /**
-     * @param tracker
-     * @param extension
-     */
     private void addActionSetPartAssociations(IExtensionTracker tracker, IExtension extension) {
 		for (IConfigurationElement element : extension.getConfigurationElements()) {
             if (element.getName().equals(IWorkbenchRegistryConstants.TAG_ACTION_SET_PART_ASSOCIATION)) {
@@ -264,9 +225,7 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
                         if (partId != null) {
                             Object trackingObject = addAssociation(actionSetId, partId);
                             if (trackingObject != null) {
-                                tracker.registerObject(extension,
-                                        trackingObject,
-                                        IExtensionTracker.REF_STRONG);
+								tracker.registerObject(extension, trackingObject, IExtensionTracker.REF_STRONG);
 
                             }
 
@@ -284,10 +243,6 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
         mapPartToActionSets.clear();
     }
 
-    /**
-     * @param tracker
-     * @param extension
-     */
     private void addActionSets(IExtensionTracker tracker, IExtension extension) {
 		for (IConfigurationElement element : extension.getConfigurationElements()) {
             if (element.getName().equals(IWorkbenchRegistryConstants.TAG_ACTION_SET)) {
@@ -298,9 +253,7 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
 
                 } catch (CoreException e) {
                     // log an error since its not safe to open a dialog here
-                    WorkbenchPlugin
-                            .log(
-                                    "Unable to create action set descriptor.", e.getStatus());//$NON-NLS-1$
+					WorkbenchPlugin.log("Unable to create action set descriptor.", e.getStatus());//$NON-NLS-1$
                 }
             }
         }
@@ -314,21 +267,17 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
         String extensionPointUniqueIdentifier = extension.getExtensionPointUniqueIdentifier();
         if (extensionPointUniqueIdentifier.equals(getActionSetExtensionPoint().getUniqueIdentifier())) {
             removeActionSets(objects);
-        }
-        else if (extensionPointUniqueIdentifier.equals(getActionSetPartAssociationExtensionPoint().getUniqueIdentifier())){
+		} else if (extensionPointUniqueIdentifier
+				.equals(getActionSetPartAssociationExtensionPoint().getUniqueIdentifier())) {
             removeActionSetPartAssociations(objects);
         }
     }
 
-    /**
-     * @param objects
-     */
     private void removeActionSetPartAssociations(Object[] objects) {
         for (Object object : objects) {
-            if (object instanceof ActionSetPartAssociation) {
-                ActionSetPartAssociation association = (ActionSetPartAssociation) object;
+			if (object instanceof ActionSetPartAssociation association) {
                 String actionSetId = association.actionSetId;
-                ArrayList actionSets = (ArrayList) mapPartToActionSetIds.get(association.partId);
+				ArrayList<String> actionSets = mapPartToActionSetIds.get(association.partId);
                 if (actionSets == null) {
 					return;
 				}
@@ -343,22 +292,17 @@ public class ActionSetRegistry implements IExtensionChangeHandler {
 
     }
 
-    /**
-     * @param objects
-     */
     private void removeActionSets(Object[] objects) {
         for (Object object : objects) {
-            if (object instanceof IActionSetDescriptor) {
-                IActionSetDescriptor desc = (IActionSetDescriptor) object;
+			if (object instanceof IActionSetDescriptor desc) {
                 removeActionSet(desc);
 
                 // now clean up the part associations
                 // TODO: this is expensive. We should consider another map from
                 // actionsets
                 // to parts.
-                for (Iterator j = mapPartToActionSetIds.values().iterator(); j
-                        .hasNext();) {
-                    ArrayList list = (ArrayList) j.next();
+				for (Iterator<ArrayList<String>> j = mapPartToActionSetIds.values().iterator(); j.hasNext();) {
+					ArrayList<String> list = j.next();
                     list.remove(desc.getId());
                     if (list.isEmpty()) {
 						j.remove();

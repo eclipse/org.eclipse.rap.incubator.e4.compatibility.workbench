@@ -14,6 +14,8 @@
 package org.eclipse.ui.internal.preferences;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * @since 3.1
@@ -22,7 +24,7 @@ public abstract class PropertyMapAdapter implements IDynamicPropertyMap {
 
     private PropertyListenerList listeners;
     private int ignoreCount = 0;
-    private ArrayList queuedEvents = new ArrayList();
+	private final ArrayList<String> queuedEvents = new ArrayList<>();
 
     @Override
 	public final void addListener(IPropertyMapListener listener) {
@@ -83,9 +85,7 @@ public abstract class PropertyMapAdapter implements IDynamicPropertyMap {
 
     protected final void firePropertyChange(String[] prefIds) {
         if (ignoreCount > 0) {
-            for (String prefId : prefIds) {
-                queuedEvents.add(prefId);
-            }
+			queuedEvents.addAll(Arrays.asList(prefIds));
             return;
         }
 
@@ -102,7 +102,7 @@ public abstract class PropertyMapAdapter implements IDynamicPropertyMap {
         ignoreCount--;
         if (ignoreCount == 0 && !queuedEvents.isEmpty()) {
             if (listeners != null) {
-                listeners.firePropertyChange((String[]) queuedEvents.toArray(new String[queuedEvents.size()]));
+				listeners.firePropertyChange(queuedEvents.toArray(new String[queuedEvents.size()]));
             }
             queuedEvents.clear();
         }
@@ -110,9 +110,27 @@ public abstract class PropertyMapAdapter implements IDynamicPropertyMap {
 
     @Override
 	public boolean equals(Object toCompare) {
-        return toCompare instanceof IPropertyMap && PropertyUtil.isEqual(this, (IPropertyMap)toCompare);
+		return toCompare instanceof IPropertyMap && isEqual(this, (IPropertyMap) toCompare);
+	}
+
+	private static boolean isEqual(IPropertyMap map1, IPropertyMap map2) {
+		Set<String> map1Keys = map1.keySet();
+		Set<String> map2Keys = map2.keySet();
+
+		if (!map1Keys.equals(map2Keys)) {
+			return false;
+		}
+
+		for (String next : map1Keys) {
+			if (!map1.getValue(next, Object.class).equals(map2.getValue(next, Object.class))) {
+				return false;
+			}
+		}
+
+		return true;
     }
 
     protected abstract void attachListener();
+
     protected abstract void detachListener();
 }

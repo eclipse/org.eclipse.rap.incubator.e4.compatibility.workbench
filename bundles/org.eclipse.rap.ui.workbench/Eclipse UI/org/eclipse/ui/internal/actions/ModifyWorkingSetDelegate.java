@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2006, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -21,6 +18,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -36,7 +34,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionDelegate2;
@@ -51,13 +48,12 @@ import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 
 /**
- * @since 3.3
  *
  */
 public class ModifyWorkingSetDelegate extends
 		AbstractWorkingSetPulldownDelegate implements IExecutableExtension, IActionDelegate2 {
 
-	public static class NewWorkingSetAction extends Action {
+	public class NewWorkingSetAction extends Action {
 
 		/**
 		 * Create a new instance of this action.
@@ -66,7 +62,6 @@ public class ModifyWorkingSetDelegate extends
 			super(WorkbenchMessages.get().NewWorkingSet);
 		}
 
-		@Override
 		public void run() {
 			IWorkingSetManager manager = WorkbenchPlugin.getDefault()
 			.getWorkingSetManager();
@@ -108,7 +103,6 @@ public class ModifyWorkingSetDelegate extends
 			setImageDescriptor(set.getImageDescriptor());
 		}
 
-		@Override
 		public void run() {
 
 			Collection oldElements = Arrays.asList(set.getElements());
@@ -127,7 +121,6 @@ public class ModifyWorkingSetDelegate extends
 	}
 
 	private QuickMenuCreator contextMenuCreator = new QuickMenuCreator() {
-		@Override
 		protected void fillMenu(IMenuManager menu) {
 			ModifyWorkingSetDelegate.this.fillMenu(menu);
 		}
@@ -137,7 +130,6 @@ public class ModifyWorkingSetDelegate extends
 
 	private IPropertyChangeListener listener = new IPropertyChangeListener() {
 
-		@Override
 		public void propertyChange(PropertyChangeEvent event) {
 			refreshEnablement();
 		}
@@ -158,25 +150,40 @@ public class ModifyWorkingSetDelegate extends
 	public ModifyWorkingSetDelegate() {
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
+	 */
 	public void run(IAction action) {
 		contextMenuCreator.createMenu();
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.IActionDelegate2#runWithEvent(org.eclipse.jface.action.IAction, org.eclipse.swt.widgets.Event)
+	 */
 	public void runWithEvent(IAction action, Event event) {
-		if (event.type == SWT.KeyDown || event.type == SWT.KeyUp)
-			run(action);
+// RAP [rh] missing key events	  
+//		if (event.type == SWT.KeyDown || event.type == SWT.KeyUp)
+//			run(action);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.actions.AbstractWorkingSetPulldownDelegate#init(org.eclipse.ui.IWorkbenchWindow)
+	 */
 	public void init(IWorkbenchWindow window) {
 		super.init(window);
 		getWindow().getWorkbench().getWorkingSetManager()
 				.addPropertyChangeListener(listener);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.actions.AbstractWorkingSetPulldownDelegate#dispose()
+	 */
 	public void dispose() {
 		getWindow().getWorkbench().getWorkingSetManager()
 				.removePropertyChangeListener(listener);
@@ -184,7 +191,6 @@ public class ModifyWorkingSetDelegate extends
 		contextMenuCreator.dispose();
 	}
 
-	@Override
 	public void fillMenu(Menu menu) {
 		List menuItems = getItems();
 		for (int i = 0; i < menuItems.size(); i++) {
@@ -237,10 +243,13 @@ public class ModifyWorkingSetDelegate extends
 		// separator.
 		boolean needsSeparator = false;
 
-		for (IWorkingSet[] sets : typedSets) {
+		for (int i = 0; i < typedSets.length; i++) {
 			int oldCount = menuItems.size();
 
-			for (IWorkingSet set : sets) {
+			IWorkingSet[] sets = typedSets[i];
+			for (int j = 0; j < sets.length; j++) {
+				IWorkingSet set = sets[j];
+
 				Set existingElements = new HashSet();
 				existingElements.addAll(Arrays
 						.asList(set.getElements()));
@@ -260,8 +269,8 @@ public class ModifyWorkingSetDelegate extends
 					}
 				}
 				else if (adaptables.length > 0) {
-					for (IAdaptable adaptable : adaptables) {
-						if (existingElements.contains(adaptable)){
+					for (int k = 0; k < adaptables.length; k++) {
+						if (existingElements.contains(adaptables[k])){
 							visible = true; // show if any element
 											// is present in removal
 							break;
@@ -306,7 +315,12 @@ public class ModifyWorkingSetDelegate extends
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.actions.AbstractWorkingSetPulldownDelegate#selectionChanged(org.eclipse.jface.action.IAction,
+	 *      org.eclipse.jface.viewers.ISelection)
+	 */
 	public void selectionChanged(IAction actionProxy, ISelection selection) {
 		super.selectionChanged(actionProxy, selection);
 		if (selection instanceof IStructuredSelection) {
@@ -314,8 +328,8 @@ public class ModifyWorkingSetDelegate extends
 					.toArray();
 			// ensure every item is of type IAdaptable and is NOT an IWorkingSet (minimal fix for 157799)
 			boolean minimallyOkay = true;
-			for (Object selectedElement : selectedElements) {
-				Object object = selectedElement;
+			for (int i = 0; i < selectedElements.length; i++) {
+				Object object = selectedElements[i];
 				if (!(object instanceof IAdaptable) || object instanceof IWorkingSet) {
 					minimallyOkay = false;
 					break;
@@ -328,7 +342,12 @@ public class ModifyWorkingSetDelegate extends
 			actionProxy.setEnabled(false);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.IExecutableExtension#setInitializationData(org.eclipse.core.runtime.IConfigurationElement,
+	 *      java.lang.String, java.lang.Object)
+	 */
 	public void setInitializationData(IConfigurationElement config,
 			String propertyName, Object data) {
 		if (data instanceof String) {
@@ -336,7 +355,9 @@ public class ModifyWorkingSetDelegate extends
 		}
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.IActionDelegate2#init(org.eclipse.jface.action.IAction)
+	 */
 	public void init(IAction action) {
 		this.actionProxy = action;
 	}

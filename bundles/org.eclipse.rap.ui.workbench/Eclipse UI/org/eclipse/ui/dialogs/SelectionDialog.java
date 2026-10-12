@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -15,6 +12,7 @@ package org.eclipse.ui.dialogs;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -33,6 +31,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * <p>
  * Clients may subclass this dialog to inherit its selection facilities.
  * </p>
+ * @since 1.0
  */
 public abstract class SelectionDialog extends TrayDialog {
 	// the final collection of selected elements, or null if this dialog was
@@ -54,9 +53,12 @@ public abstract class SelectionDialog extends TrayDialog {
 	// dialog settings for storing bounds (since 3.2)
 	private IDialogSettings dialogBoundsSettings = null;
 
-	static String SELECT_ALL_TITLE = WorkbenchMessages.get().SelectionDialog_selectLabel;
-
-	static String DESELECT_ALL_TITLE = WorkbenchMessages.get().SelectionDialog_deselectLabel;
+// RAP [rh]	removed static form String decl that contains NLS message
+//	static String SELECT_ALL_TITLE = WorkbenchMessages.get().SelectionDialog_selectLabel;
+//
+//	static String DESELECT_ALL_TITLE = WorkbenchMessages.get().SelectionDialog_deselectLabel;
+	final String SELECT_ALL_TITLE = WorkbenchMessages.get().SelectionDialog_selectLabel;
+	final String DESELECT_ALL_TITLE = WorkbenchMessages.get().SelectionDialog_deselectLabel;
 
 	/**
 	 * Creates a dialog instance. Note that the dialog will have no visual
@@ -69,7 +71,9 @@ public abstract class SelectionDialog extends TrayDialog {
 		super(parentShell);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc) Method declared in Window.
+	 */
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
 		if (title != null) {
@@ -77,10 +81,14 @@ public abstract class SelectionDialog extends TrayDialog {
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc) Method declared on Dialog.
+	 */
 	protected void createButtonsForButtonBar(Composite parent) {
-		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.get().OK_LABEL, true);
-		createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.get().CANCEL_LABEL, false);
+		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.get().OK_LABEL,
+				true);
+		createButton(parent, IDialogConstants.CANCEL_ID,
+				IDialogConstants.get().CANCEL_LABEL, false);
 	}
 
 	/**
@@ -109,7 +117,6 @@ public abstract class SelectionDialog extends TrayDialog {
 	 * @deprecated use getInitialElementSelections() instead
 	 * @return the list of initial selected elements or null
 	 */
-	@Deprecated
 	protected List getInitialSelections() {
 		if (initialSelections.isEmpty()) {
 			return null;
@@ -163,10 +170,10 @@ public abstract class SelectionDialog extends TrayDialog {
 	 * @param selectedElements
 	 *            the array of elements to select
 	 */
-	public void setInitialSelections(Object... selectedElements) {
+	public void setInitialSelections(Object[] selectedElements) {
 		initialSelections = new ArrayList(selectedElements.length);
-		for (Object selectedElement : selectedElements) {
-			initialSelections.add(selectedElement);
+		for (int i = 0; i < selectedElements.length; i++) {
+			initialSelections.add(selectedElements[i]);
 		}
 	}
 
@@ -217,7 +224,6 @@ public abstract class SelectionDialog extends TrayDialog {
 	 *
 	 * @param newResult -
 	 *            the new values
-	 * @since 2.0
 	 */
 	protected void setSelectionResult(Object[] newResult) {
 		result = newResult;
@@ -248,8 +254,6 @@ public abstract class SelectionDialog extends TrayDialog {
 	 *            Specified using {@link Dialog#DIALOG_PERSISTLOCATION}
 	 *            and {@link Dialog#DIALOG_PERSISTSIZE}.
 	 *
-	 * @since 3.2
-	 *
 	 * @see Dialog#getDialogBoundsStrategy()
 	 * @see Dialog#getDialogBoundsSettings()
 	 */
@@ -268,12 +272,9 @@ public abstract class SelectionDialog extends TrayDialog {
 	 *         size, or <code>null</code> if the dialog's bounds should not be
 	 *         stored.
 	 *
-	 * @since 3.2
-	 *
 	 * @see Dialog#getDialogBoundsStrategy()
 	 * @see #setDialogBoundsSettings(IDialogSettings, int)
 	 */
-	@Override
 	protected IDialogSettings getDialogBoundsSettings() {
 		return dialogBoundsSettings;
 	}
@@ -286,21 +287,15 @@ public abstract class SelectionDialog extends TrayDialog {
 	 * @return the constant describing the strategy for persisting the dialog
 	 *         bounds.
 	 *
-	 * @since 3.2
 	 * @see Dialog#DIALOG_PERSISTLOCATION
 	 * @see Dialog#DIALOG_PERSISTSIZE
 	 * @see Dialog#getDialogBoundsSettings()
 	 * @see #setDialogBoundsSettings(IDialogSettings, int)
 	 */
-	@Override
 	protected int getDialogBoundsStrategy() {
 		return dialogBoundsStrategy;
 	}
 
-    /**
-	 * @since 3.4
-	 */
-    @Override
 	protected boolean isResizable() {
     	return true;
     }

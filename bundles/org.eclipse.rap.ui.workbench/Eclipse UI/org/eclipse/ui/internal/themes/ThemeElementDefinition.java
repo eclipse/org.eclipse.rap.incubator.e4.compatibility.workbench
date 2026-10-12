@@ -15,16 +15,14 @@
 
 package org.eclipse.ui.internal.themes;
 
-import com.ibm.icu.text.MessageFormat;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 /**
  * @since 3.5
- *
  */
 public class ThemeElementDefinition {
-	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(Theme.class
-			.getName());
+	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(Theme.class.getName());
 
 	public interface State {
 		int UNKNOWN = 0;
@@ -36,7 +34,7 @@ public class ThemeElementDefinition {
 		int MODIFIED_BY_USER = 4;
 	}
 
-	private String id;
+	private final String id;
 
 	private String label;
 
@@ -150,6 +148,7 @@ public class ThemeElementDefinition {
 	public void removeState(int state) {
 		this.state &= ~state;
 	}
+
 	public boolean isOverridden() {
 		return (state & State.OVERRIDDEN) != 0;
 	}

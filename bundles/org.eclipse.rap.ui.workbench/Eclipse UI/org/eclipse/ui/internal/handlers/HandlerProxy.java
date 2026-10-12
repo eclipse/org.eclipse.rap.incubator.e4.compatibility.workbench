@@ -1,22 +1,19 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
  *******************************************************************************/
 
 package org.eclipse.ui.internal.handlers;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.eclipse.core.commands.AbstractHandlerWithState;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -35,6 +32,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.rap.rwt.SingletonUtil;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
@@ -58,8 +56,6 @@ import org.eclipse.ui.services.IEvaluationService;
  * attributes defined publicly in this class will cause the proxy to instantiate
  * the proxied handler.
  * </p>
- *
- * @since 3.0
  */
 public final class HandlerProxy extends AbstractHandlerWithState implements
 		IElementUpdater {
@@ -94,7 +90,7 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 	 * forced to load the real handler. At this point, the configuration element
 	 * is converted, nulled out, and this handler gains a reference.
 	 */
-	private IHandler handler;
+	private IHandler handler = null;
 
 	/**
 	 * The name of the configuration element attribute which contains the
@@ -209,15 +205,15 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 	}
 
 	public static void updateStaleCEs(IConfigurationElement[] replacements) {
-		for (IConfigurationElement replacement : replacements) {
+		for (int i = 0; i < replacements.length; i++) {
 // RAP [fappel]: change this due to memory problems
 //			HandlerProxy proxy = (HandlerProxy) CEToProxyMap
-//					.get(replacement);
+//		            .get(replacements[i]);
 			Map ceToProxyMap = SingletonUtil.getSessionInstance(CEToProxyMap.class);
 			HandlerProxy proxy = (HandlerProxy) ceToProxyMap
-					.get(replacement);
+					.get(replacements[i]);
 			if (proxy != null)
-				proxy.configurationElement = replacement;
+				proxy.configurationElement = replacements[i];
 		}
 	}
 
@@ -229,7 +225,6 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 				enabledWhenExpression, getEnablementListener(), PROP_ENABLED);
 	}
 
-	@Override
 	public void setEnabled(Object evaluationContext) {
 		if (!(evaluationContext instanceof IEvaluationContext)) {
 			return;
@@ -258,15 +253,20 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 		return proxyEnabled;
 	}
 
+	/**
+	 * @return
+	 */
 	private IPropertyChangeListener getEnablementListener() {
 		if (enablementListener == null) {
-			enablementListener = event -> {
+			enablementListener = new IPropertyChangeListener() {
+				public void propertyChange(PropertyChangeEvent event) {
 				if (event.getProperty() == PROP_ENABLED) {
 					setProxyEnabled(event.getNewValue() == null ? false
 							: ((Boolean) event.getNewValue())
 									.booleanValue());
 					fireHandlerChanged(new HandlerEvent(HandlerProxy.this,
 							true, false));
+				}
 				}
 			};
 		}
@@ -276,8 +276,7 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 	/**
 	 * Passes the dipose on to the proxied handler, if it has been loaded.
 	 */
-	@Override
-	public void dispose() {
+	public final void dispose() {
 		if (handler != null) {
 			if (handlerListener != null) {
 				handler.removeHandlerListener(handlerListener);
@@ -293,8 +292,7 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 		}
 	}
 
-	@Override
-	public Object execute(final ExecutionEvent event)
+	public final Object execute(final ExecutionEvent event)
 			throws ExecutionException {
 		if (loadHandler()) {
 			if (!isEnabled()) {
@@ -312,8 +310,7 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 		return null;
 	}
 
-	@Override
-	public boolean isEnabled() {
+	public final boolean isEnabled() {
 		if (enabledWhenExpression != null) {
 			// proxyEnabled reflects the enabledWhen clause
 			if (!getProxyEnabled()) {
@@ -336,18 +333,15 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 		return true;
 	}
 
-	@Override
-	public boolean isHandled() {
-		boolean okToLoad = isOkToLoad();
-		if (okToLoad && loadHandler()) {
-			return handler.isHandled();
-		}
-		if (!okToLoad) {
-			// That is crazy, but we should answer "true" for contributions from not loaded
-			// plugins, otherwise pure declarative commands defined in not active bundles
-			// will not run for the first time
+	public final boolean isHandled() {
+		if (configurationElement != null && handler == null) {
 			return true;
 		}
+
+		if (isOkToLoad() && loadHandler()) {
+			return handler.isHandled();
+		}
+
 		return false;
 	}
 
@@ -358,7 +352,7 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 	 * @return <code>true</code> if the handler is now non-null;
 	 *         <code>false</code> otherwise.
 	 */
-	private boolean loadHandler() {
+	private final boolean loadHandler() {
 		if (handler == null) {
 			// Load the handler.
 			try {
@@ -397,15 +391,18 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 
 	private IHandlerListener getHandlerListener() {
 		if (handlerListener == null) {
-			handlerListener = handlerEvent -> fireHandlerChanged(new HandlerEvent(HandlerProxy.this,
+			handlerListener = new IHandlerListener() {
+				public void handlerChanged(HandlerEvent handlerEvent) {
+					fireHandlerChanged(new HandlerEvent(HandlerProxy.this,
 					handlerEvent.isEnabledChanged(), handlerEvent
 							.isHandledChanged()));
+		}
+			};
 		}
 		return handlerListener;
 	}
 
-	@Override
-	public String toString() {
+	public final String toString() {
 		if (handler == null) {
 			if (configurationElement != null) {
 				String configurationElementAttribute = getConfigurationElementAttribute();
@@ -429,8 +426,10 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 		String attribute = configurationElement
 				.getAttribute(handlerAttributeName);
 		if (attribute == null) {
-			for (IConfigurationElement configElement : configurationElement.getChildren(handlerAttributeName)) {
-				String childAttribute = configElement
+			IConfigurationElement[] children = configurationElement
+					.getChildren(handlerAttributeName);
+			for (int i = 0; i < children.length; i++) {
+				String childAttribute = children[i]
 						.getAttribute(IWorkbenchRegistryConstants.ATT_CLASS);
 				if (childAttribute != null) {
 					return childAttribute;
@@ -441,9 +440,6 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 	}
 
 	private boolean isOkToLoad() {
-		if (PlatformUI.getWorkbench().isClosing())
-			return handler != null;
-
 		if (configurationElement != null && handler == null) {
 			final String bundleId = configurationElement.getContributor()
 					.getName();
@@ -452,7 +448,12 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 		return true;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.IElementUpdater#updateElement(org.eclipse.ui.menus.UIElement,
+	 *      java.util.Map)
+	 */
 	public void updateElement(UIElement element, Map parameters) {
 		if (checkedState != null) {
 			Boolean value = (Boolean) checkedState.getValue();
@@ -472,12 +473,14 @@ public final class HandlerProxy extends AbstractHandlerWithState implements
 				&& (checkedState == null && radioState == null)) {
 			return;
 		}
-		ICommandService cs = PlatformUI.getWorkbench()
+		ICommandService cs = (ICommandService) PlatformUI.getWorkbench()
 				.getService(ICommandService.class);
 		cs.refreshElements(commandId, null);
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.IStateListener#handleStateChange(org.eclipse.core.commands.State, java.lang.Object)
+	 */
 	public void handleStateChange(State state, Object oldValue) {
 		if (state.getId().equals(RegistryToggleState.STATE_ID)) {
 			checkedState = state;

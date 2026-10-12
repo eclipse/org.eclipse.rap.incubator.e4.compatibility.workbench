@@ -13,33 +13,32 @@
  *******************************************************************************/
 package org.eclipse.ui.internal;
 
-import com.ibm.icu.text.MessageFormat;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProduct;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.branding.IProductConstants;
 import org.osgi.framework.Bundle;
 
 /**
  * A class that converts the strings returned by
- * <code>org.eclipse.core.runtime.IProduct.getProperty</code> to the
- * appropriate class. This implementation is tightly bound to the properties
- * provided in IProductConstants. Clients adding their own properties could
- * choose to subclass this.
+ * <code>org.eclipse.core.runtime.IProduct.getProperty</code> to the appropriate
+ * class. This implementation is tightly bound to the properties provided in
+ * IProductConstants. Clients adding their own properties could choose to
+ * subclass this.
  *
  * @see org.eclipse.ui.branding.IProductConstants
  * @since 3.0
  */
-public class ProductProperties extends BrandingProperties implements
-        IProductConstants {
+public class ProductProperties extends BrandingProperties implements IProductConstants {
 
     private final IProduct product;
 
@@ -62,8 +61,7 @@ public class ProductProperties extends BrandingProperties implements
     private static HashMap mappingsMap = new HashMap(4);
 
     private static String[] loadMappings(Bundle definingBundle) {
-		URL location = FileLocator.find(definingBundle, new Path(
-                ABOUT_MAPPINGS));
+		URL location = FileLocator.find(definingBundle, IPath.fromOSString(ABOUT_MAPPINGS));
         PropertyResourceBundle bundle = null;
         InputStream is;
         if (location != null) {
@@ -114,8 +112,9 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * This instance will return properties from the given product.  The properties are
-     * retrieved in a lazy fashion and cached for later retrieval.
+	 * This instance will return properties from the given product. The properties
+	 * are retrieved in a lazy fashion and cached for later retrieval.
+	 *
      * @param product must not be null
      */
     public ProductProperties(IProduct product) {
@@ -126,13 +125,12 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * The application name, used to initialize the SWT Display.  This
-     * value is distinct from the string displayed in the application
-     * title bar.
+	 * The application name, used to initialize the SWT Display. This value is
+	 * distinct from the string displayed in the application title bar.
      * <p>
-     * E.g., On motif, this can be used to set the name used for
-     * resource lookup.
+	 * E.g., On motif, this can be used to set the name used for resource lookup.
      * </p>
+	 *
      * @see org.eclipse.swt.widgets.Display#setAppName
      */
     public String getAppName() {
@@ -143,9 +141,8 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * The text to show in an "about" dialog for this product.
-     * Products designed to run "headless" typically would not
-     * have such text.
+	 * The text to show in an "about" dialog for this product. Products designed to
+	 * run "headless" typically would not have such text.
      */
     public String getAboutText() {
         if (aboutText == null) {
@@ -155,14 +152,12 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * An image which can be shown in an "about" dialog for this
-     * product. Products designed to run "headless" typically would not
-     * have such an image.
+	 * An image which can be shown in an "about" dialog for this product. Products
+	 * designed to run "headless" typically would not have such an image.
      * <p>
-     * A full-sized product image (no larger than 500x330 pixels) is
-     * shown without the "aboutText" blurb.  A half-sized product image
-     * (no larger than 250x330 pixels) is shown with the "aboutText"
-     * blurb beside it.
+	 * A full-sized product image (no larger than 500x330 pixels) is shown without
+	 * the "aboutText" blurb. A half-sized product image (no larger than 250x330
+	 * pixels) is shown with the "aboutText" blurb beside it.
      */
     public ImageDescriptor getAboutImage() {
         if (aboutImageDescriptor == null) {
@@ -172,10 +167,10 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * An array of one or more images to be used for this product.  The
-     * expectation is that the array will contain the same image rendered
-     * at different sizes (16x16 and 32x32).
-     * Products designed to run "headless" typically would not have such images.
+	 * An array of one or more images to be used for this product. The expectation
+	 * is that the array will contain the same image rendered at different sizes
+	 * (16x16 and 32x32). Products designed to run "headless" typically would not
+	 * have such images.
      * <p>
      * If this property is given, then it supercedes <code>WINDOW_IMAGE</code>.
      * </p>
@@ -188,10 +183,10 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * Location of the product's welcome page (special XML-based format), either
-     * a fully qualified valid URL or a path relative to the product's defining
-     * bundle. Products designed to run "headless" typically would not have such
-     * a page. Use of this property is discouraged in 3.0, the new
+	 * Location of the product's welcome page (special XML-based format), either a
+	 * fully qualified valid URL or a path relative to the product's defining
+	 * bundle. Products designed to run "headless" typically would not have such a
+	 * page. Use of this property is discouraged in 3.0, the new
      * org.eclipse.ui.intro extension point should be used instead.
      */
     public URL getWelcomePageUrl() {
@@ -202,8 +197,8 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * Returns the product name or <code>null</code>.
-     * This is shown in the window title and the About action.
+	 * Returns the product name or <code>null</code>. This is shown in the window
+	 * title and the About action.
      */
     public String getProductName() {
         if (productName == null) {
@@ -223,17 +218,16 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * The application name, used to initialize the SWT Display.  This
-     * value is distinct from the string displayed in the application
-     * title bar.
+	 * The application name, used to initialize the SWT Display. This value is
+	 * distinct from the string displayed in the application title bar.
      * <p>
-     * E.g., On motif, this can be used to set the name used for
-     * resource lookup.
+	 * E.g., On motif, this can be used to set the name used for resource lookup.
      * </p>
      * <p>
-     * The returned value will have {n} values substituted based on the
-     * current product's mappings regardless of the given product argument.
+	 * The returned value will have {n} values substituted based on the current
+	 * product's mappings regardless of the given product argument.
      * </p>
+	 *
      * @see org.eclipse.swt.widgets.Display#setAppName
      */
     public static String getAppName(IProduct product) {
@@ -249,12 +243,11 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * The text to show in an "about" dialog for this product.
-     * Products designed to run "headless" typically would not
-     * have such text.
+	 * The text to show in an "about" dialog for this product. Products designed to
+	 * run "headless" typically would not have such text.
      * <p>
-     * The returned value will have {n} values substituted based on the
-     * current product's mappings regardless of the given product argument.
+	 * The returned value will have {n} values substituted based on the current
+	 * product's mappings regardless of the given product argument.
      * </p>
      */
     public static String getAboutText(IProduct product) {
@@ -267,9 +260,9 @@ public class ProductProperties extends BrandingProperties implements
 		}
         String[] tempMappings = getMappings(product.getDefiningBundle());
                 /*
-    	 * Check if the mapping value is a system property, specified
-    	 * by '$' at the beginning and end of the string.  If so, update
-    	 * the mappings array with the system property value.
+		 * Check if the mapping value is a system property, specified by '$' at the
+		 * beginning and end of the string. If so, update the mappings array with the
+		 * system property value.
     	 */
         for (int i=0; i<tempMappings.length; i++) {
         	String nextString = tempMappings[i];
@@ -286,25 +279,22 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * An image which can be shown in an "about" dialog for this
-     * product. Products designed to run "headless" typically would not
-     * have such an image.
+	 * An image which can be shown in an "about" dialog for this product. Products
+	 * designed to run "headless" typically would not have such an image.
      * <p>
-     * A full-sized product image (no larger than 500x330 pixels) is
-     * shown without the "aboutText" blurb.  A half-sized product image
-     * (no larger than 250x330 pixels) is shown with the "aboutText"
-     * blurb beside it.
+	 * A full-sized product image (no larger than 500x330 pixels) is shown without
+	 * the "aboutText" blurb. A half-sized product image (no larger than 250x330
+	 * pixels) is shown with the "aboutText" blurb beside it.
      */
     public static ImageDescriptor getAboutImage(IProduct product) {
-        return getImage(product.getProperty(ABOUT_IMAGE), product
-                .getDefiningBundle());
+		return getImage(product.getProperty(ABOUT_IMAGE), product.getDefiningBundle());
     }
 
     /**
-     * An array of one or more images to be used for this product.  The
-     * expectation is that the array will contain the same image rendered
-     * at different sizes (16x16 and 32x32).
-     * Products designed to run "headless" typically would not have such images.
+	 * An array of one or more images to be used for this product. The expectation
+	 * is that the array will contain the same image rendered at different sizes
+	 * (16x16 and 32x32). Products designed to run "headless" typically would not
+	 * have such images.
      * <p>
      * If this property is given, then it supercedes <code>WINDOW_IMAGE</code>.
      * </p>
@@ -321,20 +311,19 @@ public class ProductProperties extends BrandingProperties implements
     }
 
     /**
-     * Location of the product's welcome page (special XML-based format), either
-     * a fully qualified valid URL or a path relative to the product's defining
-     * bundle. Products designed to run "headless" typically would not have such
-     * a page. Use of this property is discouraged in 3.0, the new
+	 * Location of the product's welcome page (special XML-based format), either a
+	 * fully qualified valid URL or a path relative to the product's defining
+	 * bundle. Products designed to run "headless" typically would not have such a
+	 * page. Use of this property is discouraged in 3.0, the new
      * org.eclipse.ui.intro extension point should be used instead.
      */
     public static URL getWelcomePageUrl(IProduct product) {
-        return getUrl(product.getProperty(WELCOME_PAGE), product
-                .getDefiningBundle());
+		return getUrl(product.getProperty(WELCOME_PAGE), product.getDefiningBundle());
     }
 
     /**
-     * Returns the product name or <code>null</code>.
-     * This is shown in the window title and the About action.
+	 * Returns the product name or <code>null</code>. This is shown in the window
+	 * title and the About action.
      */
     public static String getProductName(IProduct product) {
         return product.getName();

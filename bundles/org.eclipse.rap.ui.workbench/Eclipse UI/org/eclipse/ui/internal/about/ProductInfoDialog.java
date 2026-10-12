@@ -1,13 +1,10 @@
-// RAP [rh] AboutDialog left out for now
+// RAP [bm] AboutDialog left out for now
 ///*******************************************************************************
-// * Copyright (c) 2000, 2015 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2000, 2009 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -16,11 +13,13 @@
 //
 //import org.eclipse.core.runtime.Assert;
 //import org.eclipse.swt.SWT;
-//import org.eclipse.swt.custom.CTabFolder;
-//import org.eclipse.swt.custom.CTabItem;
+//import org.eclipse.swt.events.DisposeEvent;
+//import org.eclipse.swt.events.DisposeListener;
 //import org.eclipse.swt.layout.GridLayout;
 //import org.eclipse.swt.widgets.Composite;
 //import org.eclipse.swt.widgets.Shell;
+//import org.eclipse.swt.widgets.TabFolder;
+//import org.eclipse.swt.widgets.TabItem;
 //import org.eclipse.ui.PlatformUI;
 //import org.eclipse.ui.about.InstallationPage;
 //
@@ -56,9 +55,8 @@
 //		this.helpContextId = helpContextId;
 //	}
 //
-//	@Override
-//	protected void createFolderItems(CTabFolder folder) {
-//		CTabItem item = new CTabItem(folder, SWT.NONE);
+//	protected void createFolderItems(TabFolder folder) {
+//		TabItem item = new TabItem(folder, SWT.NONE);
 //		item.setText(title);
 //		Composite control = new Composite(folder, SWT.BORDER);
 //		control.setLayout(new GridLayout());
@@ -67,17 +65,27 @@
 //		item.setData(page);
 //		item.setData(ID, page.getId());
 //		page.setPageContainer(this);
-//		item.addDisposeListener(e -> page.dispose());
+//		item.addDisposeListener(new DisposeListener() {
+//
+//			public void widgetDisposed(DisposeEvent e) {
+//				page.dispose();
+//			}
+//		});
 //		control.layout(true, true);
 //	}
 //
-//	@Override
 //	protected void createButtonsForButtonBar(Composite parent) {
 //		super.createButtonsForButtonBar(parent);
 //		createButtons(page);
 //	}
 //
-//	@Override
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see
+//	 * org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets
+//	 * .Shell)
+//	 */
 //	protected void configureShell(Shell newShell) {
 //		super.configureShell(newShell);
 //		newShell.setText(title);
@@ -86,7 +94,6 @@
 //					helpContextId);
 //	}
 //
-//	@Override
 //	protected String pageToId(InstallationPage page) {
 //		Assert.isLegal(page == this.page);
 //		return this.page.getId();

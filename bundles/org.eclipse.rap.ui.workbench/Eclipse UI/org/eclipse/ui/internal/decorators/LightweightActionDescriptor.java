@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -59,7 +56,7 @@ public class LightweightActionDescriptor implements IAdaptable,
         if (iconName != null) {
             IExtension extension = actionElement.getDeclaringExtension();
             this.image = AbstractUIPlugin.imageDescriptorFromPlugin(extension
-					.getContributor().getName(), iconName);
+                    .getNamespace(), iconName);
         }
     }
 
@@ -68,10 +65,9 @@ public class LightweightActionDescriptor implements IAdaptable,
      * associated with this object. Returns <code>null</code> if
      * no such object can be found.
      */
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
+    public Object getAdapter(Class adapter) {
         if (adapter == IWorkbenchAdapter.class) {
-			return adapter.cast(this);
+			return this;
 		}
         return null;
     }
@@ -103,7 +99,9 @@ public class LightweightActionDescriptor implements IAdaptable,
         return image;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IWorkbenchAdapter#getImageDescriptor(java.lang.Object)
+     */
 	public ImageDescriptor getImageDescriptor(Object o) {
         if (o == this) {
 			return getImageDescriptor();
@@ -120,7 +118,9 @@ public class LightweightActionDescriptor implements IAdaptable,
         return label;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IWorkbenchAdapter#getLabel(java.lang.Object)
+     */
 	public String getLabel(Object o) {
         if (o == this) {
             String text = getLabel();
@@ -133,12 +133,16 @@ public class LightweightActionDescriptor implements IAdaptable,
         return o == null ? "" : o.toString();//$NON-NLS-1$
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IWorkbenchAdapter#getChildren(java.lang.Object)
+     */
 	public Object[] getChildren(Object o) {
         return NO_CHILDREN;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IWorkbenchAdapter#getParent(java.lang.Object)
+     */
 	public Object getParent(Object o) {
         return null;
     }

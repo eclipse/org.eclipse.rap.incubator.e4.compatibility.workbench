@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -79,7 +76,9 @@ class NewWizardSelectionPage extends WorkbenchWizardSelectionPage {
     		}
     }
 
-    @Override
+    /** (non-Javadoc)
+     * Method declared on IDialogPage.
+     */
 	public void createControl(Composite parent) {
         IDialogSettings settings = getDialogSettings();
         newResourcePage = new NewWizardNewPage(this, wizardCategories,
@@ -100,7 +99,9 @@ class NewWizardSelectionPage extends WorkbenchWizardSelectionPage {
         newResourcePage.saveWidgetValues();
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.wizard.IWizardPage#canFlipToNextPage()
+     */
 	public boolean canFlipToNextPage() {
         // if the current page advertises that it does have pages then ask it via the super call
     		if (hasPages) {
@@ -113,7 +114,6 @@ class NewWizardSelectionPage extends WorkbenchWizardSelectionPage {
      * Sets whether the selected wizard advertises that it does provide pages.
      *
      * @param newValue whether the selected wizard has pages
-     * @since 3.1
      */
 	public void setHasPages(boolean newValue) {
 		hasPages = newValue;
@@ -123,7 +123,6 @@ class NewWizardSelectionPage extends WorkbenchWizardSelectionPage {
 	 * Sets whether the selected wizard advertises that it can finish early.
 	 *
 	 * @param newValue whether the selected wizard can finish early
-	 * @since 3.1
 	 */
 	public void setCanFinishEarly(boolean newValue) {
 		canFinishEarly = newValue;
@@ -133,7 +132,6 @@ class NewWizardSelectionPage extends WorkbenchWizardSelectionPage {
 	 * Answers whether the currently selected page, if any, advertises that it may finish early.
 	 *
 	 * @return whether the page can finish early
-	 * @since 3.1
 	 */
 	public boolean canFinishEarly() {
 		return canFinishEarly;

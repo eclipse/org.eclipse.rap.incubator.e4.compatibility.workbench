@@ -16,8 +16,8 @@ package org.eclipse.ui;
 /**
  * Represents the context marked for the user in the navigation history.
  *
- * Not intended to be implemented by clients. Clients should subclass NavigationLocation
- * instead.
+ * Not intended to be implemented by clients. Clients should subclass
+ * NavigationLocation instead.
  *
  * @since 2.1
  * @noimplement This interface is not intended to be implemented by clients.
@@ -30,9 +30,9 @@ public interface INavigationLocation {
     void dispose();
 
     /**
-     * Release any state kept by this location. Any relevant state should be
-     * saved by the previous call of saveState(IMemento). This object will
-     * not be used until restoreState is called again.
+	 * Release any state kept by this location. Any relevant state should be saved
+	 * by the previous call of saveState(IMemento). This object will not be used
+	 * until restoreState is called again.
      */
     void releaseState();
 
@@ -56,8 +56,8 @@ public interface INavigationLocation {
     void restoreLocation();
 
     /**
-     * Merge the receiver into <code>currentLocation</code>. Return true if
-     * the two locations could be merged otherwise return false.
+	 * Merge the receiver into <code>currentLocation</code>. Return true if the two
+	 * locations could be merged otherwise return false.
      * <p>
      * This message is sent to all locations before being added to the history;
      * given the change to the new location to merge itself into the current
@@ -76,6 +76,14 @@ public interface INavigationLocation {
      * @return the input for this location
      */
     Object getInput();
+
+	/**
+	 * Returns the id used for this location.
+	 *
+	 * @return the id for this location
+	 * @since 3.132
+	 */
+	String getId();
 
     /**
      * Returns the display name for this location.  This name is used in the
@@ -96,8 +104,19 @@ public interface INavigationLocation {
     void setInput(Object input);
 
     /**
-     * The message <code>update</code> is sent to the active location before
-     * another location becomes active.
+	 * Sets the location's id.
+	 * <p>
+	 * Should not be called by clients.
+	 * </p>
+	 *
+	 * @param id the editor id.
+	 * @since 3.132
+	 */
+	void setId(String id);
+
+	/**
+	 * The message <code>update</code> is sent to the active location before another
+	 * location becomes active.
      */
     void update();
 }

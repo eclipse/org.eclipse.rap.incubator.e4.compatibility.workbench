@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.CommandManager;
 import org.eclipse.core.commands.ExecutionException;
@@ -59,8 +59,8 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionDelta;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.IPlatformRunnable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IRegistryChangeListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
@@ -78,7 +78,6 @@ import org.eclipse.e4.core.di.InjectionException;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.internal.workbench.E4Workbench;
-import org.eclipse.e4.ui.internal.workbench.renderers.swt.IUpdateService;
 import org.eclipse.e4.ui.internal.workbench.swt.E4Application;
 import org.eclipse.e4.ui.internal.workbench.swt.IEventLoopAdvisor;
 import org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine;
@@ -284,6 +283,9 @@ public final class Workbench extends EventManager implements IWorkbench,
 
 	// RAP [fappel]: key for storing workbench state into setting store
 	private static final String KEY_WORKBENCH_STATE = Workbench.class.getName() + "#XMLMemento";
+	private static final String DEFAULT_APPLICATION_XMI = "org.eclipse.rap.ui.workbench/LegacyIDE.e4xmi"; //$NON-NLS-1$
+	private static final String PRODUCTS_EXTENSION_POINT = "org.eclipse.core.runtime.products"; //$NON-NLS-1$
+	private static final String APPLICATION_XMI_PROPERTY = "applicationXMI"; //$NON-NLS-1$
 
 	// RAP [fappel]: ensure that workbench is properly shutdown in case of session
 	// timeout
@@ -297,9 +299,10 @@ public final class Workbench extends EventManager implements IWorkbench,
 	private static final class ShutdownHandler implements Listener {
 		@Override
 		public void handleEvent(Event event) {
-			if (Workbench.getInstance().started && Platform.isRunning()) {
-				Workbench.getInstance().sessionInvalidated = true;
-				Workbench.getInstance().close();
+			Workbench workbench = Workbench.getInstance();
+			if (workbench.started && Platform.isRunning()) {
+				workbench.sessionInvalidated = true;
+				workbench.close();
 			}
 		}
 	}
@@ -314,7 +317,7 @@ public final class Workbench extends EventManager implements IWorkbench,
 //		StartupProgressBundleListener(IProgressMonitor progressMonitor, Display display) {
 //			displayForStartupListener = display;
 //			subMonitor = SubMonitor.convert(progressMonitor);
-//			subMonitor.setTaskName(WorkbenchMessages.Startup_Loading_Workbench);
+//			subMonitor.setTaskName(WorkbenchMessages.get().Startup_Loading_Workbench);
 //		}
 //
 //		@Override
@@ -490,7 +493,7 @@ public final class Workbench extends EventManager implements IWorkbench,
 //		this.id = createId();
 //		StartupThreading.setWorkbench(this);
 //		if (instance != null && instance.isRunning()) {
-//			throw new IllegalStateException(WorkbenchMessages.Workbench_CreatingWorkbenchTwice);
+//			throw new IllegalStateException(WorkbenchMessages.get().Workbench_CreatingWorkbenchTwice);
 //		}
 //		Assert.isNotNull(display);
 //		Assert.isNotNull(advisor);
@@ -537,8 +540,8 @@ public final class Workbench extends EventManager implements IWorkbench,
 //			final Display display1 = getDisplay();
 //			if (display1 != null && !display1.isDisposed()) {
 //				MessageDialog.openInformation(null,
-//						WorkbenchMessages.Workbench_NeedsClose_Title,
-//						WorkbenchMessages.Workbench_NeedsClose_Message);
+//						WorkbenchMessages.get().Workbench_NeedsClose_Title,
+//						WorkbenchMessages.get().Workbench_NeedsClose_Message);
 //				close(PlatformUI.RETURN_RESTART, true);
 //			}
 //		}, appContext);
@@ -687,15 +690,8 @@ public final class Workbench extends EventManager implements IWorkbench,
 								+ nlExtensions));
 			}
 
-			System.setProperty(org.eclipse.e4.ui.workbench.IWorkbench.XMI_URI_ARG,
-					"org.eclipse.rap.ui.workbench/LegacyIDE.e4xmi"); //$NON-NLS-1$
-			Object obj = getApplication(Platform.getCommandLineArgs());
-			
 			String schema = getSchema(Platform.getCommandLineArgs());
-			if (schema == null)
-			{
-			    schema  = "org.eclipse.rap.ui.workbench/LegacyIDE.e4xmi";
-			}
+			Object obj = getApplication(Platform.getCommandLineArgs());
 
 			IPreferenceStore store = WorkbenchPlugin.getDefault().getPreferenceStore();
 			if (!store.isDefault(IPreferenceConstants.LAYOUT_DIRECTION)) {
@@ -881,7 +877,7 @@ public final class Workbench extends EventManager implements IWorkbench,
 				if (runs.length > 0) {
 					Object runnable;
 					runnable = runs[0].createExecutableExtension("class");//$NON-NLS-1$
-					if (runnable instanceof IPlatformRunnable || runnable instanceof IApplication)
+					if (runnable instanceof IApplication)
 						return runnable;
 				}
 			}
@@ -892,39 +888,50 @@ public final class Workbench extends EventManager implements IWorkbench,
 		return null;
 	}
 
-    static String getSchema(String[] commandLineArgs)
-    {
-        String productId = null;
-        for (int i = 0; i < commandLineArgs.length -1; i++)
-        {
-            if (commandLineArgs[i].equals("-product"))
-            {
-                productId = commandLineArgs[i+1];
-                break;
-            }
-        }
-        if (productId == null)
-        {
-            return null;
-        }
-        IConfigurationElement[] el = Platform.getExtensionRegistry().getConfigurationElementsFor("org.eclipse.core.runtime.products");
-        for (IConfigurationElement e : el)
-        {
-            String elementProductId = e.getNamespaceIdentifier() + "." + e.getName();
-            if (productId.equals(elementProductId))
-            {
-                if (e.getChildren().length > 0)
-                {
-                    IConfigurationElement child = e.getChildren()[0];
-                    if (child.getAttribute("name").equals("applicationXMI"))
-                    {
-                        return e.getContributor().getName() + "/" + child.getAttribute("value");
-                    }
-                }
-            }
-        }
-        return null;
-    }
+	static String getSchema(String[] commandLineArgs) {
+		String productId = null;
+		for (int i = 0; i < commandLineArgs.length - 1; i++) {
+			if ("-product".equals(commandLineArgs[i])) { //$NON-NLS-1$
+				productId = commandLineArgs[i + 1];
+				break;
+			}
+		}
+		if (productId == null) {
+			IProduct product = Platform.getProduct();
+			productId = product == null ? null : product.getId();
+		}
+		if (productId == null) {
+			return DEFAULT_APPLICATION_XMI;
+		}
+
+		IConfigurationElement[] elements = Platform.getExtensionRegistry()
+				.getConfigurationElementsFor(PRODUCTS_EXTENSION_POINT);
+		for (IConfigurationElement element : elements) {
+			String extensionId = element.getDeclaringExtension().getUniqueIdentifier();
+			if (!productId.equals(extensionId)) {
+				continue;
+			}
+			for (IConfigurationElement property : element.getChildren("property")) { //$NON-NLS-1$
+				if (APPLICATION_XMI_PROPERTY.equals(property.getAttribute("name"))) { //$NON-NLS-1$
+					String value = property.getAttribute("value"); //$NON-NLS-1$
+					if (value == null || value.isBlank()) {
+						return DEFAULT_APPLICATION_XMI;
+					}
+					return resolveApplicationXmi(element, value);
+				}
+			}
+		}
+		return DEFAULT_APPLICATION_XMI;
+	}
+
+	private static String resolveApplicationXmi(IConfigurationElement product, String value) {
+		String path = value.startsWith("/") ? value.substring(1) : value; //$NON-NLS-1$
+		int slash = path.indexOf('/');
+		if (path.contains(":/") || slash > 0 && path.substring(0, slash).contains(".")) { //$NON-NLS-1$ //$NON-NLS-2$
+			return path;
+		}
+		return product.getContributor().getName() + '/' + path;
+	}
 	
 	/**
 	 * Creates the <code>Display</code> to be used by the workbench.
@@ -1301,20 +1308,14 @@ public final class Workbench extends EventManager implements IWorkbench,
 			return false;
 		}
 		
-		 // save any open editors if they are dirty
-        // RAP [bm]: added session condition
-        if(!sessionInvalidated) {
-        // RAPEND: [bm]
-            isClosing = saveAllEditors(!force);
-            if (!force && !isClosing) {
-                return false;
-            }
-        }
-
-		// save any open editors if they are dirty
-		isClosing = saveAllEditors(!force, true);
-		if (!force && !isClosing) {
-			return false;
+		// Do not prompt or save after the RAP UI session has already been invalidated.
+		// Use the shutdown-aware path once; calling both overloads saves every editor
+		// twice and made the sessionInvalidated guard ineffective.
+		if (!sessionInvalidated) {
+			isClosing = saveAllEditors(!force, true);
+			if (!force && !isClosing) {
+				return false;
+			}
 		}
 
 		// stop the workbench auto-save job so it can't conflict with shutdown
@@ -1387,7 +1388,9 @@ public final class Workbench extends EventManager implements IWorkbench,
 
 		// RAP [DM]:
 		IPresentationEngine engine = application.getContext().get(IPresentationEngine.class);
-		engine.stop();
+		if (engine != null) {
+			engine.stop();
+		}
 		shutdown();
 		// RAPEND: [DM]
 
@@ -1406,7 +1409,7 @@ public final class Workbench extends EventManager implements IWorkbench,
 	 *            also skip saving the model to the disk since that is done
 	 *            later in shutdown.
 	 */
-	private void persist(final boolean shutdown) {
+	void persist(final boolean shutdown) {
 		// persist editors that can be and possibly close the others
 		SafeRunner.run(new SafeRunnable() {
 			@Override
@@ -1875,7 +1878,7 @@ public final class Workbench extends EventManager implements IWorkbench,
             String brandingId = BrandingUtil.getCurrentBrandingId();
             if (brandingId != null) {
                 introDescriptor = (IntroDescriptor) introRegistry
-                        .getIntroForBranding(brandingId);
+                        .getIntroForProduct(brandingId);
             }
             // ENDRAP
         }
@@ -1954,7 +1957,7 @@ public final class Workbench extends EventManager implements IWorkbench,
 		StartupThreading.runWithoutExceptions(new StartupRunnable() {
 			@Override
 			public void runWithException() {
-				WorkbenchImages.getDescriptors();
+				WorkbenchImages.getImageRegistry();
 			}
 		});
 	}
@@ -2404,9 +2407,8 @@ public final class Workbench extends EventManager implements IWorkbench,
 	private ArrayList<MCategory> categoriesToRemove = new ArrayList<>();
 
 	private CommandService initializeCommandService(IEclipseContext appContext) {
-		CommandService service = new CommandService(commandManager, appContext);
+		CommandService service = new CommandService(commandManager);
 		appContext.set(ICommandService.class, service);
-		appContext.set(IUpdateService.class, service);
 		service.readRegistry();
 
 		return service;
@@ -2817,6 +2819,13 @@ public final class Workbench extends EventManager implements IWorkbench,
 	@Override
 	public boolean restart() {
 		return close(PlatformUI.RETURN_RESTART, false);
+	}
+
+	@Override
+	public boolean restart(boolean useCurrentWorkspace) {
+		// A RAP workbench runs inside the application server and cannot restart the
+		// hosting process from an individual UI session.
+		return false;
 	}
 
 	// RAP [bm]: no restart
@@ -3289,8 +3298,10 @@ public final class Workbench extends EventManager implements IWorkbench,
 		e4WorkbenchService = null;
 
 		// for dynamic UI
-		registry.removeRegistryChangeListener(extensionEventHandler);
-		registry.removeRegistryChangeListener(startupRegistryListener);
+		if (registry != null) {
+			registry.removeRegistryChangeListener(extensionEventHandler);
+			registry.removeRegistryChangeListener(startupRegistryListener);
+		}
 
 		((GrabFocus) Tweaklets.get(GrabFocus.KEY)).dispose();
 
@@ -3298,12 +3309,18 @@ public final class Workbench extends EventManager implements IWorkbench,
 //		// Bring down all of the services.
 //		serviceLocator.dispose();
 		// RAPEND [DM]
-		application.getCommands().removeAll(commandsToRemove);
-		application.getCategories().removeAll(categoriesToRemove);
-		getDisplay().removeFilter(SWT.MouseDown, backForwardListener);
+		if (application != null) {
+			application.getCommands().removeAll(commandsToRemove);
+			application.getCategories().removeAll(categoriesToRemove);
+		}
+		if (backForwardListener != null) {
+			getDisplay().removeFilter(SWT.MouseDown, backForwardListener);
+		}
 		backForwardListener = null;
 
-		workbenchActivitySupport.dispose();
+		if (workbenchActivitySupport != null) {
+			workbenchActivitySupport.dispose();
+		}
 		WorkbenchHelpSystem.disposeIfNecessary();
 
 		// shutdown the rest of the workbench
@@ -3319,37 +3336,59 @@ public final class Workbench extends EventManager implements IWorkbench,
 			tracker.close();
 		}
 		
-		eventBroker.unsubscribe( childrenEventHandler );
-		  eventBroker.unsubscribe( elementEventHandler );
-		  eventBroker.unsubscribe( toBeRenderedEventHandler );
-		  eventBroker.unsubscribe( children2EventHandler );
-		  eventBroker.unsubscribe( uiModelTopicBaseEventHandler );
+		if (eventBroker != null) {
+			eventBroker.unsubscribe(childrenEventHandler);
+			eventBroker.unsubscribe(elementEventHandler);
+			eventBroker.unsubscribe(toBeRenderedEventHandler);
+			eventBroker.unsubscribe(children2EventHandler);
+			eventBroker.unsubscribe(uiModelTopicBaseEventHandler);
+		}
 	// RAP [DM]:
-		  IMenuService wms = e4Workbench.getContext().get(IMenuService.class);
-		  wms.dispose();
-		  e4Context.dispose();
-		  
-		  contextManager.removeContextManagerListener(this.contextManagerListener);
-		  contextManager.removeContextManagerListener(bindingManager);
+		if (e4Workbench != null && e4Workbench.getContext() != null) {
+			IMenuService wms = e4Workbench.getContext().get(IMenuService.class);
+			if (wms != null) {
+				wms.dispose();
+			}
+		}
+
+		if (contextManager != null) {
+			if (contextManagerListener != null) {
+				contextManager.removeContextManagerListener(contextManagerListener);
+			}
+			if (bindingManager != null) {
+				contextManager.removeContextManagerListener(bindingManager);
+			}
+		}
 		  
 		  // Bring down all of the services.
-		  serviceLocator.dispose();
-		  clearListeners();
-		  clearE4Listeners();
-		  Job.getJobManager().setLockListener(null);
-		  this.synchronizer = null;
-		  e4Workbench.close();
+		serviceLocator.dispose();
+		clearListeners();
+		clearE4Listeners();
+		Job.getJobManager().setLockListener(null);
+		this.synchronizer = null;
+		if (e4Workbench != null) {
+			e4Workbench.close();
+		}
+		// E4Workbench.close() still needs its context to stop the renderer and
+		// unregister its model/event services. Dispose the session context last.
+		if (e4Context != null) {
+			e4Context.dispose();
+		}
 	}
 
 	/**
      * Clear several listeners during disposal
      */
-    private void clearE4Listeners()
-    {
-        IPreferenceStore preferenceStore = PrefUtil.getAPIPreferenceStore();
-        preferenceStore.removePropertyChangeListener(this.enableAnimationsListener);
-        this.bindingManager.removeBindingManagerListener(this.bindingManagerListener);
-    }
+	private void clearE4Listeners() {
+		IPreferenceStore preferenceStore = PrefUtil.getAPIPreferenceStore();
+		if (enableAnimationsListener != null) {
+			preferenceStore.removePropertyChangeListener(enableAnimationsListener);
+			enableAnimationsListener = null;
+		}
+		if (bindingManager != null && bindingManagerListener != null) {
+			bindingManager.removeBindingManagerListener(bindingManagerListener);
+		}
+	}
     // RAPEND [DM]
     
     /**

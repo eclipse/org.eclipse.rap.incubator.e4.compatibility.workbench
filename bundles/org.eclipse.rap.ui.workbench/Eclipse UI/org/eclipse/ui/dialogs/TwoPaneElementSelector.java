@@ -20,7 +20,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -29,12 +31,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-
-import org.eclipse.core.runtime.IStatus;
-
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.ILabelProvider;
-
 
 /**
  * A list selection dialog with two panes. Duplicated entries will be folded
@@ -49,11 +45,12 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
 
     /**
      * The comparator used to sort the list in the lower pane.
+	 *
      * @since 3.5
      */
     private Comparator fLowerListComparator = null;
 
-    private ILabelProvider fQualifierRenderer;
+	private final ILabelProvider fQualifierRenderer;
 
     private Object[] fElements = new Object[0];
 
@@ -64,15 +61,11 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
     /**
      * Creates the two pane element selector.
      *
-     * @param parent
-     *            the parent shell.
-     * @param elementRenderer
-     *            the element renderer.
-     * @param qualifierRenderer
-     *            the qualifier renderer.
+	 * @param parent            the parent shell.
+	 * @param elementRenderer   the element renderer.
+	 * @param qualifierRenderer the qualifier renderer.
      */
-    public TwoPaneElementSelector(Shell parent, ILabelProvider elementRenderer,
-            ILabelProvider qualifierRenderer) {
+	public TwoPaneElementSelector(Shell parent, ILabelProvider elementRenderer, ILabelProvider qualifierRenderer) {
         super(parent, elementRenderer);
         setSize(50, 15);
         setAllowDuplicates(false);
@@ -80,10 +73,10 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
     }
 
     /**
-     * Sets the upper list label. If the label is <code>null</code> (default),
-     * no label is created.
+	 * Sets the upper list label. If the label is <code>null</code> (default), no
+	 * label is created.
      *
-     * @param label
+	 * @param label the label to set or null for no label.
      */
     public void setUpperListLabel(String label) {
         fUpperListLabel = label;
@@ -92,9 +85,8 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
     /**
      * Sets the lower list label.
      *
-     * @param label
-     *            String or <code>null</code>. If the label is
-     *            <code>null</code> (default), no label is created.
+	 * @param label String or <code>null</code>. If the label is <code>null</code>
+	 *              (default), no label is created.
      */
     public void setLowerListLabel(String label) {
         fLowerListLabel = label;
@@ -107,8 +99,7 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
      * {@link AbstractElementListSelectionDialog#isCaseIgnored()}.
      * </p>
      *
-     * @param comparator
-     *            a Comparator or <code>null</code> if <code>String</code>'s
+	 * @param comparator a Comparator or <code>null</code> if <code>String</code>'s
      *            comparison methods should be used
      * @since 3.5
      */
@@ -119,8 +110,7 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
     /**
      * Sets the elements to be displayed.
      *
-     * @param elements
-     *            the elements to be displayed.
+	 * @param elements the elements to be displayed.
      */
     public void setElements(Object[] elements) {
         fElements = elements;
@@ -142,7 +132,7 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
         List initialSelections = getInitialElementSelections();
         if (!initialSelections.isEmpty()) {
             Object element = initialSelections.get(0);
-            setSelection(new Object[] { element });
+			setSelection(element);
             setLowerSelectedElement(element);
         }
         return contents;
@@ -151,12 +141,9 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
     /**
      * Creates a label if name was not <code>null</code>.
      *
-     * @param parent
-     *            the parent composite.
-     * @param name
-     *            the name of the label.
-     * @return returns a label if a name was given, <code>null</code>
-     *         otherwise.
+	 * @param parent the parent composite.
+	 * @param name   the name of the label.
+	 * @return returns a label if a name was given, <code>null</code> otherwise.
      */
     protected Label createLabel(Composite parent, String name) {
         if (name == null) {
@@ -171,8 +158,7 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
     /**
      * Creates the list widget and sets layout data.
      *
-     * @param parent
-     *            the parent composite.
+	 * @param parent the parent composite.
      * @return returns the list table widget.
      */
     protected Table createLowerList(Composite parent) {
@@ -256,7 +242,8 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
 
     /**
      * Selects an element in the lower pane.
-     * @param element
+	 *
+	 * @param element the element to select
      */
     protected void setLowerSelectedElement(Object element) {
         if (fQualifierElements == null) {
@@ -277,6 +264,7 @@ public class TwoPaneElementSelector extends AbstractElementListSelectionDialog {
 
     /**
      * Returns the selected element from the lower pane.
+	 *
      * @return Object
      */
     protected Object getLowerSelectedElement() {

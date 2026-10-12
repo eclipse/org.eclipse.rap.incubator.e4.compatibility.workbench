@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -28,8 +25,6 @@ import org.eclipse.ui.internal.util.PrefUtil;
 
 /**
  * Action to open the help contents.
- *
- * @since 3.0
  */
 public class HelpContentsAction extends Action implements IWorkbenchAction {
     /**
@@ -73,17 +68,25 @@ public class HelpContentsAction extends Action implements IWorkbenchAction {
 				IWorkbenchHelpContextIds.HELP_CONTENTS_ACTION);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IAction.
+     */
 	public void run() {
         if (workbenchWindow == null) {
             // action has been disposed
             return;
         }
         //This may take a while, so use the busy indicator
-        BusyIndicator.showWhile(null, () -> workbenchWindow.getWorkbench().getHelpSystem().displayHelp());
+        BusyIndicator.showWhile(null, new Runnable() {
+            public void run() {
+            	workbenchWindow.getWorkbench().getHelpSystem().displayHelp();
+            }
+        });
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on ActionFactory.IWorkbenchAction.
+     */
 	public void dispose() {
         workbenchWindow = null;
     }

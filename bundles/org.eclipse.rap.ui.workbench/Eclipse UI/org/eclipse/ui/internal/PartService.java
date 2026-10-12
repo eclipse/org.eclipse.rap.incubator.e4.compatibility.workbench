@@ -25,11 +25,10 @@ import org.eclipse.ui.IPartService;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 
-public class PartService implements IPageChangedListener, IPartListener, IPartListener2,
-		IPartService {
+public class PartService implements IPageChangedListener, IPartListener, IPartListener2, IPartService {
 
-	private ListenerList<IPartListener> partListeners = new ListenerList<>();
-	private ListenerList<IPartListener2> partListeners2 = new ListenerList<>();
+	private final ListenerList<IPartListener> partListeners = new ListenerList<>();
+	private final ListenerList<IPartListener2> partListeners2 = new ListenerList<>();
 
 	private WorkbenchPage page;
 

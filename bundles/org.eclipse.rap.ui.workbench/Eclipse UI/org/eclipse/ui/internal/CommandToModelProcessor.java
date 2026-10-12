@@ -24,7 +24,6 @@ import org.eclipse.core.commands.CommandManager;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.e4.core.commands.internal.HandlerServiceImpl;
 import org.eclipse.e4.core.contexts.ContextFunction;
-import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.internal.workbench.addons.CommandProcessingAddon;
@@ -32,7 +31,7 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.commands.MCategory;
 import org.eclipse.e4.ui.model.application.commands.MCommand;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.ui.internal.commands.CommandPersistence;
+import org.eclipse.ui.internal.commands.CommandService;
 
 /**
  * @since 3.5
@@ -70,31 +69,37 @@ public class CommandToModelProcessor {
 		CommandManager commandManager = context.get(CommandManager.class);
 		if (commandManager == null) {
 			HandlerServiceImpl.handlerGenerator = new ContextFunction() {
-			    @Override
-                public Object compute(IEclipseContext paramContext, String contextKey) {
-                    IEclipseContext cont = paramContext;
-                    if (paramContext == null)
-                    {
-                        cont = context;
-                    }
-                    return new WorkbenchHandlerServiceHandler(contextKey, cont);
-                }
+				@Override
+				public Object compute(IEclipseContext paramContext, String contextKey) {
+					IEclipseContext handlerContext = paramContext == null ? context : paramContext;
+					return new WorkbenchHandlerServiceHandler(contextKey, handlerContext);
+				}
 			};
 			commandManager = new CommandManager();
 			// setCommandFireEvents(commandManager, false);
 			context.set(CommandManager.class, commandManager);
 		}
 
-		CommandPersistence cp = new CommandPersistence(commandManager);
-		ContextInjectionFactory.inject(cp, context);
-		cp.reRead();
+		CommandService commandService = new CommandService(commandManager);
+		commandService.readRegistry();
+
+		// The compatibility processor defines the registry commands before the E4
+		// CommandProcessingAddon is created. Consequently CommandServiceImpl sees
+		// already-defined commands and does not install its HandlerServiceHandler.
+		// Without that bridge, handlers activated through IHandlerService (including
+		// org.eclipse.ui.handlers contributions) can never be reached from E4.
+		for (Command command : commandManager.getDefinedCommands()) {
+			if (command.getHandler() == null) {
+				command.setHandler(HandlerServiceImpl.getHandler(command.getId(), context));
+			}
+		}
 		
 		 // RAP [DM]:  
 //	      generateCategories(application, commandManager);
 //        generateCommands(application, commandManager);
 		generateCategories(application, commandManager, categories);
 		generateCommands(application, commandManager, commands, categories);
-		cp.dispose();
+		commandService.dispose();
 	}
 
 	/**

@@ -15,22 +15,18 @@
 
 package org.eclipse.ui.internal;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
 import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.model.application.ui.menu.MToolControl;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TaskBar;
-import org.eclipse.swt.widgets.TaskItem;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.progress.ProgressRegion;
-import org.eclipse.ui.internal.progress.TaskBarProgressManager;
-import org.eclipse.ui.internal.util.PrefUtil;
 
 /**
  * @since 3.5
@@ -72,29 +68,6 @@ public class StandardTrim {
 		child.set(MToolControl.class, toolControl);
 		child.set(Composite.class, parent);
 		ContextInjectionFactory.make(ProgressRegion.class, child);
-
-		if (parent.getDisplay() != null && parent.getDisplay().getSystemTaskBar() != null) {
-			// only create the TaskBarProgressManager if there is a TaskBar that
-			// the progress can be displayed on
-			TaskItem taskItem = null;
-			TaskBar systemTaskBar = parent.getDisplay().getSystemTaskBar();
-			taskItem = systemTaskBar.getItem(parent.getShell());
-			if (taskItem == null) {
-				// try to get the application TaskItem
-				taskItem = systemTaskBar.getItem(null);
-			}
-
-			if (taskItem != null) {
-				// If there is a TaskItem, see if there is
-				// TaskBarProgressManager already associated with it to make
-				// sure that we don't duplicate the progress information
-				String taskBarProgressManagerKey = TaskBarProgressManager.class.getName() + ".instance"; //$NON-NLS-1$
-				Object data = taskItem.getData(taskBarProgressManagerKey);
-				if (data == null || !(data instanceof TaskBarProgressManager)) {
-					taskItem.setData(taskBarProgressManagerKey, new TaskBarProgressManager(taskItem));
-				}
-			}
-		}
 	}
 
 	/**
@@ -102,7 +75,7 @@ public class StandardTrim {
 	 * @param toolControl
 	 */
 	private void createHeapStatus(Composite parent, MToolControl toolControl) {
-		new HeapStatus(parent, PrefUtil.getInternalPreferenceStore());
+		// RAP has no JVM heap-status widget: the JVM is shared by all UI sessions.
 	}
 
 	/**
@@ -132,3 +105,4 @@ public class StandardTrim {
 		}
 	}
 }
+

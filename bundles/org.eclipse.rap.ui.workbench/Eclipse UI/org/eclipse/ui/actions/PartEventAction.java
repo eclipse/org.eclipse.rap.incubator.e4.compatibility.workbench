@@ -20,17 +20,18 @@ import org.eclipse.ui.IWorkbenchPart;
 /**
  * The abstract superclass for actions that listen to part activation and
  * open/close events. This implementation tracks the active part (see
- * <code>getActivePart</code>) and provides a convenient place to monitor
- * part lifecycle events that could affect the availability of the action.
+ * <code>getActivePart</code>) and provides a convenient place to monitor part
+ * lifecycle events that could affect the availability of the action.
  * <p>
  * Subclasses must implement the following <code>IAction</code> method:
+ * </p>
  * <ul>
  *   <li><code>run</code> - to do the action's work</li>
  * </ul>
- * </p>
  * <p>
  * Subclasses may extend any of the <code>IPartListener</code> methods if the
  * action availablity needs to be recalculated:
+ * </p>
  * <ul>
  *   <li><code>partActivated</code></li>
  *   <li><code>partDeactivated</code></li>
@@ -38,10 +39,9 @@ import org.eclipse.ui.IWorkbenchPart;
  *   <li><code>partClosed</code></li>
  *   <li><code>partBroughtToTop</code></li>
  * </ul>
- * </p>
  * <p>
- * Although this method implements the <code>IPartListener</code> interface,
- * it does NOT register itself.
+ * Although this method implements the <code>IPartListener</code> interface, it
+ * does NOT register itself.
  * </p>
  */
 public abstract class PartEventAction extends Action implements IPartListener {
@@ -65,8 +65,8 @@ public abstract class PartEventAction extends Action implements IPartListener {
      *
      * @param text the action's text, or <code>null</code> if there is no text
      * @param style one of <code>AS_PUSH_BUTTON</code>, <code>AS_CHECK_BOX</code>,
-     * 		<code>AS_DROP_DOWN_MENU</code>, <code>AS_RADIO_BUTTON</code>, and
-     * 		<code>AS_UNSPECIFIED</code>
+	 *              <code>AS_DROP_DOWN_MENU</code>, <code>AS_RADIO_BUTTON</code>,
+	 *              and <code>AS_UNSPECIFIED</code>
      * @since 3.0
      */
     protected PartEventAction(String text, int style) {
@@ -95,8 +95,8 @@ public abstract class PartEventAction extends Action implements IPartListener {
 
     /**
      * The <code>PartEventAction</code> implementation of this
-     * <code>IPartListener</code> method does nothing. Subclasses should extend
-     * this method if action availability has to be recalculated.
+	 * <code>IPartListener</code> method does nothing. Subclasses should extend this
+	 * method if action availability has to be recalculated.
      */
     @Override
 	public void partBroughtToTop(IWorkbenchPart part) {
@@ -129,8 +129,8 @@ public abstract class PartEventAction extends Action implements IPartListener {
 
     /**
      * The <code>PartEventAction</code> implementation of this
-     * <code>IPartListener</code> method does nothing. Subclasses should extend
-     * this method if action availability has to be recalculated.
+	 * <code>IPartListener</code> method does nothing. Subclasses should extend this
+	 * method if action availability has to be recalculated.
      */
     @Override
 	public void partOpened(IWorkbenchPart part) {

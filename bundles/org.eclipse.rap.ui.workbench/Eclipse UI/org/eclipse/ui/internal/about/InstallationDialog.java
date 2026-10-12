@@ -1,13 +1,10 @@
-// RAP [rh] AboutDialog left out for now
+// RAP [bm] AboutDialog left out for now
 ///*******************************************************************************
-// * Copyright (c) 2008, 2018 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2008, 2009 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -31,11 +28,10 @@
 //import org.eclipse.jface.dialogs.TrayDialog;
 //import org.eclipse.osgi.util.NLS;
 //import org.eclipse.swt.SWT;
-//import org.eclipse.swt.custom.CTabFolder;
-//import org.eclipse.swt.custom.CTabItem;
+//import org.eclipse.swt.events.DisposeEvent;
+//import org.eclipse.swt.events.DisposeListener;
 //import org.eclipse.swt.events.SelectionAdapter;
 //import org.eclipse.swt.events.SelectionEvent;
-//import org.eclipse.swt.events.SelectionListener;
 //import org.eclipse.swt.graphics.FontMetrics;
 //import org.eclipse.swt.graphics.GC;
 //import org.eclipse.swt.graphics.Point;
@@ -46,6 +42,8 @@
 //import org.eclipse.swt.widgets.Control;
 //import org.eclipse.swt.widgets.Label;
 //import org.eclipse.swt.widgets.Shell;
+//import org.eclipse.swt.widgets.TabFolder;
+//import org.eclipse.swt.widgets.TabItem;
 //import org.eclipse.ui.about.IInstallationPageContainer;
 //import org.eclipse.ui.about.InstallationPage;
 //import org.eclipse.ui.internal.ConfigurationInfo;
@@ -63,7 +61,7 @@
 //	class ButtonManager {
 //
 //		private Composite composite;
-//		HashMap<String, List<Button>> buttonMap = new HashMap<>(); // page id->Collection of page
+//		HashMap buttonMap = new HashMap(); // page id->Collection of page
 //
 //		// buttons
 //
@@ -81,13 +79,14 @@
 //			GC metricsGC = new GC(composite);
 //			FontMetrics metrics = metricsGC.getFontMetrics();
 //			metricsGC.dispose();
-//			List<Button> buttons = buttonMap.get(currentPageId);
+//			List buttons = (List) buttonMap.get(currentPageId);
 //			Control[] children = composite.getChildren();
 //
 //			int visibleChildren = 0;
 //			Button closeButton = getButton(IDialogConstants.CLOSE_ID);
 //
-//			for (Control control : children) {
+//			for (int i = 0; i < children.length; i++) {
+//				Control control = children[i];
 //				if (closeButton == control)
 //					closeButton.dispose();
 //				else {
@@ -97,7 +96,7 @@
 //			}
 //			if (buttons != null) {
 //				for (int i = 0; i < buttons.size(); i++) {
-//					Button button = buttons.get(i);
+//					Button button = (Button) buttons.get(i);
 //					button.setVisible(true);
 //					setButtonLayoutData(metrics, button, true);
 //					GridData data = (GridData) button.getLayoutData();
@@ -123,29 +122,29 @@
 //		}
 //
 //		public void addPageButton(String id, Button button) {
-//			List<Button> list = buttonMap.get(id);
+//			List list = (List) buttonMap.get(id);
 //			if (list == null) {
-//				list = new ArrayList<>(1);
+//				list = new ArrayList(1);
 //				buttonMap.put(id, list);
 //			}
 //			list.add(button);
 //		}
 //
 //		public void clear() {
-//			buttonMap = new HashMap<>();
+//			buttonMap = new HashMap();
 //		}
 //	}
 //
 //	protected static final String ID = "ID"; //$NON-NLS-1$
 //	private static final String DIALOG_SETTINGS_SECTION = "InstallationDialogSettings"; //$NON-NLS-1$
-//	private static final int TAB_WIDTH_IN_DLUS = 440;
-//	private static final int TAB_HEIGHT_IN_DLUS = 320;
+//	private final static int TAB_WIDTH_IN_DLUS = 440;
+//	private final static int TAB_HEIGHT_IN_DLUS = 320;
 //
 //	private static String lastSelectedTabId = null;
-//	private CTabFolder folder;
+//	private TabFolder folder;
 //	IServiceLocator serviceLocator;
 //	private ButtonManager buttonManager;
-//	private Map<InstallationPage, String> pageToId = new HashMap<>();
+//	private Map pageToId = new HashMap();
 //	private Dialog modalParent;
 //
 //	/**
@@ -158,7 +157,13 @@
 //
 //	}
 //
-//	@Override
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see
+//	 * org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets
+//	 * .Shell)
+//	 */
 //	protected void configureShell(Shell newShell) {
 //		super.configureShell(newShell);
 //		String productName = ""; //$NON-NLS-1$
@@ -169,16 +174,26 @@
 //				WorkbenchMessages.get().InstallationDialog_ShellTitle, productName));
 //	}
 //
-//	@Override
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see org.eclipse.jface.dialogs.Dialog#isResizable()
+//	 */
 //	protected boolean isResizable() {
 //		return true;
 //	}
 //
-//	@Override
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see
+//	 * org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets
+//	 * .Composite)
+//	 */
 //	protected Control createDialogArea(Composite parent) {
 //		Composite composite = (Composite) super.createDialogArea(parent);
 //
-//		folder = new CTabFolder(composite, SWT.NONE);
+//		folder = new TabFolder(composite, SWT.NONE);
 //		configureFolder();
 //		createFolderItems(folder);
 //
@@ -187,15 +202,20 @@
 //		folderData.heightHint = convertVerticalDLUsToPixels(TAB_HEIGHT_IN_DLUS);
 //		folder.setLayoutData(folderData);
 //		folder.addSelectionListener(createFolderSelectionListener());
-//		folder.addDisposeListener(e -> releaseContributions());
+//		folder.addDisposeListener(new DisposeListener() {
+//			public void widgetDisposed(DisposeEvent e) {
+//				releaseContributions();
+//			}
+//		});
 //		return composite;
 //	}
 //
-//	protected void createFolderItems(CTabFolder folder) {
+//	protected void createFolderItems(TabFolder folder) {
 //		IConfigurationElement[] elements = ConfigurationInfo
 //				.getSortedExtensions(loadElements());
-//		for (IConfigurationElement element : elements) {
-//			CTabItem item = new CTabItem(folder, SWT.NONE);
+//		for (int i = 0; i < elements.length; i++) {
+//			IConfigurationElement element = elements[i];
+//			TabItem item = new TabItem(folder, SWT.NONE);
 //			item.setText(element
 //					.getAttribute(IWorkbenchRegistryConstants.ATT_NAME));
 //			item.setData(element);
@@ -208,13 +228,12 @@
 //		}
 //	}
 //
-//	@Override
 //	protected Control createContents(Composite parent) {
 //		Control control = super.createContents(parent);
 //		boolean selected = false;
 //		if (folder.getItemCount() > 0) {
 //			if (lastSelectedTabId != null) {
-//				CTabItem[] items = folder.getItems();
+//				TabItem[] items = folder.getItems();
 //				for (int i = 0; i < items.length; i++)
 //					if (items[i].getData(ID).equals(lastSelectedTabId)) {
 //						folder.setSelection(i);
@@ -232,11 +251,11 @@
 //		return control;
 //	}
 //
-//	private SelectionListener createFolderSelectionListener() {
+//	private SelectionAdapter createFolderSelectionListener() {
 //		return new SelectionAdapter() {
-//			@Override
+//
 //			public void widgetSelected(SelectionEvent e) {
-//				tabSelected((CTabItem) e.item);
+//				tabSelected((TabItem) e.item);
 //			}
 //		};
 //	}
@@ -244,7 +263,7 @@
 //	/*
 //	 * Must be called after contributions and button manager are created.
 //	 */
-//	private void tabSelected(CTabItem item) {
+//	private void tabSelected(TabItem item) {
 //		if (item.getData() instanceof IConfigurationElement) {
 //			final IConfigurationElement element = (IConfigurationElement) item
 //					.getData();
@@ -265,7 +284,12 @@
 //						.getAttribute(IWorkbenchRegistryConstants.ATT_ID));
 //				createButtons(page);
 //				item.setData(page);
-//				item.addDisposeListener(e -> page.dispose());
+//				item.addDisposeListener(new DisposeListener() {
+//
+//					public void widgetDisposed(DisposeEvent e) {
+//						page.dispose();
+//					}
+//				});
 //				pageComposite.layout(true, true);
 //
 //			} catch (CoreException e1) {
@@ -279,7 +303,7 @@
 //		rememberSelectedTab(id);
 //		buttonManager.update(id);
 //		Button button = createButton(buttonManager.getParent(),
-//				IDialogConstants.CLOSE_ID, IDialogConstants.get().CLOSE_LABEL, true);
+//				IDialogConstants.CLOSE_ID, IDialogConstants.CLOSE_LABEL, true);
 //		GridData gd = (GridData) button.getLayoutData();
 //		gd.horizontalAlignment = SWT.BEGINNING;
 //		gd.horizontalIndent = convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH) / 2;
@@ -300,7 +324,13 @@
 //		lastSelectedTabId = pageId;
 //	}
 //
-//	@Override
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see
+//	 * org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse
+//	 * .swt.widgets.Composite)
+//	 */
 //	protected void createButtonsForButtonBar(Composite parent) {
 //		// The button manager will handle the correct sizing of the buttons.
 //		// We do not want columns equal width because we are going to add some
@@ -319,7 +349,6 @@
 //		return point.getConfigurationElements();
 //	}
 //
-//	@Override
 //	protected IDialogSettings getDialogBoundsSettings() {
 //		IDialogSettings settings = WorkbenchPlugin.getDefault()
 //				.getDialogSettings();
@@ -334,27 +363,24 @@
 //		buttonManager.clear();
 //	}
 //
-//	@Override
 //	public void closeModalContainers() {
 //		close();
 //		if (modalParent != null)
 //			modalParent.close();
 //	}
 //
-//	@Override
 //	protected void buttonPressed(int buttonId) {
 //		if (IDialogConstants.CLOSE_ID == buttonId) {
 //			okPressed();
 //		}
 //	}
 //
-//	@Override
 //	public void registerPageButton(InstallationPage page, Button button) {
 //		buttonManager.addPageButton(pageToId(page), button);
 //	}
 //
 //	protected String pageToId(InstallationPage page) {
-//		String pageId = pageToId.get(page);
+//		String pageId = (String) pageToId.get(page);
 //		Assert.isLegal(pageId != null);
 //		return pageId;
 //	}

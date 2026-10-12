@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -19,6 +16,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionDelta;
@@ -34,9 +32,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.internal.themes.ColorDefinition;
 import org.eclipse.ui.internal.themes.FontDefinition;
-//import org.eclipse.ui.internal.themes.ThemeElementHelper;
+import org.eclipse.ui.internal.themes.ThemeElementHelper;
 import org.eclipse.ui.internal.themes.ThemeRegistry;
 import org.eclipse.ui.internal.themes.ThemeRegistryReader;
+import org.eclipse.ui.internal.util.PrefUtil;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 
@@ -50,7 +49,6 @@ class ExtensionEventHandler implements IRegistryChangeListener {
         this.workbench = workbench;
     }
 
-    @Override
 	public void registryChanged(IRegistryChangeEvent event) {
         try {
             // RAP [bm]: replaced namespace
@@ -79,28 +77,28 @@ class ExtensionEventHandler implements IRegistryChangeListener {
             // push action sets and perspectives to the top because incoming
             // actionSetPartAssociations and perspectiveExtensions may depend upon
             // them for their bindings.
-            for (IExtensionDelta extensionDelta : delta) {
-                id = extensionDelta.getExtensionPoint().getSimpleIdentifier();
-                if (extensionDelta.getKind() == IExtensionDelta.ADDED) {
+            for (int i = 0; i < delta.length; i++) {
+                id = delta[i].getExtensionPoint().getSimpleIdentifier();
+                if (delta[i].getKind() == IExtensionDelta.ADDED) {
                     if (id.equals(IWorkbenchRegistryConstants.PL_ACTION_SETS)) {
-						appearList.add(0, extensionDelta);
+						appearList.add(0, delta[i]);
 					} else if (!id.equals(IWorkbenchRegistryConstants.PL_PERSPECTIVES)
                             && !id.equals(IWorkbenchRegistryConstants.PL_VIEWS)
                             && !id.equals(IWorkbenchRegistryConstants.PL_ACTION_SETS)) {
 						appearList.add(appearList.size() - numPerspectives,
-                                extensionDelta);
+                                delta[i]);
 					}
                 } else {
-                    if (extensionDelta.getKind() == IExtensionDelta.REMOVED) {
+                    if (delta[i].getKind() == IExtensionDelta.REMOVED) {
                         if (id
                                 .equals(IWorkbenchRegistryConstants.PL_ACTION_SET_PART_ASSOCIATIONS)) {
-                            revokeList.add(0, extensionDelta);
+                            revokeList.add(0, delta[i]);
                             numActionSetPartAssoc++;
                         } else if (id
                                 .equals(IWorkbenchRegistryConstants.PL_PERSPECTIVES)) {
-							revokeList.add(numActionSetPartAssoc, extensionDelta);
+							revokeList.add(numActionSetPartAssoc, delta[i]);
 						} else {
-							revokeList.add(extensionDelta);
+							revokeList.add(delta[i]);
 						}
                     }
                 }
@@ -132,7 +130,11 @@ class ExtensionEventHandler implements IRegistryChangeListener {
 
     private void asyncAppear(Display display, final IExtensionPoint extpt,
             final IExtension ext) {
-        Runnable run = () -> appear(extpt, ext);
+        Runnable run = new Runnable() {
+            public void run() {
+                appear(extpt, ext);
+            }
+        };
         display.syncExec(run);
     }
 
@@ -155,17 +157,17 @@ class ExtensionEventHandler implements IRegistryChangeListener {
         ThemeRegistryReader reader = new ThemeRegistryReader();
         reader.setRegistry((ThemeRegistry) WorkbenchPlugin.getDefault()
                 .getThemeRegistry());
-		for (IConfigurationElement configElement : ext.getConfigurationElements()) {
-			reader.readElement(configElement);
+        IConfigurationElement[] elements = ext.getConfigurationElements();
+        for (int i = 0; i < elements.length; i++) {
+			reader.readElement(elements[i]);
 		}
 
         Collection fonts = reader.getFontDefinitions();
         FontDefinition[] fontDefs = (FontDefinition[]) fonts
                 .toArray(new FontDefinition[fonts.size()]);
-        // RAP
-//        ThemeElementHelper.populateRegistry(workbench.getThemeManager()
-//				.getTheme(IThemeManager.DEFAULT_THEME), fontDefs, PrefUtil
-//				.getInternalPreferenceStore());
+        ThemeElementHelper.populateRegistry(workbench.getThemeManager()
+				.getTheme(IThemeManager.DEFAULT_THEME), fontDefs, PrefUtil
+				.getInternalPreferenceStore());
     }
 
     //TODO: confirm
@@ -174,8 +176,9 @@ class ExtensionEventHandler implements IRegistryChangeListener {
         ThemeRegistry registry = (ThemeRegistry) WorkbenchPlugin.getDefault()
                 .getThemeRegistry();
         reader.setRegistry(registry);
-		for (IConfigurationElement configElement : ext.getConfigurationElements()) {
-			reader.readElement(configElement);
+        IConfigurationElement[] elements = ext.getConfigurationElements();
+        for (int i = 0; i < elements.length; i++) {
+			reader.readElement(elements[i]);
 		}
 
         Collection colors = reader.getColorDefinitions();
@@ -184,15 +187,14 @@ class ExtensionEventHandler implements IRegistryChangeListener {
 
         ITheme theme = workbench.getThemeManager().getTheme(
                 IThemeManager.DEFAULT_THEME);
-        // RAP
-//        ThemeElementHelper.populateRegistry(theme, colorDefs, PrefUtil
-//				.getInternalPreferenceStore());
-//
-//        Collection fonts = reader.getFontDefinitions();
-//        FontDefinition[] fontDefs = (FontDefinition[]) fonts
-//                .toArray(new FontDefinition[fonts.size()]);
-//        ThemeElementHelper.populateRegistry(theme, fontDefs, PrefUtil
-//				.getInternalPreferenceStore());
+        ThemeElementHelper.populateRegistry(theme, colorDefs, PrefUtil
+				.getInternalPreferenceStore());
+
+        Collection fonts = reader.getFontDefinitions();
+        FontDefinition[] fontDefs = (FontDefinition[]) fonts
+                .toArray(new FontDefinition[fonts.size()]);
+        ThemeElementHelper.populateRegistry(theme, fontDefs, PrefUtil
+				.getInternalPreferenceStore());
 
         Map data = reader.getData();
         registry.addData(data);
@@ -202,9 +204,8 @@ class ExtensionEventHandler implements IRegistryChangeListener {
         if (changeList.isEmpty()) {
 			return;
 		}
-
 // RAP [if]: need session aware messages
-        final StringBuilder message = new StringBuilder(
+        final StringBuffer message = new StringBuffer(
 //                ExtensionEventHandlerMessages.ExtensionEventHandler_following_changes);
 				ExtensionEventHandlerMessages.get().ExtensionEventHandler_following_changes);
 
@@ -215,7 +216,8 @@ class ExtensionEventHandler implements IRegistryChangeListener {
 //        message.append(ExtensionEventHandlerMessages.ExtensionEventHandler_need_to_reset);
 		message.append(ExtensionEventHandlerMessages.get().ExtensionEventHandler_need_to_reset);
 
-        display.asyncExec(() -> {
+        display.asyncExec(new Runnable() {
+            public void run() {
 		    Shell parentShell = null;
 		    IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 		    if (window == null) {
@@ -230,14 +232,15 @@ class ExtensionEventHandler implements IRegistryChangeListener {
 		    if (MessageDialog
 		            .openQuestion(
 		                    parentShell,
-							ExtensionEventHandlerMessages.get().ExtensionEventHandler_reset_perspective,
-							message.toString())) {
+//                                ExtensionEventHandlerMessages.ExtensionEventHandler_reset_perspective, message.toString())) {
+                                ExtensionEventHandlerMessages.get().ExtensionEventHandler_reset_perspective, message.toString())) {
 		        IWorkbenchPage page = window.getActivePage();
 		        if (page == null) {
 					return;
 				}
 		        page.resetPerspective();
 		    }
+            }
 		});
 
     }

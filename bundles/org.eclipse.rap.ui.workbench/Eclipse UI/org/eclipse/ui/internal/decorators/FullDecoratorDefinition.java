@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -61,7 +58,6 @@ class FullDecoratorDefinition extends DecoratorDefinition {
             Platform
                     .run(new SafeRunnable(
                             NLS.bind(WorkbenchMessages.get().DecoratorManager_ErrorActivatingDecorator, getName() )) {
-                        @Override
 						public void run() {
                             try {
                                 decorator = (ILabelDecorator) WorkbenchPlugin
@@ -91,7 +87,9 @@ class FullDecoratorDefinition extends DecoratorDefinition {
         return decorator;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.internal.decorators.DecoratorDefinition#refreshDecorator()
+     */
 	protected void refreshDecorator() {
         //Only do something if disabled so as to prevent
         //gratutitous activation
@@ -150,13 +148,17 @@ class FullDecoratorDefinition extends DecoratorDefinition {
         return decorator;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.internal.decorators.DecoratorDefinition#internalGetLabelProvider()
+     */
 	protected IBaseLabelProvider internalGetLabelProvider()
             throws CoreException {
         return internalGetDecorator();
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.internal.decorators.DecoratorDefinition#isFull()
+     */
 	public boolean isFull() {
         return true;
     }

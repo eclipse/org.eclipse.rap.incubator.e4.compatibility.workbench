@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -46,7 +43,6 @@ public class NewWizard extends Wizard {
     /**
      * Create the wizard pages
      */
-    @Override
 	public void addPages() {
         IWizardCategory root = WorkbenchPlugin.getDefault().getNewWizardRegistry().getRootCategory();
         IWizardDescriptor [] primary = WorkbenchPlugin.getDefault().getNewWizardRegistry().getPrimaryWizards();
@@ -88,9 +84,11 @@ public class NewWizard extends Wizard {
      */
     private IWizardCategory getChildWithID(
             IWizardCategory parent, String id) {
-		for (IWizardCategory wizardCategory : parent.getCategories()) {
-			if (wizardCategory.getId().equals(id)) {
-				return wizardCategory;
+        IWizardCategory [] children = parent.getCategories();
+        for (int i = 0; i < children.length; ++i) {
+        	IWizardCategory currentChild = children[i];
+            if (currentChild.getId().equals(id)) {
+				return currentChild;
 			}
         }
         return null;
@@ -125,7 +123,6 @@ public class NewWizard extends Wizard {
      *
      * @return boolean
      */
-    @Override
 	public boolean performFinish() {
         //save our selection state
         mainPage.saveWidgetValues();
@@ -160,7 +157,9 @@ public class NewWizard extends Wizard {
         projectsOnly = b;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.wizard.IWizard#canFinish()
+     */
 	public boolean canFinish() {
          // we can finish if the first page is current and the the page can finish early.
 	    	if (getContainer().getCurrentPage() == mainPage) {
@@ -170,5 +169,4 @@ public class NewWizard extends Wizard {
 	    	}
 	    	return super.canFinish();
     }
-
 }

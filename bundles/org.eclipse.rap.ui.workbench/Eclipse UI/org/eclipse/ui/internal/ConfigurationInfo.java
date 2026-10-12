@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2008, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -36,7 +33,6 @@ import com.ibm.icu.text.DateFormat;
  * This class contains utility methods that clients may use to obtain
  * information about the system configuration.
  *
- * @since 3.4
  *
  */
 public final class ConfigurationInfo {
@@ -88,7 +84,9 @@ public final class ConfigurationInfo {
 				.getExtensionRegistry().getConfigurationElementsFor(
 						PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 						IWorkbenchRegistryConstants.PL_SYSTEM_SUMMARY_SECTIONS));
-		for (IConfigurationElement element : configElements) {
+		for (int i = 0; i < configElements.length; ++i) {
+			IConfigurationElement element = configElements[i];
+
 			Object obj = null;
 			try {
 				obj = WorkbenchPlugin.createExtension(element,
@@ -118,7 +116,6 @@ public final class ConfigurationInfo {
 		Arrays.sort(configElements, new Comparator() {
 			Collator collator = Collator.getInstance(Locale.getDefault());
 
-			@Override
 			public int compare(Object a, Object b) {
 				IConfigurationElement element1 = (IConfigurationElement) a;
 				IConfigurationElement element2 = (IConfigurationElement) b;

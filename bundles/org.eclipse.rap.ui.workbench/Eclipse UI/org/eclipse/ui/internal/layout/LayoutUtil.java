@@ -28,10 +28,8 @@ import org.eclipse.swt.widgets.Shell;
 public class LayoutUtil {
 
     /**
-     * Should be called whenever a control's contents have changed. Will
-     * trigger a layout parent controls if necessary.
-     *
-     * @param changedControl
+	 * Should be called whenever a control's contents have changed. Will trigger a
+	 * layout parent controls if necessary.
      */
     public static void resize(Control changedControl) {
         Composite parent = changedControl.getParent();

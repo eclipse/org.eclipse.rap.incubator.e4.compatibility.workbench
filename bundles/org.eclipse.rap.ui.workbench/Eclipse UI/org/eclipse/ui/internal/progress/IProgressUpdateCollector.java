@@ -14,9 +14,9 @@
 package org.eclipse.ui.internal.progress;
 
 /**
- * The IProgressUpdateCollector is the interface that content providers
- * conform to in order that the ProgressViewUpdater can talk to various
- * types of content provider.
+ * The IProgressUpdateCollector is the interface that content providers conform
+ * to in order that the ProgressViewUpdater can talk to various types of content
+ * provider.
  */
 public interface IProgressUpdateCollector {
 
@@ -27,18 +27,19 @@ public interface IProgressUpdateCollector {
 
     /**
      * Refresh the elements.
-     * @param elements
      */
 	void refresh(JobTreeElement... elements);
 
     /**
      * Add the elements.
+	 *
      * @param elements Array of JobTreeElement
      */
 	void add(JobTreeElement... elements);
 
     /**
      * Remove the elements.
+	 *
      * @param elements Array of JobTreeElement
      */
 	void remove(JobTreeElement... elements);

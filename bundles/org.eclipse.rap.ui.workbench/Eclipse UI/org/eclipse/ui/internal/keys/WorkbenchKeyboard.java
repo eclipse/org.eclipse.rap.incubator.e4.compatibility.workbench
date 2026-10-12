@@ -17,23 +17,19 @@ package org.eclipse.ui.internal.keys;
 import java.util.List;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.bindings.keys.KeyBindingDispatcher;
+import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 /**
  * @since 3.5
- *
  */
 public class WorkbenchKeyboard {
-	private KeyBindingDispatcher delegate;
+	private final KeyBindingDispatcher delegate;
 
 	static class KeyDownFilter implements Listener {
-		private KeyBindingDispatcher.KeyDownFilter delegate;
+		private final KeyBindingDispatcher.KeyDownFilter delegate;
 
-		/**
-		 * @param event
-		 * @see org.eclipse.swt.widgets.Listener#handleEvent(org.eclipse.swt.widgets.Event)
-		 */
 		@Override
 		public void handleEvent(Event event) {
 			delegate.handleEvent(event);
@@ -66,7 +62,6 @@ public class WorkbenchKeyboard {
 	}
 
 	/**
-	 * @return
 	 * @see org.eclipse.e4.ui.bindings.keys.KeyBindingDispatcher#getKeyDownFilter()
 	 */
 	public KeyDownFilter getKeyDownFilter() {
@@ -74,18 +69,14 @@ public class WorkbenchKeyboard {
 	}
 
 	/**
-	 * @param potentialKeyStrokes
-	 * @param event
-	 * @return
 	 * @see org.eclipse.e4.ui.bindings.keys.KeyBindingDispatcher#press(java.util.List,
 	 *      org.eclipse.swt.widgets.Event)
 	 */
-	public boolean press(List potentialKeyStrokes, Event event) {
+	public boolean press(List<KeyStroke> potentialKeyStrokes, Event event) {
 		return delegate.press(potentialKeyStrokes, event);
 	}
 
 	/**
-	 * @param context
 	 * @see org.eclipse.e4.ui.bindings.keys.KeyBindingDispatcher#setContext(org.eclipse.e4.core.contexts.IEclipseContext)
 	 */
 	public void setContext(IEclipseContext context) {
@@ -96,11 +87,7 @@ public class WorkbenchKeyboard {
 		delegate = kbd;
 	}
 
-	/**
-	 * @param ctrlShiftT
-	 * @return
-	 */
-	public static List generatePossibleKeyStrokes(Event event) {
+	public static List<KeyStroke> generatePossibleKeyStrokes(Event event) {
 		return KeyBindingDispatcher.generatePossibleKeyStrokes(event);
 	}
 }

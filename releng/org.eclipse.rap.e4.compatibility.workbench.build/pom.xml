@@ -18,18 +18,18 @@
 
 	<groupId>org.eclipse.rap.incubator</groupId>
 	<artifactId>org.eclipse.rap.ui.compatibility.workbench.build</artifactId>
-	<version>3.9.14-SNAPSHOT</version>
+	<version>4.7.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<platform-repo.url>https://download.eclipse.org/eclipse/updates/4.10/R-4.10-201812060815/</platform-repo.url>
-		<rap-repository>https://download.eclipse.org/rt/rap/3.9/R-20190612-1720/</rap-repository>
-		<rap-e4-repository>https://download.eclipse.org/rt/rap/3.9/e4/R-20190612-1720/</rap-e4-repository>
+		<platform-repo.url>https://download.eclipse.org/eclipse/updates/4.40/R-4.40-202606010713/</platform-repo.url>
+		<rap-repository>https://download.eclipse.org/rt/rap/4.7/R-20260603-0740/</rap-repository>
+		<rap-e4-repository>https://download.eclipse.org/rt/rap/4.7/e4/R-20260603-0740/</rap-e4-repository>
 		<download-publish-path>/shared/rt/rap/incubator/nightly/e4/target</download-publish-path>
-		<tycho-version>1.4.0</tycho-version>
-		<orbit-dependencies-repository>https://download.eclipse.org/tools/orbit/downloads/drops/R20190226160451/repository/</orbit-dependencies-repository>
+		<tycho-version>4.0.13</tycho-version>
+		<orbit-dependencies-repository>https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/2026-06/</orbit-dependencies-repository>
 		<rap-incubator-repository>http://download.eclipse.org/rt/rap/incubator/nightly/</rap-incubator-repository>
 		<baseline-repository>${rap-incubator-repository}</baseline-repository>
 	</properties>
@@ -81,7 +81,7 @@
    			 <artifactId>maven-compiler-plugin</artifactId>
   			  <version>3.8.1</version>
    			 <configuration>
-    		    <release>11</release>  <!--or <release>10</release>-->
+			    <release>21</release>
   			  </configuration>
 		</plugin>
 
@@ -102,7 +102,7 @@
 							<groupId>org.eclipse.rap.incubator</groupId>
 							<artifactId>E4_TP_RAP</artifactId>
 							<relativePath>../target</relativePath>
-							<version>3.9.14-SNAPSHOT</version>
+							<version>4.7.1-SNAPSHOT</version>
 						</artifact>
 					</target>
 					<environments>
@@ -136,7 +136,6 @@
 					<archiveSite>true</archiveSite>
 					<!-- UNCOMMENT the following line and update the release date when building 
 						an OFFICIAL FULL RELEASE -->
-					<forceContextQualifier>E4CLW-v20230627-1436</forceContextQualifier>
 					<!-- FOR F*** SAKE we want to be _compliant_ with Eclipse version format 
 						convention, thank you very much! -->
 					<!-- format>'v'yyyyMMdd'-'HHmm</format -->

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -96,7 +93,7 @@ public abstract class PluginAction extends Action implements
                 .getAttribute(IWorkbenchRegistryConstants.ATT_DEFINITION_ID);
         setActionDefinitionId(defId);
 
-		pluginId = configElement.getContributor().getName();
+        pluginId = configElement.getNamespace();
 
         // Read enablement declaration.
         if (configElement.getAttribute(IWorkbenchRegistryConstants.ATT_ENABLES_FOR) != null) {
@@ -210,12 +207,16 @@ public abstract class PluginAction extends Action implements
         }
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IAction.
+     */
 	public void run() {
         runWithEvent(null);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IAction.
+     */
 	public void runWithEvent(Event event) {
         // this message dialog is problematic.
         if (delegate == null) {
@@ -283,7 +284,6 @@ public abstract class PluginAction extends Action implements
      * <code>selectionChanged(IStructuredSelection)</code> when the selection is
      * a structured one.
      */
-    @Override
 	public void selectionChanged(SelectionChangedEvent event) {
         ISelection sel = event.getSelection();
         selectionChanged(sel);
@@ -295,7 +295,6 @@ public abstract class PluginAction extends Action implements
      * <code>selectionChanged(IStructuredSelection)</code> when the selection is
      * a structured one. Subclasses may extend this method to react to the change.
      */
-    @Override
 	public void selectionChanged(IWorkbenchPart part, ISelection sel) {
         selectionChanged(sel);
     }
@@ -304,7 +303,6 @@ public abstract class PluginAction extends Action implements
      * For testing purposes only.
      *
      * @return the selection
-     * @since 3.1
      */
     public ISelection getSelection() {
     	return selection;
@@ -323,18 +321,21 @@ public abstract class PluginAction extends Action implements
     /**
      * @return the IConfigurationElement used to create this PluginAction.
      *
-     * @since 3.0
      */
     protected IConfigurationElement getConfigElement() {
         return configElement;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IPluginContribution#getLocalId()
+     */
 	public String getLocalId() {
         return getId();
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IPluginContribution#getPluginId()
+     */
 	public String getPluginId() {
         return pluginId;
     }
@@ -342,7 +343,6 @@ public abstract class PluginAction extends Action implements
     /**
      * Disposes the delegate, if created.
      *
-     * @since 3.1
      */
     public void disposeDelegate() {
         // avoid calling dispose() twice if the delegate implements
@@ -359,14 +359,15 @@ public abstract class PluginAction extends Action implements
     /**
      * Disposes this plugin action.
      *
-     * @since 3.1
      */
     public void dispose() {
         disposeDelegate();
         selection = null;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.action.Action#getMenuCreator()
+     */
 	public IMenuCreator getMenuCreator() {
     	// now that action contribution item defers asking for the menu
     	// creator until its ready o show the menu, asking for the menu

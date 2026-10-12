@@ -19,21 +19,17 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchWindow;
 
 /**
- * Add workbench specific information to a standard control contribution.
- * Allows the client derivatives to access the IWorkbenchWindow hosting
- * the control as well as the side of the workbench that the control is
- * currently being displayed on.
+ * Add workbench specific information to a standard control contribution. Allows
+ * the client derivatives to access the IWorkbenchWindow hosting the control as
+ * well as the side of the workbench that the control is currently being
+ * displayed on.
  *
  * @since 3.3
- *
  */
 public abstract class InternalControlContribution extends ControlContribution {
 	private IWorkbenchWindow wbw;
 	private int curSide;
 
-	/**
-	 * @param id
-	 */
 	protected InternalControlContribution(String id) {
 		super(id);
 	}
@@ -71,8 +67,9 @@ public abstract class InternalControlContribution extends ControlContribution {
 	}
 
 	public int getOrientation() {
-		if (getCurSide() == SWT.LEFT || getCurSide() == SWT.RIGHT)
+		if (getCurSide() == SWT.LEFT || getCurSide() == SWT.RIGHT) {
 			return SWT.VERTICAL;
+		}
 
 		return SWT.HORIZONTAL;
 	}

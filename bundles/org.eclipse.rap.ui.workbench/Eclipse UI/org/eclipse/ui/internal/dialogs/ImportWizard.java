@@ -1,16 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Alain Bernard <alain.bernard1224@gmail.com> - Bug 281490
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
@@ -40,13 +36,12 @@ import org.eclipse.ui.wizards.IWizardCategory;
 public class ImportWizard extends Wizard {
 
     //the list selection page
-	static class SelectionPage extends WorkbenchWizardListSelectionPage {
+    class SelectionPage extends WorkbenchWizardListSelectionPage {
         SelectionPage(IWorkbench w, IStructuredSelection ss, AdaptableList e,
                 String s) {
             super(w, ss, e, s, WorkbenchTriggerPoints.IMPORT_WIZARDS);
         }
 
-        @Override
 		public void createControl(Composite parent) {
             super.createControl(parent);
             getWorkbench()
@@ -56,10 +51,8 @@ public class ImportWizard extends Wizard {
 							IWorkbenchHelpContextIds.IMPORT_WIZARD_SELECTION_WIZARD_PAGE);
         }
 
-        @Override
 		public IWizardNode createWizardNode(WorkbenchWizardElement element) {
             return new WorkbenchWizardNode(this, element) {
-                @Override
 				public IWorkbenchWizard createWizard() throws CoreException {
                     return wizardElement.createWizard();
                 }
@@ -76,10 +69,9 @@ public class ImportWizard extends Wizard {
     /**
      * Creates the wizard's pages lazily.
      */
-    @Override
 	public void addPages() {
         addPage(new SelectionPage(this.workbench, this.selection,
-                getAvailableImportWizards(), WorkbenchMessages.get().ImportWizard_selectWizard));
+                getAvailableImportWizards(), WorkbenchMessages.get().ImportWizard_selectSource)); 
     }
 
     /**
@@ -116,7 +108,9 @@ public class ImportWizard extends Wizard {
         setNeedsProgressMonitor(true);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.wizard.IWizard#performFinish()
+     */
 	public boolean performFinish() {
         ((SelectionPage) getPages()[0]).saveWidgetValues();
         return true;

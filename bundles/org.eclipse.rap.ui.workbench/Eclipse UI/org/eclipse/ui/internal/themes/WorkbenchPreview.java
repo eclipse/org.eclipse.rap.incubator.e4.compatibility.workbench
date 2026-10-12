@@ -41,7 +41,8 @@ public class WorkbenchPreview implements IThemePreview {
 
 	  // don't reset this dynamically, so just keep the information static.
 	// see bug:
-	//   75422 [Presentations] Switching presentation to R21 switches immediately, but only partially
+	// 75422 [Presentations] Switching presentation to R21 switches immediately, but
+	// only partially
     private static int tabPos = PlatformUI.getPreferenceStore().getInt(IWorkbenchPreferenceConstants.VIEW_TAB_POSITION);
 
     private boolean disposed = false;
@@ -56,7 +57,7 @@ public class WorkbenchPreview implements IThemePreview {
 
     private ViewForm viewForm;
 
-    private IPropertyChangeListener fontAndColorListener = event -> {
+	private final IPropertyChangeListener fontAndColorListener = event -> {
 	    if (!disposed) {
 	        setColorsAndFonts();
 	        //viewMessage.setSize(viewMessage.computeSize(SWT.DEFAULT, SWT.DEFAULT, true));
@@ -81,8 +82,7 @@ public class WorkbenchPreview implements IThemePreview {
         toolBar = new ToolBar(viewForm, SWT.FLAT | SWT.WRAP);
         ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
 
-        Image hoverImage = WorkbenchImages
-                .getImage(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU);
+		Image hoverImage = WorkbenchImages.getImage(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU);
         toolItem.setImage(hoverImage);
 
         viewForm.setTopRight(toolBar);
@@ -111,18 +111,8 @@ public class WorkbenchPreview implements IThemePreview {
         currentTheme.addPropertyChangeListener(fontAndColorListener);
         setColorsAndFonts();
         setTabPosition();
-        setTabStyle();
     }
 
-    /**
-     * Set the tab style from preferences.
-     */
-    protected void setTabStyle() {
-        boolean traditionalTab = PlatformUI.getPreferenceStore()
-                .getBoolean(IWorkbenchPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS);
-        // RAP
-//        folder.setSimple(traditionalTab);
-    }
 
     /**
      * Set the tab location from preferences.
@@ -136,26 +126,18 @@ public class WorkbenchPreview implements IThemePreview {
      * Set the folder colors and fonts
      */
     private void setColorsAndFonts() {
-        folder.setSelectionForeground(theme.getColorRegistry().get(
-                IWorkbenchThemeConstants.ACTIVE_TAB_TEXT_COLOR));
-        folder.setForeground(theme.getColorRegistry().get(
-                IWorkbenchThemeConstants.INACTIVE_TAB_TEXT_COLOR));
+		folder.setSelectionForeground(theme.getColorRegistry().get(IWorkbenchThemeConstants.ACTIVE_TAB_TEXT_COLOR));
+		folder.setForeground(theme.getColorRegistry().get(IWorkbenchThemeConstants.INACTIVE_TAB_TEXT_COLOR));
 
         Color[] colors = new Color[2];
-        colors[0] = theme.getColorRegistry().get(
-                IWorkbenchThemeConstants.INACTIVE_TAB_BG_START);
-        colors[1] = theme.getColorRegistry().get(
-                IWorkbenchThemeConstants.INACTIVE_TAB_BG_END);
-        colors[0] = theme.getColorRegistry().get(
-                IWorkbenchThemeConstants.ACTIVE_TAB_BG_START);
-        colors[1] = theme.getColorRegistry().get(
-                IWorkbenchThemeConstants.ACTIVE_TAB_BG_END);
-        folder.setSelectionBackground(colors, new int[] { theme
-                .getInt(IWorkbenchThemeConstants.ACTIVE_TAB_PERCENT) }, theme
-                .getBoolean(IWorkbenchThemeConstants.ACTIVE_TAB_VERTICAL));
+		colors[0] = theme.getColorRegistry().get(IWorkbenchThemeConstants.INACTIVE_TAB_BG_START);
+		colors[1] = theme.getColorRegistry().get(IWorkbenchThemeConstants.INACTIVE_TAB_BG_END);
+		colors[0] = theme.getColorRegistry().get(IWorkbenchThemeConstants.ACTIVE_TAB_BG_START);
+		colors[1] = theme.getColorRegistry().get(IWorkbenchThemeConstants.ACTIVE_TAB_BG_END);
+		folder.setSelectionBackground(colors, new int[] { theme.getInt(IWorkbenchThemeConstants.ACTIVE_TAB_PERCENT) },
+				theme.getBoolean(IWorkbenchThemeConstants.ACTIVE_TAB_VERTICAL));
 
-        folder.setFont(theme.getFontRegistry().get(
-                IWorkbenchThemeConstants.TAB_TEXT_FONT));
+		folder.setFont(theme.getFontRegistry().get(IWorkbenchThemeConstants.TAB_TEXT_FONT));
     }
 
     @Override

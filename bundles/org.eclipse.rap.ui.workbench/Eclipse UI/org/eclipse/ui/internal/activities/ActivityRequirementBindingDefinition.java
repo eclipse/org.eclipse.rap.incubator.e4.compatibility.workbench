@@ -19,13 +19,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import org.eclipse.ui.internal.util.Util;
 
 public final class ActivityRequirementBindingDefinition {
     private static final int HASH_FACTOR = 89;
 
-    private static final int HASH_INITIAL = ActivityRequirementBindingDefinition.class
-            .getName().hashCode();
+	private static final int HASH_INITIAL = ActivityRequirementBindingDefinition.class.getName().hashCode();
 
 	static Map<String, Collection<ActivityRequirementBindingDefinition>> activityRequirementBindingDefinitionsByActivityId(
 			Collection<ActivityRequirementBindingDefinition> activityRequirementBindingDefinitions) {
@@ -38,11 +38,9 @@ public final class ActivityRequirementBindingDefinition {
 
         while (iterator.hasNext()) {
             Object object = iterator.next();
-            Util.assertInstance(object,
-                    ActivityRequirementBindingDefinition.class);
+			Util.assertInstance(object, ActivityRequirementBindingDefinition.class);
             ActivityRequirementBindingDefinition activityRequirementBindingDefinition = (ActivityRequirementBindingDefinition) object;
-            String parentActivityId = activityRequirementBindingDefinition
-                    .getActivityId();
+			String parentActivityId = activityRequirementBindingDefinition.getActivityId();
 
             if (parentActivityId != null) {
 				Collection<ActivityRequirementBindingDefinition> activityRequirementBindingDefinitions2 = map
@@ -50,30 +48,27 @@ public final class ActivityRequirementBindingDefinition {
 
                 if (activityRequirementBindingDefinitions2 == null) {
 					activityRequirementBindingDefinitions2 = new HashSet<>();
-                    map.put(parentActivityId,
-                            activityRequirementBindingDefinitions2);
+					map.put(parentActivityId, activityRequirementBindingDefinitions2);
                 }
 
-                activityRequirementBindingDefinitions2
-                        .add(activityRequirementBindingDefinition);
+				activityRequirementBindingDefinitions2.add(activityRequirementBindingDefinition);
             }
         }
 
         return map;
     }
 
-    private String requiredActivityId;
+	private final String requiredActivityId;
 
     private transient int hashCode = HASH_INITIAL;
 
-    private String activityId;
+	private final String activityId;
 
-    private String sourceId;
+	private final String sourceId;
 
     private transient String string;
 
-    public ActivityRequirementBindingDefinition(String requiredActivityId,
-            String activityId, String sourceId) {
+	public ActivityRequirementBindingDefinition(String requiredActivityId, String activityId, String sourceId) {
         this.requiredActivityId = requiredActivityId;
         this.activityId = activityId;
         this.sourceId = sourceId;
@@ -81,8 +76,7 @@ public final class ActivityRequirementBindingDefinition {
 
     public int compareTo(Object object) {
         ActivityRequirementBindingDefinition castedObject = (ActivityRequirementBindingDefinition) object;
-        int compareTo = Util.compare(requiredActivityId,
-                castedObject.requiredActivityId);
+		int compareTo = Util.compare(requiredActivityId, castedObject.requiredActivityId);
 
         if (compareTo == 0) {
             compareTo = Util.compare(activityId, castedObject.activityId);
@@ -97,21 +91,13 @@ public final class ActivityRequirementBindingDefinition {
 
     @Override
 	public boolean equals(Object object) {
-        if (!(object instanceof ActivityRequirementBindingDefinition)) {
+		if (!(object instanceof final ActivityRequirementBindingDefinition castedObject)) {
 			return false;
 		}
 
-        final ActivityRequirementBindingDefinition castedObject = (ActivityRequirementBindingDefinition) object;
-        if (!Util.equals(requiredActivityId,
-                castedObject.requiredActivityId)) {
-            return false;
-        }
-
-        if (!Util.equals(activityId, castedObject.activityId)) {
-            return false;
-        }
-
-        return Util.equals(sourceId, castedObject.sourceId);
+		return Objects.equals(requiredActivityId, castedObject.requiredActivityId)
+				&& Objects.equals(activityId, castedObject.activityId)
+				&& Objects.equals(sourceId, castedObject.sourceId);
     }
 
     public String getRequiredActivityId() {
@@ -129,10 +115,9 @@ public final class ActivityRequirementBindingDefinition {
     @Override
 	public int hashCode() {
         if (hashCode == HASH_INITIAL) {
-            hashCode = hashCode * HASH_FACTOR
-                    + Util.hashCode(requiredActivityId);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(activityId);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(sourceId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(requiredActivityId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(activityId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(sourceId);
             if (hashCode == HASH_INITIAL) {
 				hashCode++;
 			}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" name="org.eclipse.ui.internal.BindingToModelProcessor">
+   <service>
+      <provide interface="org.eclipse.e4.ui.workbench.modeling.IModelProcessorContribution"/>
+   </service>
+   <reference cardinality="1..1" field="commandToModelProcessor" interface="org.eclipse.ui.internal.CommandToModelProcessor" name="commandToModelProcessor"/>
+   <reference cardinality="1..1" field="contextToModelProcessor" interface="org.eclipse.ui.internal.ContextToModelProcessor" name="contextToModelProcessor"/>
+   <implementation class="org.eclipse.ui.internal.BindingToModelProcessor"/>
+</scr:component>

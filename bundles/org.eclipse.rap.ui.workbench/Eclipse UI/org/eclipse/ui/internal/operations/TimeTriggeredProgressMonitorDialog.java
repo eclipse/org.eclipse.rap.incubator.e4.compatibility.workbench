@@ -13,7 +13,6 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.operations;
 
-
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,7 +34,7 @@ public class TimeTriggeredProgressMonitorDialog extends ProgressMonitorDialog {
 	/**
 	 * The time considered to be the long operation time.
 	 */
-	private int longOperationTime;
+	private final int longOperationTime;
 
 	/**
 	 * The time at which the dialog should be opened.
@@ -48,22 +47,18 @@ public class TimeTriggeredProgressMonitorDialog extends ProgressMonitorDialog {
 	private boolean dialogOpened = false;
 
 	/**
-	 * Wrappered monitor so we can check ticks and open the dialog when
-	 * appropriate
+	 * Wrappered monitor so we can check ticks and open the dialog when appropriate
 	 */
 	private IProgressMonitor wrapperedMonitor;
 
 	/**
 	 * Create a new instance of the receiver.
 	 *
-	 * @param parent
-	 *            the parent of the dialog
-	 * @param longOperationTime
-	 *            the time (in milliseconds) considered to be a long enough
-	 *            execution time to warrant opening a dialog.
+	 * @param parent            the parent of the dialog
+	 * @param longOperationTime the time (in milliseconds) considered to be a long
+	 *                          enough execution time to warrant opening a dialog.
 	 */
-	public TimeTriggeredProgressMonitorDialog(Shell parent,
-			int longOperationTime) {
+	public TimeTriggeredProgressMonitorDialog(Shell parent, int longOperationTime) {
 		super(parent);
 		setOpenOnRun(false);
 		this.longOperationTime = longOperationTime;
@@ -71,13 +66,11 @@ public class TimeTriggeredProgressMonitorDialog extends ProgressMonitorDialog {
 
    /**
 	 * Create a monitor for the receiver that wrappers the superclasses monitor.
-	 *
 	 */
     public void createWrapperedMonitor() {
         wrapperedMonitor = new IProgressMonitor() {
 
-            IProgressMonitor superMonitor = TimeTriggeredProgressMonitorDialog.super
-                    .getProgressMonitor();
+			IProgressMonitor superMonitor = TimeTriggeredProgressMonitorDialog.super.getProgressMonitor();
 
             @Override
 			public void beginTask(String name, int totalWork) {
@@ -97,8 +90,6 @@ public class TimeTriggeredProgressMonitorDialog extends ProgressMonitorDialog {
     				dialogOpened = true;
     			}
             }
-
-
 
             @Override
 			public void done() {
@@ -154,9 +145,8 @@ public class TimeTriggeredProgressMonitorDialog extends ProgressMonitorDialog {
     }
 
     @Override
-	public void run(final boolean fork, final boolean cancelable,
-            final IRunnableWithProgress runnable) throws InvocationTargetException,
-            InterruptedException {
+	public void run(final boolean fork, final boolean cancelable, final IRunnableWithProgress runnable)
+			throws InvocationTargetException, InterruptedException {
     	final InvocationTargetException[] invokes = new InvocationTargetException[1];
         final InterruptedException[] interrupt = new InterruptedException[1];
         Runnable dialogWaitRunnable = () -> {

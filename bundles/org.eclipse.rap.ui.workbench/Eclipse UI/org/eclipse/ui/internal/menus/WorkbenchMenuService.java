@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2016 IBM Corporation and others.
+ * Copyright (c) 2010, 2019 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -70,23 +70,18 @@ import org.eclipse.ui.menus.IMenuService;
 
 /**
  * @since 3.5
- *
  */
 public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaround {
 
 	private static final String POPULATED_TOOL_BARS = "populatedToolBars"; //$NON-NLS-1$
 	private static final String POPULATED_MENUS = "populatedMenus"; //$NON-NLS-1$
-	private IEclipseContext e4Context;
-	private ServiceLocator serviceLocator;
+	private final IEclipseContext e4Context;
+	private final ServiceLocator serviceLocator;
 	private ExpressionContext legacyContext;
-	private MenuPersistence persistence;
-	private Map<AbstractContributionFactory, Object> factoriesToContributions = new HashMap<>();
-	private EModelService modelService;
+	private final MenuPersistence persistence;
+	private final Map<AbstractContributionFactory, Object> factoriesToContributions = new HashMap<>();
+	private final EModelService modelService;
 
-	/**
-	 * @param serviceLocator
-	 * @param e4Context
-	 */
 	public WorkbenchMenuService(ServiceLocator serviceLocator, IEclipseContext e4Context) {
 		this.serviceLocator = serviceLocator;
 		this.e4Context = e4Context;
@@ -117,9 +112,8 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 	@Override
 	public void addContributionFactory(final AbstractContributionFactory factory) {
 		MenuLocationURI location = new MenuLocationURI(factory.getLocation());
-		if (location.getPath() == null || location.getPath().length() == 0) {
-			WorkbenchPlugin
-					.log("WorkbenchMenuService.addContributionFactory: Invalid menu URI: " + location); //$NON-NLS-1$
+		if (location.getPath() == null || location.getPath().isEmpty()) {
+			WorkbenchPlugin.log("WorkbenchMenuService.addContributionFactory: Invalid menu URI: " + location); //$NON-NLS-1$
 			return;
 		}
 
@@ -129,7 +123,7 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 				// configElement);
 			} else {
 				String query = location.getQuery();
-				if (query == null || query.length() == 0) {
+				if (query == null || query.isEmpty()) {
 					query = "after=additions"; //$NON-NLS-1$
 				}
 				processToolbarChildren(factory, location, location.getPath(), query);
@@ -137,6 +131,8 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 			return;
 		}
 		MMenuContribution menuContribution = MenuFactoryImpl.eINSTANCE.createMenuContribution();
+		menuContribution.getPersistedState().put(org.eclipse.e4.ui.workbench.IWorkbench.PERSIST_STATE,
+				Boolean.FALSE.toString());
 		menuContribution.setElementId(factory.getNamespace() + ":" + factory.hashCode()); //$NON-NLS-1$
 
 		if ("org.eclipse.ui.popup.any".equals(location.getPath())) { //$NON-NLS-1$
@@ -145,7 +141,7 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 			menuContribution.setParentId(location.getPath());
 		}
 		String query = location.getQuery();
-		if (query == null || query.length() == 0) {
+		if (query == null || query.isEmpty()) {
 			query = "after=additions"; //$NON-NLS-1$
 		}
 		menuContribution.setPositionInParent(query);
@@ -163,10 +159,11 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 
 	}
 
-	private void processToolbarChildren(AbstractContributionFactory factory,
-			MenuLocationURI location, String parentId, String position) {
-		MToolBarContribution toolBarContribution = MenuFactoryImpl.eINSTANCE
-				.createToolBarContribution();
+	private void processToolbarChildren(AbstractContributionFactory factory, MenuLocationURI location, String parentId,
+			String position) {
+		MToolBarContribution toolBarContribution = MenuFactoryImpl.eINSTANCE.createToolBarContribution();
+		toolBarContribution.getPersistedState().put(org.eclipse.e4.ui.workbench.IWorkbench.PERSIST_STATE,
+				Boolean.FALSE.toString());
 		toolBarContribution.setElementId(factory.getNamespace() + ":" + factory.hashCode()); //$NON-NLS-1$
 		toolBarContribution.setParentId(parentId);
 		toolBarContribution.setPositionInParent(position);
@@ -184,8 +181,9 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 		Object contribution;
 		if ((contribution = factoriesToContributions.remove(factory)) != null) {
 			MApplication app = e4Context.get(MApplication.class);
-			if (app == null)
+			if (app == null) {
 				return;
+			}
 			if (contribution instanceof MMenuContribution) {
 				app.getMenuContributions().remove(contribution);
 			} else if (contribution instanceof MToolBarContribution) {
@@ -196,8 +194,9 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 	}
 
 	protected IWorkbenchWindow getWindow() {
-		if (serviceLocator == null)
+		if (serviceLocator == null) {
 			return null;
+		}
 
 		IWorkbenchLocationService wls = serviceLocator.getService(IWorkbenchLocationService.class);
 
@@ -229,13 +228,11 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 		populateContributionManager(model, mgr, location);
 	}
 
-	public void populateContributionManager(MApplicationElement model, ContributionManager mgr,
-			String location) {
+	public void populateContributionManager(MApplicationElement model, ContributionManager mgr, String location) {
 		MenuLocationURI uri = new MenuLocationURI(location);
 
 		// Now handle registering dynamic additions by querying E4 model
-		if (mgr instanceof MenuManager) {
-			MenuManager menu = (MenuManager) mgr;
+		if (mgr instanceof MenuManager menu) {
 			MMenu mMenu = getMenuModel(model, menu, uri);
 			if (mMenu == null) {
 				return;
@@ -243,12 +240,10 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 
 			IRendererFactory factory = e4Context.get(IRendererFactory.class);
 			AbstractPartRenderer obj = factory.getRenderer(mMenu, null);
-			if (obj instanceof MenuManagerRenderer) {
-				MenuManagerRenderer renderer = (MenuManagerRenderer) obj;
+			if (obj instanceof MenuManagerRenderer renderer) {
 				mMenu.setRenderer(renderer);
 				renderer.reconcileManagerToModel(menu, mMenu);
-				renderer.processContributions(mMenu, uri.getPath(), false,
-						"popup".equals(uri.getScheme())); //$NON-NLS-1$
+				renderer.processContributions(mMenu, uri.getPath(), false, "popup".equals(uri.getScheme())); //$NON-NLS-1$
 				// double cast because we're bad people
 				renderer.processContents((MElementContainer<MUIElement>) ((Object) mMenu));
 				final IEclipseContext evalContext;
@@ -257,11 +252,9 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 				} else {
 					evalContext = modelService.getContainingContext(mMenu);
 				}
-				MenuManagerRendererFilter.updateElementVisibility(mMenu, renderer, menu,
-						evalContext, 2, true);
+				MenuManagerRendererFilter.updateElementVisibility(mMenu, renderer, menu, evalContext, 2, true);
 			}
-		} else if (mgr instanceof ToolBarManager) {
-			ToolBarManager toolbar = (ToolBarManager) mgr;
+		} else if (mgr instanceof ToolBarManager toolbar) {
 			MToolBar mToolBar = getToolbarModel(model, toolbar, uri);
 			if (mToolBar == null) {
 				return;
@@ -269,8 +262,7 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 
 			IRendererFactory factory = e4Context.get(IRendererFactory.class);
 			AbstractPartRenderer obj = factory.getRenderer(mToolBar, null);
-			if (obj instanceof ToolBarManagerRenderer) {
-				ToolBarManagerRenderer renderer = (ToolBarManagerRenderer) obj;
+			if (obj instanceof ToolBarManagerRenderer renderer) {
 				mToolBar.setRenderer(renderer);
 				renderer.reconcileManagerToModel(toolbar, mToolBar);
 				renderer.processContribution(mToolBar, uri.getPath());
@@ -285,12 +277,10 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 	protected MToolBar getToolbarModel(MApplicationElement model, ToolBarManager toolbarManager,
 			MenuLocationURI location) {
 		final IRendererFactory factory = e4Context.get(IRendererFactory.class);
-		final AbstractPartRenderer obj = factory.getRenderer(
-				MenuFactoryImpl.eINSTANCE.createToolBar(), null);
-		if (!(obj instanceof ToolBarManagerRenderer)) {
+		final AbstractPartRenderer obj = factory.getRenderer(MenuFactoryImpl.eINSTANCE.createToolBar(), null);
+		if (!(obj instanceof ToolBarManagerRenderer renderer)) {
 			return null;
 		}
-		ToolBarManagerRenderer renderer = (ToolBarManagerRenderer) obj;
 		MToolBar mToolBar = renderer.getToolBarModel(toolbarManager);
 		if (mToolBar != null) {
 			String tag = "toolbar:" + location.getPath(); //$NON-NLS-1$
@@ -315,8 +305,7 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 	}
 
 	private void addToolbar(MApplicationElement model, MToolBar tb, IEclipseContext ctx) {
-		ArrayList<MToolBar> toolbars = (ArrayList<MToolBar>) model.getTransientData().get(
-				POPULATED_TOOL_BARS);
+		ArrayList<MToolBar> toolbars = (ArrayList<MToolBar>) model.getTransientData().get(POPULATED_TOOL_BARS);
 		if (toolbars == null) {
 			toolbars = new ArrayList<>();
 			model.getTransientData().put(POPULATED_TOOL_BARS, toolbars);
@@ -343,16 +332,14 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 		((Notifier) menu).eAdapters().add(ctx.get(UIEventPublisher.class));
 	}
 
-	protected MMenu getMenuModel(MApplicationElement model, MenuManager menuManager,
-			MenuLocationURI location) {
+	protected MMenu getMenuModel(MApplicationElement model, MenuManager menuManager, MenuLocationURI location) {
 
 		final IRendererFactory factory = e4Context.get(IRendererFactory.class);
-		final AbstractPartRenderer obj = factory.getRenderer(((WorkbenchWindow) getWindow())
-				.getModel().getMainMenu(), null);
-		if (!(obj instanceof MenuManagerRenderer)) {
+		final AbstractPartRenderer obj = factory.getRenderer(((WorkbenchWindow) getWindow()).getModel().getMainMenu(),
+				null);
+		if (!(obj instanceof MenuManagerRenderer renderer)) {
 			return null;
 		}
-		MenuManagerRenderer renderer = (MenuManagerRenderer) obj;
 		MMenu mMenu = renderer.getMenuModel(menuManager);
 		if (mMenu != null) {
 			final String tag;
@@ -391,52 +378,41 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 		return mMenu;
 	}
 
-
 	private MPart getPartToExtend() {
 		return (MPart) e4Context.getActiveLeaf().get(IServiceConstants.ACTIVE_PART);
 	}
 
 	@Override
 	public void releaseContributions(ContributionManager mgr) {
-		if (mgr instanceof MenuManager) {
-			MenuManager menu = (MenuManager) mgr;
+		if (mgr instanceof MenuManager menu) {
 			releaseContributionManager(menu);
-		} else if (mgr instanceof ToolBarManager) {
-			ToolBarManager toolbar = (ToolBarManager) mgr;
+		} else if (mgr instanceof ToolBarManager toolbar) {
 			releaseContributionManager(toolbar);
 		} else {
 			WorkbenchPlugin.log("releaseContributions: Unhandled manager: " + mgr); //$NON-NLS-1$
 		}
 	}
 
-	/**
-	 * @param toolbar
-	 */
 	private void releaseContributionManager(ToolBarManager toolbarManager) {
 		final IRendererFactory factory = e4Context.get(IRendererFactory.class);
-		final AbstractPartRenderer obj = factory.getRenderer(
-				MenuFactoryImpl.eINSTANCE.createToolBar(), null);
-		if (!(obj instanceof ToolBarManagerRenderer)) {
+		final AbstractPartRenderer obj = factory.getRenderer(MenuFactoryImpl.eINSTANCE.createToolBar(), null);
+		if (!(obj instanceof ToolBarManagerRenderer renderer)) {
 			return;
 		}
-		ToolBarManagerRenderer renderer = (ToolBarManagerRenderer) obj;
 		MToolBar mToolBar = renderer.getToolBarModel(toolbarManager);
 		if (mToolBar == null) {
 			return;
 		}
-		MApplicationElement model = (MApplicationElement) mToolBar.getTransientData().get(
-				ModelUtils.CONTAINING_PARENT);
+		MApplicationElement model = (MApplicationElement) mToolBar.getTransientData().get(ModelUtils.CONTAINING_PARENT);
 		if (model != null) {
 			((Notifier) mToolBar).eAdapters().clear();
-			ArrayList<MToolBar> toolbars = (ArrayList<MToolBar>) model.getTransientData().get(
-					POPULATED_TOOL_BARS);
+			ArrayList<MToolBar> toolbars = (ArrayList<MToolBar>) model.getTransientData().get(POPULATED_TOOL_BARS);
 			if (toolbars != null) {
 				toolbars.remove(mToolBar);
 			}
 		}
 		final ToolBar widget = toolbarManager.getControl();
-		if (widget != null && !widget.isDisposed()
-				&& widget.getData(AbstractPartRenderer.OWNING_ME) == null) {
+		if (widget != null && !widget.isDisposed() && widget.getData(AbstractPartRenderer.OWNING_ME) == null) {
 			widget.setData(AbstractPartRenderer.OWNING_ME, mToolBar);
 		}
 		final IPresentationEngine engine = e4Context.get(IPresentationEngine.class);
@@ -444,34 +420,27 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 		mToolBar.getTransientData().remove(ModelUtils.CONTAINING_PARENT);
 	}
 
-	/**
-	 * @param menu
-	 */
 	private void releaseContributionManager(MenuManager menuManager) {
 		final IRendererFactory factory = e4Context.get(IRendererFactory.class);
-		final AbstractPartRenderer obj = factory.getRenderer(((WorkbenchWindow) getWindow())
-				.getModel().getMainMenu(), null);
-		if (!(obj instanceof MenuManagerRenderer)) {
+		final AbstractPartRenderer obj = factory.getRenderer(((WorkbenchWindow) getWindow()).getModel().getMainMenu(),
+				null);
+		if (!(obj instanceof MenuManagerRenderer renderer)) {
 			return;
 		}
-		MenuManagerRenderer renderer = (MenuManagerRenderer) obj;
 		MMenu mMenu = renderer.getMenuModel(menuManager);
 		if (mMenu == null) {
 			return;
 		}
-		MApplicationElement model = (MApplicationElement) mMenu.getTransientData().get(
-				ModelUtils.CONTAINING_PARENT);
+		MApplicationElement model = (MApplicationElement) mMenu.getTransientData().get(ModelUtils.CONTAINING_PARENT);
 		if (model != null) {
 			((Notifier) mMenu).eAdapters().clear();
-			ArrayList<MMenu> menus = (ArrayList<MMenu>) model.getTransientData().get(
-					POPULATED_MENUS);
+			ArrayList<MMenu> menus = (ArrayList<MMenu>) model.getTransientData().get(POPULATED_MENUS);
 			if (menus != null) {
 				menus.remove(mMenu);
 			}
 		}
 		final Menu widget = menuManager.getMenu();
-		if (widget != null && !widget.isDisposed()
-				&& widget.getData(AbstractPartRenderer.OWNING_ME) == null) {
+		if (widget != null && !widget.isDisposed() && widget.getData(AbstractPartRenderer.OWNING_ME) == null) {
 			widget.setData(AbstractPartRenderer.OWNING_ME, mMenu);
 		}
 		final IPresentationEngine engine = e4Context.get(IPresentationEngine.class);
@@ -481,9 +450,6 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 
 	/**
 	 * Disposes contributions created by service for given part. See bug 537046.
-	 *
-	 * @param site
-	 * @param part
 	 */
 	@Override
 	public void clearContributions(PartSite site, MPart part) {
@@ -495,9 +461,8 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 			for (MToolBar mToolBar : toolbars) {
 				((Notifier) mToolBar).eAdapters().clear();
 				AbstractPartRenderer apr = rendererFactory.getRenderer(mToolBar, null);
-				if (apr instanceof ToolBarManagerRenderer) {
+				if (apr instanceof ToolBarManagerRenderer tbmr) {
 					ToolBarManager tbm = (ToolBarManager) actionBars.getToolBarManager();
-					ToolBarManagerRenderer tbmr = (ToolBarManagerRenderer) apr;
 					tbmr.clearModelToManager(mToolBar, tbm);
 					CompatibilityView.clearOpaqueToolBarItems(tbmr, mToolBar);
 				}
@@ -512,9 +477,8 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 			for (MMenu mMenu : menus) {
 				((Notifier) mMenu).eAdapters().clear();
 				AbstractPartRenderer apr = rendererFactory.getRenderer(mMenu, null);
-				if (apr instanceof MenuManagerRenderer) {
+				if (apr instanceof MenuManagerRenderer tbmr) {
 					MenuManager tbm = (MenuManager) actionBars.getMenuManager();
-					MenuManagerRenderer tbmr = (MenuManagerRenderer) apr;
 					tbmr.clearModelToManager(mMenu, tbm);
 					CompatibilityView.clearOpaqueMenuItems(tbmr, mMenu);
 				}
@@ -542,11 +506,11 @@ public class WorkbenchMenuService implements IMenuService, IMenuServiceWorkaroun
 	}
 
 	/**
-	 * read in the menu contributions and turn them into model menu
-	 * contributions
+	 * read in the menu contributions and turn them into model menu contributions
 	 */
 	public void readRegistry() {
 		persistence.read();
 	}
 
 }
+

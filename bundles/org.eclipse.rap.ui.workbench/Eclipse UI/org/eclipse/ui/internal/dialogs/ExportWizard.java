@@ -1,16 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Alain Bernard <alain.bernard1224@gmail.com> - Bug 281490
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
@@ -42,23 +38,20 @@ public class ExportWizard extends Wizard {
     private IStructuredSelection selection;
 
     //the list selection page
-    static class SelectionPage extends WorkbenchWizardListSelectionPage {
+    class SelectionPage extends WorkbenchWizardListSelectionPage {
         SelectionPage(IWorkbench w, IStructuredSelection ss, AdaptableList e,
                 String s) {
             super(w, ss, e, s, WorkbenchTriggerPoints.EXPORT_WIZARDS);
         }
 
-        @Override
 		public void createControl(Composite parent) {
             super.createControl(parent);
             workbench.getHelpSystem().setHelp(getControl(),
                     IWorkbenchHelpContextIds.EXPORT_WIZARD_SELECTION_WIZARD_PAGE);
         }
 
-        @Override
 		protected IWizardNode createWizardNode(WorkbenchWizardElement element) {
             return new WorkbenchWizardNode(this, element) {
-                @Override
 				public IWorkbenchWizard createWizard() throws CoreException {
                     return wizardElement.createWizard();
                 }
@@ -69,10 +62,9 @@ public class ExportWizard extends Wizard {
     /**
      * Creates the wizard's pages lazily.
      */
-    @Override
 	public void addPages() {
         addPage(new SelectionPage(this.theWorkbench, this.selection,
-                getAvailableExportWizards(), WorkbenchMessages.get().ExportWizard_selectWizard));
+                getAvailableExportWizards(), WorkbenchMessages.get().ExportWizard_selectDestination));
     }
 
     /**
@@ -113,7 +105,6 @@ public class ExportWizard extends Wizard {
      * Subclasses must implement this <code>IWizard</code> method
      * to perform any special finish processing for their wizard.
      */
-    @Override
 	public boolean performFinish() {
         ((SelectionPage) getPages()[0]).saveWidgetValues();
         return true;

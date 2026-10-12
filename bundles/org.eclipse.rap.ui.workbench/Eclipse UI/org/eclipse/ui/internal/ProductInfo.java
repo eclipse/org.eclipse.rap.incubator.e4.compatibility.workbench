@@ -20,10 +20,11 @@ import org.eclipse.jface.resource.ImageDescriptor;
  * Stores information about the product.  This class replaces the old AboutInfo.
  * The product information is available as strings, but is needed as URLs, etc.
  * This class manages that translation.
+ *
  * @since 3.0
  */
 public class ProductInfo {
-    private IProduct product;
+	private final IProduct product;
 
     private String productName;
 
@@ -40,8 +41,8 @@ public class ProductInfo {
     }
 
     /**
-     * Returns the product name or <code>null</code>.
-     * This is shown in the window title and the About action.
+	 * Returns the product name or <code>null</code>. This is shown in the window
+	 * title and the About action.
      *
      * @return the product name, or <code>null</code>
      */
@@ -53,11 +54,11 @@ public class ProductInfo {
     }
 
     /**
-     * Returns the application name or <code>null</code>. Note this is never
-     * shown to the user.  It is used to initialize the SWT Display.
+	 * Returns the application name or <code>null</code>. Note this is never shown
+	 * to the user. It is used to initialize the SWT Display.
      * <p>
-     * On Motif, for example, this can be used to set the name used
-     * for resource lookup.
+	 * On Motif, for example, this can be used to set the name used for resource
+	 * lookup.
      * </p>
      *
      * @return the application name, or <code>null</code>
@@ -86,10 +87,10 @@ public class ProductInfo {
     }
 
     /**
-     * Return an array of image descriptors for the window images to use for
-     * this product. The expectations is that the elements will be the same
-     * image rendered at different sizes. Products designed to run "headless"
-     * typically would not have such images.
+	 * Return an array of image descriptors for the window images to use for this
+	 * product. The expectations is that the elements will be the same image
+	 * rendered at different sizes. Products designed to run "headless" typically
+	 * would not have such images.
      *
      * @return an array of the image descriptors for the window images, or
      *         <code>null</code> if none
@@ -102,8 +103,8 @@ public class ProductInfo {
     }
 
     /**
-     * Returns the text to show in an "about" dialog for this product.
-     * Products designed to run "headless" typically would not have such text.
+	 * Returns the text to show in an "about" dialog for this product. Products
+	 * designed to run "headless" typically would not have such text.
      *
      * @return the about text, or <code>null</code> if none
      */

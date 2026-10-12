@@ -17,8 +17,8 @@ package org.eclipse.ui.internal.registry;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.TextProcessor;
@@ -30,10 +30,8 @@ import org.eclipse.ui.internal.WorkbenchImages;
 
 /**
  * Implementation of IFileEditorMapping.
- *
  */
-public class FileEditorMapping extends Object implements IFileEditorMapping,
-    Cloneable {
+public class FileEditorMapping extends Object implements IFileEditorMapping, Cloneable {
 
 	private static final String STAR = "*"; //$NON-NLS-1$
 	private static final String DOT = ".";	//$NON-NLS-1$
@@ -93,7 +91,6 @@ public class FileEditorMapping extends Object implements IFileEditorMapping,
     /**
      * Clone the receiver.
      */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object clone() {
         try {
@@ -113,58 +110,24 @@ public class FileEditorMapping extends Object implements IFileEditorMapping,
         if (this == obj) {
 			return true;
 		}
-        if (!(obj instanceof FileEditorMapping)) {
-			return false;
-		}
-        FileEditorMapping mapping = (FileEditorMapping) obj;
-        if (!this.name.equals(mapping.name)) {
-			return false;
-		}
-        if (!this.extension.equals(mapping.extension)) {
-			return false;
-		}
-
-        if (!compareList(this.editors, mapping.editors)) {
-			return false;
-		}
-		if (!compareList(this.declaredDefaultEditors, mapping.declaredDefaultEditors)) {
-			return false;
-		}
-        return compareList(this.deletedEditors, mapping.deletedEditors);
-    }
-
-    /**
-     * Compare the editor ids from both lists and return true if they
-     * are equals.
-     */
-	private boolean compareList(List<IEditorDescriptor> l1, List<IEditorDescriptor> l2) {
-        if (l1.size() != l2.size()) {
-			return false;
-		}
-
-		Iterator<IEditorDescriptor> i1 = l1.iterator();
-		Iterator<IEditorDescriptor> i2 = l2.iterator();
-        while (i1.hasNext() && i2.hasNext()) {
-            Object o1 = i1.next();
-            Object o2 = i2.next();
-            if (!(o1 == null ? o2 == null : o1.equals(o2))) {
+		if (!(obj instanceof FileEditorMapping mapping)) {
 				return false;
 			}
-        }
-        return true;
+		return Objects.equals(name, mapping.name) && Objects.equals(extension, mapping.extension)
+				&& Objects.equals(editors, mapping.editors)
+				&& Objects.equals(declaredDefaultEditors, mapping.declaredDefaultEditors)
+				&& Objects.equals(deletedEditors, mapping.deletedEditors);
     }
 
     @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((declaredDefaultEditors == null) ? 0 : declaredDefaultEditors.hashCode());
-		result = prime * result + ((deletedEditors == null) ? 0 : deletedEditors.hashCode());
-		result = prime * result + ((editors == null) ? 0 : editors.hashCode());
-		result = prime * result + ((extension == null) ? 0 : extension.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
+		result = prime * result + Objects.hashCode(declaredDefaultEditors);
+		result = prime * result + Objects.hashCode(deletedEditors);
+		result = prime * result + Objects.hashCode(editors);
+		result = prime * result + Objects.hashCode(extension);
+		return prime * result + Objects.hashCode(name);
 	}
 
     @Override
@@ -204,15 +167,14 @@ public class FileEditorMapping extends Object implements IFileEditorMapping,
 	public ImageDescriptor getImageDescriptor() {
         IEditorDescriptor editor = getDefaultEditor();
         if (editor == null) {
-            return WorkbenchImages
-                    .getImageDescriptor(ISharedImages.IMG_OBJ_FILE);
+			return WorkbenchImages.getImageDescriptor(ISharedImages.IMG_OBJ_FILE);
         }
         return editor.getImageDescriptor();
     }
 
     @Override
 	public String getLabel() {
-        return TextProcessor.process(name + (extension.length() == 0 ? "" : DOT + extension), STAR + DOT); 	//$NON-NLS-1$
+		return TextProcessor.process(name + (extension.isEmpty() ? "" : DOT + extension), STAR + DOT); //$NON-NLS-1$
     }
 
     @Override
@@ -233,8 +195,7 @@ public class FileEditorMapping extends Object implements IFileEditorMapping,
     }
 
     /**
-     * Set the default editor registered for file type
-     * described by this mapping.
+	 * Set the default editor registered for file type described by this mapping.
      *
      * @param editor the editor to be set as default
      */
@@ -247,11 +208,10 @@ public class FileEditorMapping extends Object implements IFileEditorMapping,
     }
 
     /**
-     * Set the collection of all editors (EditorDescriptor)
-     * registered for the file type described by this mapping.
-     * Typically an editor is registered either through a plugin or explicitly by
-     * the user modifying the associations in the preference pages.
-     * This modifies the internal list to share the passed list.
+	 * Set the collection of all editors (EditorDescriptor) registered for the file
+	 * type described by this mapping. Typically an editor is registered either
+	 * through a plugin or explicitly by the user modifying the associations in the
+	 * preference pages. This modifies the internal list to share the passed list.
      * (hence the clear indication of list in the method name)
      *
      * @param newEditors the new list of associated editors
@@ -262,11 +222,10 @@ public class FileEditorMapping extends Object implements IFileEditorMapping,
     }
 
     /**
-     * Set the collection of all editors (EditorDescriptor)
-     * formally registered for the file type described by this mapping
-     * which have been deleted by the user.
-     * This modifies the internal list to share the passed list.
-     * (hence the clear indication of list in the method name)
+	 * Set the collection of all editors (EditorDescriptor) formally registered for
+	 * the file type described by this mapping which have been deleted by the user.
+	 * This modifies the internal list to share the passed list. (hence the clear
+	 * indication of list in the method name)
      *
      * @param newDeletedEditors the new list of associated (but deleted) editors
      */
@@ -306,17 +265,16 @@ public class FileEditorMapping extends Object implements IFileEditorMapping,
 	}
 
 	/**
-	 * Return whether the editor is declared default.
-	 * If this is EditorDescriptor fails the ExpressionsCheck it will always
-	 * return <code>false</code>, even if it's the original default editor.
+	 * Return whether the editor is declared default. If this is EditorDescriptor
+	 * fails the ExpressionsCheck it will always return <code>false</code>, even if
+	 * it's the original default editor.
 	 *
 	 * @param editor the editor to test
 	 * @return whether the editor is declared default
 	 * @since 3.1
 	 */
 	public boolean isDeclaredDefaultEditor (IEditorDescriptor editor) {
-		return declaredDefaultEditors.contains(editor)
-				&& !WorkbenchActivityHelper.restrictUseOf(editor);
+		return declaredDefaultEditors.contains(editor) && !WorkbenchActivityHelper.restrictUseOf(editor);
 	}
 
 	/**

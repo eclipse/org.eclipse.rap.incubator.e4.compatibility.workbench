@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2016 IBM Corporation and others.
+ * Copyright (c) 2009, 2019 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -11,16 +11,18 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Lars Vogel <Lars.Vogel@vogella.com> - Bug 503387
+ *     Vladimir Piskarev <pisv@1c.ru> - Bug 543609
  ******************************************************************************/
 
 package org.eclipse.ui.internal.e4.compatibility;
 
+import jakarta.inject.Inject;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.inject.Inject;
 import org.eclipse.e4.core.contexts.ContextFunction;
 import org.eclipse.e4.core.contexts.IContextFunction;
 import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.ui.di.PersistState;
 import org.eclipse.e4.ui.internal.workbench.ContributionsAnalyzer;
 import org.eclipse.e4.ui.internal.workbench.OpaqueElementUtil;
 import org.eclipse.e4.ui.internal.workbench.swt.AbstractPartRenderer;
@@ -50,6 +52,7 @@ import org.eclipse.ui.internal.IMenuServiceWorkaround;
 import org.eclipse.ui.internal.PartSite;
 import org.eclipse.ui.internal.ViewActionBuilder;
 import org.eclipse.ui.internal.ViewReference;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.registry.ViewDescriptor;
 import org.eclipse.ui.internal.testing.ContributionInfoMessages;
@@ -58,7 +61,7 @@ import org.eclipse.ui.testing.ContributionInfo;
 
 public class CompatibilityView extends CompatibilityPart {
 
-	private ViewReference reference;
+	private final ViewReference reference;
 
 	@Inject
 	EModelService modelService;
@@ -120,8 +123,7 @@ public class CompatibilityView extends CompatibilityPart {
 
 		}
 		AbstractPartRenderer apr = rendererFactory.getRenderer(menu, parent);
-		if (apr instanceof MenuManagerRenderer) {
-			MenuManagerRenderer renderer = (MenuManagerRenderer) apr;
+		if (apr instanceof MenuManagerRenderer renderer) {
 			renderer.linkModelToManager(menu, mm);
 		}
 
@@ -153,16 +155,15 @@ public class CompatibilityView extends CompatibilityPart {
 
 		ViewDescriptor desc = reference.getDescriptor();
 		if (desc != null && desc.getPluginId() != null) {
-			parent.setData(new ContributionInfo(desc.getPluginId(),
-					ContributionInfoMessages.get().ContributionInfo_View, null));
+			parent.setData(
+					new ContributionInfo(desc.getPluginId(), ContributionInfoMessages.get().ContributionInfo_View, null));
 		}
 
 		// dispose the tb, it will be re-created when the tab is shown
 		toolBarParent.dispose();
 
 		apr = rendererFactory.getRenderer(menu, parent);
-		if (apr instanceof MenuManagerRenderer) {
-			MenuManagerRenderer renderer = (MenuManagerRenderer) apr;
+		if (apr instanceof MenuManagerRenderer renderer) {
 			// create opaque items for any contribution items that were added
 			// directly to the manager
 			renderer.reconcileManagerToModel(mm, menu);
@@ -178,11 +179,10 @@ public class CompatibilityView extends CompatibilityPart {
 		final IContextFunction func = new ContextFunction() {
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
-				if (toolbarContributed.get()) {
+				if (toolbarContributed.getAndSet(true)) {
 					// fix for bug 448873: don't contribute to the toolbar twice
 					return null;
 				}
-				toolbarContributed.set(true);
 				final ViewActionBuilder actionBuilder = new ViewActionBuilder();
 				actionBuilder.readActionExtensions(getView());
 				ActionDescriptor[] actionDescriptors = actionBuilder.getExtendedActions();
@@ -193,14 +193,13 @@ public class CompatibilityView extends CompatibilityPart {
 							IAction action = actionDescriptor.getAction();
 
 							if (action != null && action.getActionDefinitionId() != null) {
-								hs.activateHandler(action.getActionDefinitionId(),
-										new ActionHandler(action));
+								hs.activateHandler(action.getActionDefinitionId(), new ActionHandler(action));
 							}
 						}
 					}
 				}
 				actionBars.updateActionBars();
-				final Runnable dispose = () -> actionBuilder.dispose();
+				Runnable dispose = actionBuilder::dispose;
 				return dispose;
 			}
 		};
@@ -212,6 +211,18 @@ public class CompatibilityView extends CompatibilityPart {
 		}
 
 		return true;
+	}
+
+	@Override
+	@PersistState
+	void persistState() {
+		super.persistState();
+
+		// call ViewReference.persist() whenever E4 asks to persist state
+		// except for when the workbench closes since it has already been called
+		if (!Workbench.getInstance().isClosing()) {
+			reference.persist();
+		}
 	}
 
 	public static void clearOpaqueMenuItems(MenuManagerRenderer renderer, MMenu menu) {
@@ -228,8 +239,7 @@ public class CompatibilityView extends CompatibilityPart {
 			} else if (OpaqueElementUtil.isOpaqueMenuItem(child)) {
 				OpaqueElementUtil.clearOpaqueItem(child);
 				it.remove();
-			} else if (child instanceof MMenu) {
-				MMenu submenu = (MMenu) child;
+			} else if (child instanceof MMenu submenu) {
 				MenuManager manager = renderer.getManager(submenu);
 				if (manager != null) {
 					renderer.clearModelToManager(submenu, manager);
@@ -252,8 +262,7 @@ public class CompatibilityView extends CompatibilityPart {
 		for (MMenu menu : part.getMenus()) {
 			if (menu.getTags().contains(StackRenderer.TAG_VIEW_MENU)) {
 				AbstractPartRenderer apr = rendererFactory.getRenderer(menu, null);
-				if (apr instanceof MenuManagerRenderer) {
-					MenuManagerRenderer renderer = (MenuManagerRenderer) apr;
+				if (apr instanceof MenuManagerRenderer renderer) {
 					MenuManager mm = (MenuManager) actionBars.getMenuManager();
 					renderer.clearModelToManager(menu, mm);
 					clearOpaqueMenuItems(renderer, menu);
@@ -265,9 +274,8 @@ public class CompatibilityView extends CompatibilityPart {
 		MToolBar toolbar = part.getToolbar();
 		if (toolbar != null) {
 			AbstractPartRenderer apr = rendererFactory.getRenderer(toolbar, null);
-			if (apr instanceof ToolBarManagerRenderer) {
+			if (apr instanceof ToolBarManagerRenderer tbmr) {
 				ToolBarManager tbm = (ToolBarManager) actionBars.getToolBarManager();
-				ToolBarManagerRenderer tbmr = (ToolBarManagerRenderer) apr;
 				tbmr.clearModelToManager(toolbar, tbm);
 				clearOpaqueToolBarItems(tbmr, toolbar);
 			}
@@ -280,10 +288,9 @@ public class CompatibilityView extends CompatibilityPart {
 
 	private static void clearMenuServiceContributions(PartSite site, MPart part) {
 		IMenuService menuService = site.getService(IMenuService.class);
-		if (!(menuService instanceof IMenuServiceWorkaround)) {
+		if (!(menuService instanceof IMenuServiceWorkaround service)) {
 			return;
 		}
-		IMenuServiceWorkaround service = (IMenuServiceWorkaround) menuService;
 		service.clearContributions(site, part);
 	}
 

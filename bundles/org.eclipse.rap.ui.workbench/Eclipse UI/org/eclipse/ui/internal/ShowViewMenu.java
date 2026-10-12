@@ -1,21 +1,16 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
  *******************************************************************************/
 
 package org.eclipse.ui.internal;
 
-import com.ibm.icu.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,6 +19,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IParameter;
@@ -57,6 +53,8 @@ import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.views.IViewDescriptor;
 import org.eclipse.ui.views.IViewRegistry;
 
+import com.ibm.icu.text.Collator;
+
 /**
  * A <code>ShowViewMenu</code> is used to populate a menu manager with Show
  * View actions. The visible views are determined by user preference from the
@@ -66,28 +64,28 @@ public class ShowViewMenu extends ContributionItem {
 	/**
 	 * @deprecated As of 3.5, replaced by {@link IWorkbenchCommandConstants#VIEWS_SHOW_VIEW}
 	 */
-	@Deprecated
 	public static final String SHOW_VIEW_ID= IWorkbenchCommandConstants.VIEWS_SHOW_VIEW;
 	/**
 	 * @deprecated As of 3.6, replaced by
 	 *             {@link IWorkbenchCommandConstants#VIEWS_SHOW_VIEW_PARM_ID}
 	 */
-	@Deprecated
 	public static final String VIEW_ID_PARM = IWorkbenchCommandConstants.VIEWS_SHOW_VIEW_PARM_ID;
 
 	private IWorkbenchWindow window;
 
 // RAP [rh] Cannot referene NLS message with static field
-//		private static final String NO_TARGETS_MSG = WorkbenchMessages.Workbench_showInNoTargets;
-	private static final String NO_TARGETS_MSG = WorkbenchMessages.get().Workbench_showInNoTargets;
+//	private static final String NO_TARGETS_MSG = WorkbenchMessages.get().Workbench_showInNoTargets;
+	private final String NO_TARGETS_MSG = WorkbenchMessages.get().Workbench_showInNoTargets;
 
-	private Comparator actionComparator = (o1, o2) -> {
+	private Comparator actionComparator = new Comparator() {
+		public int compare(Object o1, Object o2) {
 		if (collator == null) {
 			collator = Collator.getInstance();
 		}
 		CommandContributionItemParameter a1 = (CommandContributionItemParameter) o1;
 		CommandContributionItemParameter a2 = (CommandContributionItemParameter) o2;
 		return collator.compare(a1.label, a2.label);
+		}
 	};
 
 	private Action showDlgAction;
@@ -97,9 +95,14 @@ public class ShowViewMenu extends ContributionItem {
 	// Maps pages to a list of opened views
 	private Map openedViews = new HashMap();
 
-	private MenuManager menuManager;
+	protected boolean dirty = true;
 
-	private IMenuListener menuListener = manager -> manager.markDirty();
+	private IMenuListener menuListener = new IMenuListener() {
+		public void menuAboutToShow(IMenuManager manager) {
+			manager.markDirty();
+			dirty = true;
+		}
+	};
 	private boolean makeFast;
 
 	private static Collator collator;
@@ -131,14 +134,13 @@ public class ShowViewMenu extends ContributionItem {
 		super(id);
 		this.window = window;
 		this.makeFast = makeFast;
-		final IHandlerService handlerService = window
+		final IHandlerService handlerService = (IHandlerService) window
 				.getService(IHandlerService.class);
-		final ICommandService commandService = window
+		final ICommandService commandService = (ICommandService) window
 				.getService(ICommandService.class);
 		final ParameterizedCommand cmd = getCommand(commandService, makeFast);
 
 		showDlgAction = new Action(WorkbenchMessages.get().ShowView_title) {
-			@Override
 			public void run() {
 				try {
 					handlerService.executeCommand(cmd, null);
@@ -166,10 +168,13 @@ public class ShowViewMenu extends ContributionItem {
 
 	}
 
+	public boolean isDirty() {
+		return dirty;
+	}
+
 	/**
 	 * Overridden to always return true and force dynamic menu building.
 	 */
-	@Override
 	public boolean isDynamic() {
 		return true;
 	}
@@ -243,12 +248,20 @@ public class ShowViewMenu extends ContributionItem {
 			pluginId = ((ViewDescriptor) v).getPluginId();
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.ui.IPluginContribution#getLocalId()
+		 */
 		public String getLocalId() {
 			return localId;
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.ui.IPluginContribution#getPluginId()
+		 */
 		public String getPluginId() {
 			return pluginId;
 		}
@@ -307,29 +320,28 @@ public class ShowViewMenu extends ContributionItem {
 		return parts;
 	}
 
-	@Override
 	public void fill(Menu menu, int index) {
 		if (getParent() instanceof MenuManager) {
 			((MenuManager) getParent()).addMenuListener(menuListener);
 		}
 
-		if (menuManager != null) {
-			menuManager.dispose();
-			menuManager = null;
+		if (!dirty) {
+			return;
 		}
 
-		menuManager = new MenuManager();
-		fillMenu(menuManager);
-		IContributionItem items[] = menuManager.getItems();
+		MenuManager manager = new MenuManager();
+		fillMenu(manager);
+		IContributionItem items[] = manager.getItems();
 		if (items.length == 0) {
 			MenuItem item = new MenuItem(menu, SWT.NONE, index++);
 			item.setText(NO_TARGETS_MSG);
 			item.setEnabled(false);
 		} else {
-			for (IContributionItem item : items) {
-				item.fill(menu, index++);
+			for (int i = 0; i < items.length; i++) {
+				items[i].fill(menu, index++);
 			}
 		}
+		dirty = false;
 	}
 
 	// for dynamic UI
@@ -357,16 +369,5 @@ public class ShowViewMenu extends ContributionItem {
 			}
 		}
 		return new ParameterizedCommand(c, parms);
-	}
-
-	@Override
-	public void dispose() {
-		if (menuManager != null) {
-			menuManager.dispose();
-			menuManager = null;
-		}
-		openedViews.clear();
-		window = null;
-		super.dispose();
 	}
 }

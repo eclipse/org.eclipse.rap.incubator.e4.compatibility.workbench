@@ -17,8 +17,8 @@ package org.eclipse.ui.activities;
 import java.util.Set;
 
 /**
- * An instance of this interface allows clients to manage activities, as
- * defined by the extension point <code>org.eclipse.ui.activities</code>.
+ * An instance of this interface allows clients to manage activities, as defined
+ * by the extension point <code>org.eclipse.ui.activities</code>.
  * <p>
  * This interface is not intended to be extended or implemented by clients.
  * </p>
@@ -29,23 +29,21 @@ import java.util.Set;
 public interface IActivityManager {
 
     /**
-     * Registers an instance of <code>IActivityManagerListener</code> to
-     * listen for changes to properties of this instance.
+	 * Registers an instance of <code>IActivityManagerListener</code> to listen for
+	 * changes to properties of this instance.
      *
-     * @param activityManagerListener
-     *            the instance to register. Must not be <code>null</code>.
-     *            If an attempt is made to register an instance which is
-     *            already registered with this instance, no operation is
+	 * @param activityManagerListener the instance to register. Must not be
+	 *                                <code>null</code>. If an attempt is made to
+	 *                                register an instance which is already
+	 *                                registered with this instance, no operation is
      *            performed.
      */
-    void addActivityManagerListener(
-            IActivityManagerListener activityManagerListener);
+	void addActivityManagerListener(IActivityManagerListener activityManagerListener);
 
     /**
      * Returns an instance of <code>IActivity</code> given an identifier.
      *
-     * @param activityId
-     *            an identifier. Must not be <code>null</code>
+	 * @param activityId an identifier. Must not be <code>null</code>
      * @return an instance of <code>IActivity</code>.
      */
     IActivity getActivity(String activityId);
@@ -53,8 +51,7 @@ public interface IActivityManager {
     /**
      * Returns an instance of <code>ICategory</code> given an identifier.
      *
-     * @param categoryId
-     *            an identifier. Must not be <code>null</code>
+	 * @param categoryId an identifier. Must not be <code>null</code>
      * @return an instance of <code>ICategory</code>.
      */
     ICategory getCategory(String categoryId);
@@ -62,13 +59,12 @@ public interface IActivityManager {
     /**
      * Returns the set of identifiers to defined activities.
      * <p>
-     * Notification is sent to all registered listeners if this property
-     * changes.
+	 * Notification is sent to all registered listeners if this property changes.
      * </p>
      *
-     * @return the set of identifiers to defined activities. This set may be
-     *         empty, but is guaranteed not to be <code>null</code>. If this
-     *         set is not empty, it is guaranteed to only contain instances of
+	 * @return the set of identifiers to defined activities. This set may be empty,
+	 *         but is guaranteed not to be <code>null</code>. If this set is not
+	 *         empty, it is guaranteed to only contain instances of
      *         <code>String</code>.
      */
 	Set<String> getDefinedActivityIds();
@@ -76,13 +72,12 @@ public interface IActivityManager {
     /**
      * Returns the set of identifiers to defined categories.
      * <p>
-     * Notification is sent to all registered listeners if this property
-     * changes.
+	 * Notification is sent to all registered listeners if this property changes.
      * </p>
      *
-     * @return the set of identifiers to defined categories. This set may be
-     *         empty, but is guaranteed not to be <code>null</code>. If this
-     *         set is not empty, it is guaranteed to only contain instances of
+	 * @return the set of identifiers to defined categories. This set may be empty,
+	 *         but is guaranteed not to be <code>null</code>. If this set is not
+	 *         empty, it is guaranteed to only contain instances of
      *         <code>String</code>.
      */
 	Set<String> getDefinedCategoryIds();
@@ -90,13 +85,12 @@ public interface IActivityManager {
     /**
      * Returns the set of identifiers to enabled activities.
      * <p>
-     * Notification is sent to all registered listeners if this property
-     * changes.
+	 * Notification is sent to all registered listeners if this property changes.
      * </p>
      *
-     * @return the set of identifiers to enabled activities. This set may be
-     *         empty, but is guaranteed not to be <code>null</code>. If this
-     *         set is not empty, it is guaranteed to only contain instances of
+	 * @return the set of identifiers to enabled activities. This set may be empty,
+	 *         but is guaranteed not to be <code>null</code>. If this set is not
+	 *         empty, it is guaranteed to only contain instances of
      *         <code>String</code>.
      */
 	Set<String> getEnabledActivityIds();
@@ -104,22 +98,29 @@ public interface IActivityManager {
     /**
      * Returns an instance of <code>IIdentifier</code> given an identifier.
      *
-     * @param identifierId
-     *            an identifier. Must not be <code>null</code>
+	 * @param identifierId an identifier. Must not be <code>null</code>
      * @return an instance of <code>IIdentifier</code>.
      */
     IIdentifier getIdentifier(String identifierId);
 
     /**
-     * Removes an instance of <code>IActivityManagerListener</code>
-     * listening for changes to properties of this instance.
+	 * Removes an instance of <code>IActivityManagerListener</code> listening for
+	 * changes to properties of this instance.
      *
-     * @param activityManagerListener
-     *            the instance to remove. Must not be <code>null</code>.
-     *            If an attempt is made to remove an instance which is not
-     *            already registered with this instance, no operation is
+	 * @param activityManagerListener the instance to remove. Must not be
+	 *                                <code>null</code>. If an attempt is made to
+	 *                                remove an instance which is not already
+	 *                                registered with this instance, no operation is
      *            performed.
      */
-    void removeActivityManagerListener(
-            IActivityManagerListener activityManagerListener);
+	void removeActivityManagerListener(IActivityManagerListener activityManagerListener);
+
+	/**
+	 * Disposes this activity manager. Removes all listeners. The behavior of all
+	 * other methods after disposing is undefined.
+	 *
+	 * @since 3.131
+	 */
+	void dispose();
+
 }

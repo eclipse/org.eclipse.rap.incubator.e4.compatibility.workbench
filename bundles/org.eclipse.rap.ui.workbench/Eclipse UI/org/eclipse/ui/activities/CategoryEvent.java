@@ -16,9 +16,8 @@ package org.eclipse.ui.activities;
 
 /**
  * An instance of this class describes changes to an instance of
- * <code>ICategory</code>.  This class does not give details as to the
- * specifics of a change, only that the given property on the source object has
- * changed.
+ * <code>ICategory</code>. This class does not give details as to the specifics
+ * of a change, only that the given property on the source object has changed.
  *
  * <p>
  * This class is not intended to be extended by clients.
@@ -28,32 +27,32 @@ package org.eclipse.ui.activities;
  * @see ICategoryListener#categoryChanged(CategoryEvent)
  */
 public final class CategoryEvent {
-    private ICategory category;
+	private final ICategory category;
 
-    private boolean categoryActivityBindingsChanged;
+	private final boolean categoryActivityBindingsChanged;
 
-    private boolean definedChanged;
+	private final boolean definedChanged;
 
-    private boolean nameChanged;
+	private final boolean nameChanged;
 
-    private boolean descriptionChanged;
+	private final boolean descriptionChanged;
 
     /**
      * Creates a new instance of this class.
      *
-     * @param category
-     *        the instance of the interface that changed.
-     * @param categoryActivityBindingsChanged
-     *        <code>true</code>, iff the categoryActivityBindings property changed.
-     * @param definedChanged
-     *        <code>true</code>, iff the defined property changed.
-     * @param descriptionChanged
-     *        <code>true</code>, iff the description property changed.
-     * @param nameChanged
-     *        <code>true</code>, iff the name property changed.
+	 * @param category                        the instance of the interface that
+	 *                                        changed.
+	 * @param categoryActivityBindingsChanged <code>true</code>, iff the
+	 *                                        categoryActivityBindings property
+	 *                                        changed.
+	 * @param definedChanged                  <code>true</code>, iff the defined
+	 *                                        property changed.
+	 * @param descriptionChanged              <code>true</code>, iff the description
+	 *                                        property changed.
+	 * @param nameChanged                     <code>true</code>, iff the name
+	 *                                        property changed.
      */
-    public CategoryEvent(ICategory category,
-            boolean categoryActivityBindingsChanged, boolean definedChanged,
+	public CategoryEvent(ICategory category, boolean categoryActivityBindingsChanged, boolean definedChanged,
             boolean descriptionChanged, boolean nameChanged) {
         if (category == null) {
 			throw new NullPointerException();

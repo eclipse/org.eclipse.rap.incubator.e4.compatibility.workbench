@@ -17,19 +17,25 @@
 package org.eclipse.ui.internal.quickaccess;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.e4.core.commands.ExpressionContext;
-import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.SWTKeySupport;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.DialogSettings;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -40,19 +46,33 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.progress.ProgressManagerUtil;
+import org.eclipse.ui.internal.quickaccess.providers.ActionProvider;
+import org.eclipse.ui.internal.quickaccess.providers.EditorProvider;
+import org.eclipse.ui.internal.quickaccess.providers.HelpSearchProvider;
+import org.eclipse.ui.internal.quickaccess.providers.PerspectiveProvider;
+import org.eclipse.ui.internal.quickaccess.providers.PreferenceProvider;
+import org.eclipse.ui.internal.quickaccess.providers.PropertiesProvider;
+import org.eclipse.ui.internal.quickaccess.providers.WizardProvider;
 import org.eclipse.ui.keys.IBindingService;
+import org.eclipse.ui.quickaccess.QuickAccessElement;
+import org.osgi.framework.FrameworkUtil;
 
 /**
  * This is the quick access popup dialog used in 3.x. The new quick access is
@@ -66,62 +86,79 @@ public class QuickAccessDialog extends PopupDialog {
 	private Command invokingCommand;
 	private QuickAccessContents contents;
 	private KeyAdapter keyAdapter;
+	private Set<ModifyListener> toRemoveTextListeners;
 	private Text filterText;
+	private Label hintText;
+	private Table table;
 	private IWorkbenchWindow window;
-	private LinkedList previousPicksList = new LinkedList();
-	private static final String TEXT_ARRAY = "textArray"; //$NON-NLS-1$
+	private static final String USER_INPUT_TEXTS = "textArray"; //$NON-NLS-1$
 	private static final String TEXT_ENTRIES = "textEntries"; //$NON-NLS-1$
 	private static final String ORDERED_PROVIDERS = "orderedProviders"; //$NON-NLS-1$
 	private static final String ORDERED_ELEMENTS = "orderedElements"; //$NON-NLS-1$
 	static final int MAXIMUM_NUMBER_OF_ELEMENTS = 60;
 	static final int MAXIMUM_NUMBER_OF_TEXT_ENTRIES_PER_ELEMENT = 3;
-	protected Map textMap = new HashMap();
-	protected Map elementMap = new HashMap();
-	protected Map providerMap;
+	protected Map<QuickAccessElement, ArrayList<String>> textMap = new HashMap<>();
+	protected Map<String, QuickAccessElement> elementMap = new HashMap<>();
+	private final Display display;
+	private String lastSelectionFilter = ""; //$NON-NLS-1$
+	private PreviousPicksProvider previousPicksProvider;
 
-	public QuickAccessDialog(final IWorkbenchWindow window, final Command invokingCommand) {
-		super(ProgressManagerUtil.getDefaultParent(), SWT.RESIZE, true, true, // persist
+	public QuickAccessDialog(IWorkbenchWindow window, Command invokingCommand) {
+		super(ProgressManagerUtil.getDefaultParent(), SWT.RESIZE | SWT.BORDER, true, true, // persist
 																				// size
 				false, // but not location
-				true, true, null, QuickAccessMessages.QuickAccess_StartTypingToFindMatches);
+				true, true, QuickAccessMessages.get().QuickAccessContents_QuickAccess,
+				QuickAccessMessages.get().QuickAccess_StartTypingToFindMatches);
 		this.window = window;
-
+		this.display = window.getShell() != null ? window.getShell().getDisplay() : null;
 		WorkbenchWindow workbenchWindow = (WorkbenchWindow) window;
-		final MWindow model = workbenchWindow.getModel();
+		// [rap] no e4
+		//final MWindow model = workbenchWindow.getModel();
 
-		BusyIndicator.showWhile(window.getShell() == null ? null : window.getShell().getDisplay(),
-				() -> {
-					final CommandProvider commandProvider = new CommandProvider();
-					commandProvider.setSnapshot(new ExpressionContext(model.getContext()
-							.getActiveLeaf()));
-					QuickAccessProvider[] providers = new QuickAccessProvider[] {
-							new PreviousPicksProvider(previousPicksList),
-							new EditorProvider(),
-							new ViewProvider(model.getContext().get(MApplication.class), model),
-							new PerspectiveProvider(), commandProvider, new ActionProvider(),
-							new WizardProvider(), new PreferenceProvider(),
-							new PropertiesProvider() };
-					providerMap = new HashMap();
-					for (QuickAccessProvider provider : providers) {
-						providerMap.put(provider.getId(), provider);
-					}
-					QuickAccessDialog.this.contents = new QuickAccessContents(providers) {
+		BusyIndicator.showWhile(window.getShell() == null ? null : window.getShell().getDisplay(), () -> {
+			// [rap] no e4
+			//final CommandProvider commandProvider = new CommandProvider();
+			//commandProvider.setContext(model.getContext().getActiveLeaf());
+			List<QuickAccessProvider> providers = new ArrayList<>();
+			previousPicksProvider = new PreviousPicksProvider(MAXIMUM_NUMBER_OF_ELEMENTS);
+			previousPicksProvider.setElementsInitializer(() -> restorePreviousEntries(providers));
+			providers.add(previousPicksProvider);
+			providers.add(new EditorProvider());
+			// [rap] no e4
+			//providers.add(new ViewProvider(model.getContext().get(MApplication.class), model));
+			providers.add(new PerspectiveProvider());
+			// [rap] no e4
+			//providers.add(commandProvider);
+			providers.add(new ActionProvider());
+			providers.add(new WizardProvider());
+			providers.add(new PreferenceProvider());
+			providers.add(new PropertiesProvider());
+			providers.addAll(QuickAccessExtensionManager.getProviders(() -> {
+				if (display != null) {
+					display.asyncExec(() -> {
+						QuickAccessDialog dialog = new QuickAccessDialog(window, invokingCommand);
+						dialog.filterText.setText(lastSelectionFilter);
+						dialog.open();
+					});
+				}
+			}));
+			//providers.add(new HelpSearchProvider());
+
+			Collection<String> previousPickProviderIds = getPreviousPickProviderIds(getDialogSettings());
+			previousPicksProvider.setInvolvedProviders(
+					providers.stream().filter(provider -> previousPickProviderIds.contains(provider.getId()))
+							.collect(Collectors.toSet()));
+			QuickAccessDialog.this.contents = new QuickAccessContents(
+					providers.toArray(new QuickAccessProvider[providers.size()])) {
 						@Override
-						protected void updateFeedback(boolean filterTextEmpty,
-								boolean showAllMatches) {
-							if (filterTextEmpty) {
-								setInfoText(QuickAccessMessages.QuickAccess_StartTypingToFindMatches);
-							} else {
+				protected void updateFeedback(boolean filterTextEmpty, boolean showAllMatches) {
 								TriggerSequence[] sequences = getInvokingCommandKeySequences();
-								if (showAllMatches || sequences == null
-										|| sequences.length == 0) {
+					if (showAllMatches || sequences == null || sequences.length == 0) {
 									setInfoText(""); //$NON-NLS-1$
 								} else {
-									setInfoText(NLS
-											.bind(QuickAccessMessages.QuickAccess_PressKeyToShowAllMatches,
+						setInfoText(NLS.bind(QuickAccessMessages.get().QuickAccess_PressKeyToShowAllMatches,
 													sequences[0].format()));
 								}
-							}
 						}
 
 						@Override
@@ -132,65 +169,28 @@ public class QuickAccessDialog extends PopupDialog {
 						/**
 						 * @param element
 						 */
-						void addPreviousPick(String text, Object element) {
-							// previousPicksList:
-							// Remove element from previousPicksList so
-							// there are no duplicates
-							// If list is max size, remove last(oldest)
-							// element
-							// Remove entries for removed element from
-							// elementMap and textMap
-							// Add element to front of previousPicksList
-							previousPicksList.remove(element);
-							if (previousPicksList.size() == MAXIMUM_NUMBER_OF_ELEMENTS) {
-								Object removedElement = previousPicksList.removeLast();
-								ArrayList removedList = (ArrayList) textMap
-										.remove(removedElement);
-								for (int i = 0; i < removedList.size(); i++) {
-									elementMap.remove(removedList.get(i));
-								}
-							}
-							previousPicksList.addFirst(element);
-
-							// textMap:
-							// Get list of strings for element from textMap
-							// Create new list for element if there isn't
-							// one and put
-							// element->textList in textMap
-							// Remove rememberedText from list
-							// If list is max size, remove first(oldest)
-							// string
-							// Remove text from elementMap
-							// Add rememberedText to list of strings for
-							// element in textMap
-							ArrayList textList = (ArrayList) textMap.get(element);
-							if (textList == null) {
-								textList = new ArrayList();
-								textMap.put(element, textList);
-							}
-
+				void addPreviousPick(String text, QuickAccessElement element) {
+					previousPicksProvider.addPreviousPick(element, removedElement -> {
+						ArrayList<String> removedList = textMap.remove(removedElement);
+						removedList.forEach(elementMap::remove);
+					});
+					ArrayList<String> textList = textMap.computeIfAbsent(element, key -> new ArrayList<>());
 							textList.remove(text);
 							if (textList.size() == MAXIMUM_NUMBER_OF_TEXT_ENTRIES_PER_ELEMENT) {
-								Object removedText = textList.remove(0);
+						String removedText = textList.remove(0);
 								elementMap.remove(removedText);
 							}
 
-							if (text.length() > 0) {
+					if (!text.isEmpty()) {
 								textList.add(text);
-
-								// elementMap:
-								// Put rememberedText->element in elementMap
-								// If it replaced a different element update
-								// textMap and
-								// PreviousPicksList
-								Object replacedElement = elementMap.put(text, element);
+						QuickAccessElement replacedElement = elementMap.put(text, element);
 								if (replacedElement != null && !replacedElement.equals(element)) {
-									textList = (ArrayList) textMap.get(replacedElement);
+							textList = textMap.get(replacedElement);
 									if (textList != null) {
 										textList.remove(text);
 										if (textList.isEmpty()) {
 											textMap.remove(replacedElement);
-											previousPicksList.remove(replacedElement);
+									previousPicksProvider.removeElement(replacedElement);
 										}
 									}
 								}
@@ -199,31 +199,27 @@ public class QuickAccessDialog extends PopupDialog {
 
 						@Override
 						protected QuickAccessElement getPerfectMatch(String filter) {
-							QuickAccessElement perfectMatch = (QuickAccessElement) elementMap
-									.get(filter);
-							return perfectMatch;
+					return elementMap.get(filter);
 						}
 
 						@Override
 						protected void handleElementSelected(String text, Object selectedElement) {
+					lastSelectionFilter = text;
 							if (selectedElement instanceof QuickAccessElement) {
-								addPreviousPick(text, selectedElement);
+						addPreviousPick(text, (QuickAccessElement) selectedElement);
 								storeDialog(getDialogSettings());
 
 								/*
-								 * Execute after the dialog has been fully
-								 * closed/disposed and the correct
+						 * Execute after the dialog has been fully closed/disposed and the correct
 								 * EclipseContext is in place.
 								 */
 								final QuickAccessElement element = (QuickAccessElement) selectedElement;
-								window.getShell().getDisplay().asyncExec(() -> element.execute());
+						window.getShell().getDisplay().asyncExec(element::execute);
 							}
 						}
 					};
-					restoreDialog();
 					QuickAccessDialog.this.invokingCommand = invokingCommand;
-					if (QuickAccessDialog.this.invokingCommand != null
-							&& !QuickAccessDialog.this.invokingCommand.isDefined()) {
+			if (QuickAccessDialog.this.invokingCommand != null && !QuickAccessDialog.this.invokingCommand.isDefined()) {
 						QuickAccessDialog.this.invokingCommand = null;
 					} else {
 						// Pre-fetch key sequence - do not change because
@@ -234,19 +230,16 @@ public class QuickAccessDialog extends PopupDialog {
 					// create early
 					create();
 				});
-		QuickAccessDialog.this.contents.refresh(""); //$NON-NLS-1$
+		QuickAccessDialog.this.contents.updateProposals(""); //$NON-NLS-1$
 	}
 
 	@Override
 	protected Control createTitleControl(Composite parent) {
+		parent.getShell().setText(QuickAccessMessages.get().QuickAccessContents_QuickAccess);
 		filterText = new Text(parent, SWT.NONE);
-
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false)
-				.applyTo(filterText);
-
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(filterText);
 		contents.hookFilterText(filterText);
 		filterText.addKeyListener(getKeyAdapter());
-
 		return filterText;
 	}
 
@@ -254,20 +247,23 @@ public class QuickAccessDialog extends PopupDialog {
 	protected Control createDialogArea(Composite parent) {
 		Composite composite = (Composite) super.createDialogArea(parent);
 		boolean isWin32 = Util.isWindows();
-		GridLayoutFactory.fillDefaults().extendedMargins(isWin32 ? 0 : 3, 3, 2, 2)
-				.applyTo(composite);
+		GridLayoutFactory.fillDefaults().extendedMargins(isWin32 ? 0 : 3, 3, 2, 2).applyTo(composite);
+		hintText = contents.createHintText(composite, SWT.DEFAULT);
+		GridData gridData = new GridData(SWT.FILL, SWT.DEFAULT, true, false,
+				((GridLayout) composite.getLayout()).numColumns, 1);
+		gridData.horizontalIndent = IDialogConstants.HORIZONTAL_MARGIN;
+		hintText.setLayoutData(gridData);
 
-		Table table = contents.createTable(composite, getDefaultOrientation());
+		table = contents.createTable(composite, getDefaultOrientation());
 		table.addKeyListener(getKeyAdapter());
 
 		return composite;
 	}
 
-	final protected TriggerSequence[] getInvokingCommandKeySequences() {
+	private TriggerSequence[] getInvokingCommandKeySequences() {
 		if (invokingCommandKeySequences == null) {
 			if (invokingCommand != null) {
-				IBindingService bindingService =
-						Adapters.adapt(window.getWorkbench(), IBindingService.class);
+				IBindingService bindingService = Adapters.adapt(window.getWorkbench(), IBindingService.class);
 				invokingCommandKeySequences = bindingService.getActiveBindingsFor(invokingCommand.getId());
 			}
 		}
@@ -280,8 +276,8 @@ public class QuickAccessDialog extends PopupDialog {
 				@Override
 				public void keyPressed(KeyEvent e) {
 					int accelerator = SWTKeySupport.convertEventToUnmodifiedAccelerator(e);
-					KeySequence keySequence = KeySequence.getInstance(SWTKeySupport
-							.convertAcceleratorToKeyStroke(accelerator));
+					KeySequence keySequence = KeySequence
+							.getInstance(SWTKeySupport.convertAcceleratorToKeyStroke(accelerator));
 					TriggerSequence[] sequences = getInvokingCommandKeySequences();
 					if (sequences == null)
 						return;
@@ -305,6 +301,14 @@ public class QuickAccessDialog extends PopupDialog {
 
 	@Override
 	public boolean close() {
+		if (!filterText.isDisposed()) {
+			filterText.removeKeyListener(getKeyAdapter());
+			if (toRemoveTextListeners != null) {
+				for (ModifyListener listener : toRemoveTextListeners) {
+					filterText.removeModifyListener(listener);
+				}
+			}
+		}
 		storeDialog(getDialogSettings());
 		return super.close();
 	}
@@ -326,8 +330,7 @@ public class QuickAccessDialog extends PopupDialog {
 	}
 
 	@Override
-	protected Point getDefaultLocation(Point initialSize) {
-		Point size = new Point(400, 400);
+	protected Point getDefaultLocation(Point size) {
 		Rectangle parentBounds = getParentShell().getBounds();
 		int x = parentBounds.x + parentBounds.width / 2 - size.x / 2;
 		int y = parentBounds.y + parentBounds.height / 2 - size.y / 2;
@@ -336,79 +339,128 @@ public class QuickAccessDialog extends PopupDialog {
 
 	@Override
 	protected IDialogSettings getDialogSettings() {
-		final IDialogSettings workbenchDialogSettings = WorkbenchPlugin.getDefault()
-				.getDialogSettings();
-		IDialogSettings result = workbenchDialogSettings.getSection(getId());
-		if (result == null) {
-			result = workbenchDialogSettings.addNewSection(getId());
-		}
-		return result;
+		//TODO
+		return new DialogSettings("QuickAccess");
+//		final IDialogSettings workbenchDialogSettings = PlatformUI
+//				.getDialogSettingsProvider(FrameworkUtil.getBundle(QuickAccessDialog.class)).getDialogSettings();
+//		IDialogSettings result = workbenchDialogSettings.getSection(getId());
+//		if (result == null) {
+//			result = workbenchDialogSettings.addNewSection(getId());
+//		}
+//		return result;
 	}
 
-	protected String getId() {
+	protected static String getId() {
 		return "org.eclipse.ui.internal.QuickAccess"; //$NON-NLS-1$
 	}
 
 	private void storeDialog(IDialogSettings dialogSettings) {
-		String[] orderedElements = new String[previousPicksList.size()];
-		String[] orderedProviders = new String[previousPicksList.size()];
-		String[] textEntries = new String[previousPicksList.size()];
-		ArrayList arrayList = new ArrayList();
+		if (previousPicksProvider.elements != null) {
+			String[] orderedElements = new String[previousPicksProvider.elements.size()];
+			String[] orderedProviders = new String[previousPicksProvider.elements.size()];
+			String[] textEntries = new String[previousPicksProvider.elements.size()];
+			ArrayList<String> arrayList = new ArrayList<>();
 		for (int i = 0; i < orderedElements.length; i++) {
-			QuickAccessElement quickAccessElement = (QuickAccessElement) previousPicksList.get(i);
-			ArrayList elementText = (ArrayList) textMap.get(quickAccessElement);
+				QuickAccessElement quickAccessElement = previousPicksProvider.elements.get(i);
+				ArrayList<String> elementText = textMap.get(quickAccessElement);
 			Assert.isNotNull(elementText);
 			orderedElements[i] = quickAccessElement.getId();
-			orderedProviders[i] = quickAccessElement.getProvider().getId();
+				orderedProviders[i] = contents.getProviderFor(quickAccessElement).getId();
 			arrayList.addAll(elementText);
-			textEntries[i] = elementText.size() + ""; //$NON-NLS-1$
+				textEntries[i] = Integer.toString(elementText.size());
 		}
-		String[] textArray = (String[]) arrayList.toArray(new String[arrayList.size()]);
+			String[] textArray = arrayList.toArray(new String[arrayList.size()]);
 		dialogSettings.put(ORDERED_ELEMENTS, orderedElements);
 		dialogSettings.put(ORDERED_PROVIDERS, orderedProviders);
 		dialogSettings.put(TEXT_ENTRIES, textEntries);
-		dialogSettings.put(TEXT_ARRAY, textArray);
+			dialogSettings.put(USER_INPUT_TEXTS, textArray);
+		}
 	}
 
-	private void restoreDialog() {
+	private List<QuickAccessElement> restorePreviousEntries(Collection<QuickAccessProvider> providers) {
 		IDialogSettings dialogSettings = getDialogSettings();
-		if (dialogSettings != null) {
+		if (dialogSettings == null) {
+			return Collections.emptyList();
+		}
+		List<QuickAccessElement> res = new ArrayList<>();
 			String[] orderedElements = dialogSettings.getArray(ORDERED_ELEMENTS);
 			String[] orderedProviders = dialogSettings.getArray(ORDERED_PROVIDERS);
-			String[] textEntries = dialogSettings.getArray(TEXT_ENTRIES);
-			String[] textArray = dialogSettings.getArray(TEXT_ARRAY);
-			elementMap = new HashMap();
-			textMap = new HashMap();
-			previousPicksList = new LinkedList();
-			if (orderedElements != null && orderedProviders != null && textEntries != null
-					&& textArray != null) {
-				int arrayIndex = 0;
+		String[] rawTextEntriesCountByElement = dialogSettings.getArray(TEXT_ENTRIES);
+		String[] userInputTexts = dialogSettings.getArray(USER_INPUT_TEXTS);
+		elementMap = new HashMap<>();
+		textMap = new HashMap<>();
+		if (orderedElements != null && orderedProviders != null && rawTextEntriesCountByElement != null
+				&& userInputTexts != null) {
+			Map<String, QuickAccessProvider> providerMap = providers.stream()
+					.collect(Collectors.toMap(QuickAccessProvider::getId, Function.identity()));
+			Integer[] textEntriesCountByElement = Arrays.stream(rawTextEntriesCountByElement).map(Integer::parseInt)
+					.toArray(Integer[]::new);
+			int inputTextIndex = 0;
 				for (int i = 0; i < orderedElements.length; i++) {
-					QuickAccessProvider quickAccessProvider = (QuickAccessProvider) providerMap
-							.get(orderedProviders[i]);
-					int numTexts = Integer.parseInt(textEntries[i]);
+				int numberOfMatchingTextsForCurrentElement = textEntriesCountByElement[i].intValue();
+				QuickAccessProvider quickAccessProvider = providerMap.get(orderedProviders[i]);
 					if (quickAccessProvider != null) {
-						QuickAccessElement quickAccessElement = quickAccessProvider
-								.getElementForId(orderedElements[i]);
+					String firstText = null;
+					if (inputTextIndex < userInputTexts.length && numberOfMatchingTextsForCurrentElement >= 1) {
+						firstText = userInputTexts[inputTextIndex];
+					}
+					QuickAccessElement quickAccessElement = quickAccessProvider.findElement(orderedElements[i],
+							firstText);
 						if (quickAccessElement != null) {
-							ArrayList arrayList = new ArrayList();
-							for (int j = arrayIndex; j < arrayIndex + numTexts; j++) {
-								String text = textArray[j];
+						contents.registerProviderFor(quickAccessElement, quickAccessProvider);
+						ArrayList<String> matchingTextsForElement = new ArrayList<>();
+						for (int j = inputTextIndex; j < inputTextIndex
+								+ numberOfMatchingTextsForCurrentElement; j++) {
+							String text = userInputTexts[j];
 								// text length can be zero for old workspaces,
 								// see bug 190006
-								if (text.length() > 0) {
-									arrayList.add(text);
+							if (!text.isEmpty()) {
+								matchingTextsForElement.add(text);
 									elementMap.put(text, quickAccessElement);
 								}
 							}
-							textMap.put(quickAccessElement, arrayList);
-							previousPicksList.add(quickAccessElement);
+						textMap.put(quickAccessElement, matchingTextsForElement);
+						res.add(quickAccessElement);
 						}
 					}
-					arrayIndex += numTexts;
-				}
+				inputTextIndex += numberOfMatchingTextsForCurrentElement;
 			}
 		}
+		return res;
+	}
+
+	/**
+	 * @param dialogSettings
+	 * @return
+	 */
+	private Collection<String> getPreviousPickProviderIds(IDialogSettings dialogSettings) {
+		if (dialogSettings == null) {
+			return Collections.emptySet();
+		}
+		String[] orderedProviders = dialogSettings.getArray(ORDERED_PROVIDERS);
+		if (orderedProviders == null) {
+			return Collections.emptySet();
+		}
+		return new HashSet<>(Arrays.asList(orderedProviders));
+	}
+
+	public QuickAccessContents getQuickAccessContents() {
+		return this.contents;
+	}
+	
+	@Override
+	protected List getForegroundColorExclusions() {
+		List list = super.getForegroundColorExclusions();
+		if(filterText != null) {
+			list.add(filterText);
+				}
+		if(hintText != null) {
+			list.add(hintText);
+			}
+		if(table != null) {
+			list.add(table);
+		}
+		return list;
 	}
 
 }

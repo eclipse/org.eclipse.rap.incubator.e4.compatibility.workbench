@@ -24,55 +24,49 @@ public class UISynchronizer extends Synchronizer {
     protected UILockListener lockListener;
 
     /**
-	 * Indicates that the UI is in startup mode and that no non-workbench
-	 * runnables should be invoked.
+	 * Indicates that the UI is in startup mode and that no non-workbench runnables
+	 * should be invoked.
 	 */
 	protected boolean isStarting = true;
 
 	/**
-	 * List of non-workbench Runnables that need executing at some point in the future
+	 * List of non-workbench Runnables that need executing at some point in the
+	 * future
 	 */
-	protected List pendingStartup = new ArrayList();
+	protected List<Runnable> pendingStartup = new ArrayList<>();
 
 	/**
-	 * If this boolean is set to true the synchronizer will fall back to the
-	 * behaviour it had prior to 3.3/3.4. Ie: there will be no restriction on
-	 * what runnables may be run via a/syncExec calls.
-	 *
-	 * @see IPreferenceConstants#USE_32_THREADING
+	 * Setting this variable to the value {@link Boolean#TRUE} will allow a thread
+	 * to execute code during the startup sequence.
 	 */
-	private boolean use32Threading = false;
-
-	/**
-	 * Setting this variable to the value {@link Boolean#TRUE} will allow a
-	 * thread to execute code during the startup sequence.
-	 */
-	public static final ThreadLocal startupThread = new ThreadLocal() {
+	public static final ThreadLocal<Boolean> startupThread = new ThreadLocal<>() {
 
 		@Override
-		protected Object initialValue() {
+		protected Boolean initialValue() {
 			return Boolean.FALSE;
 		}
 
 		@Override
-		public void set(Object value) {
-			if (value != Boolean.TRUE && value != Boolean.FALSE)
+		public void set(Boolean value) {
+			if (value != Boolean.TRUE && value != Boolean.FALSE) {
 				throw new IllegalArgumentException();
+			}
 			super.set(value);
 		}
 	};
 
-	public static final ThreadLocal overrideThread = new ThreadLocal() {
+	public static final ThreadLocal<Boolean> overrideThread = new ThreadLocal<>() {
 		@Override
-		protected Object initialValue() {
+		protected Boolean initialValue() {
 			return Boolean.FALSE;
 		}
+
 		@Override
-		public void set(Object value) {
-			if (value != Boolean.TRUE && value != Boolean.FALSE)
+		public void set(Boolean value) {
+			if (value != Boolean.TRUE && value != Boolean.FALSE) {
 				throw new IllegalArgumentException();
-			if (value == Boolean.TRUE
-                    && ((Boolean)startupThread.get()).booleanValue()) {
+			}
+			if (value == Boolean.TRUE && startupThread.get().booleanValue()) {
 				throw new IllegalStateException();
 			}
 			super.set(value);
@@ -82,18 +76,16 @@ public class UISynchronizer extends Synchronizer {
     public UISynchronizer(Display display, UILockListener lock) {
         super(display);
         this.lockListener = lock;
-        use32Threading = WorkbenchPlugin.getDefault()
-				.getPreferenceStore().getBoolean(
-						IPreferenceConstants.USE_32_THREADING);
     }
 
     public void started() {
     	synchronized (this) {
-			if (!isStarting)
+			if (!isStarting) {
 				throw new IllegalStateException();
+			}
 			isStarting = false;
-			for (Iterator i = pendingStartup.iterator(); i.hasNext();) {
-				Runnable runnable = (Runnable) i.next();
+			for (Iterator<Runnable> i = pendingStartup.iterator(); i.hasNext();) {
+				Runnable runnable = i.next();
 				try {
 					//queue up all pending asyncs
 					super.asyncExec(runnable);
@@ -109,11 +101,9 @@ public class UISynchronizer extends Synchronizer {
 
     @Override
 	protected void asyncExec(Runnable runnable) {
-    	// the following block should not be invoked if we're using 3.2 threading.
-    	if (runnable != null && !use32Threading) {
+		if (runnable != null) {
 			synchronized (this) {
-				if (isStarting && !(runnable instanceof StartupRunnable)
-						&& overrideThread.get() == Boolean.FALSE) {
+				if (isStarting && !(runnable instanceof StartupRunnable) && overrideThread.get() == Boolean.FALSE) {
 
 					// don't run it now, add it to the list of deferred runnables
 					pendingStartup.add(runnable);
@@ -129,8 +119,7 @@ public class UISynchronizer extends Synchronizer {
 	public void syncExec(Runnable runnable) {
 
 		synchronized (this) {
-			// the following block should not be invoked if we're using 3.2 threading.
-			if (isStarting && !use32Threading && startupThread.get() == Boolean.FALSE
+			if (isStarting && startupThread.get() == Boolean.FALSE
 					&& overrideThread.get() == Boolean.FALSE) {
 				do {
 					try {
@@ -141,16 +130,16 @@ public class UISynchronizer extends Synchronizer {
 			}
 		}
 
-        //if this thread is the UI or this thread does not own any locks, just do the syncExec
-        if ((runnable == null) || lockListener.isUI()
-                || !lockListener.isLockOwner()) {
+		// if this thread is the UI or this thread does not own any locks, just do the
+		// syncExec
+		if ((runnable == null) || lockListener.isUI() || !lockListener.isLockOwner()) {
             super.syncExec(runnable);
             return;
         }
         PendingSyncExec work = new PendingSyncExec(runnable);
         work.setOperationThread(Thread.currentThread());
         lockListener.addPendingWork(work);
-        asyncExec(() -> lockListener.doPendingWork());
+		asyncExec(lockListener::doPendingWork);
 
 		try {
 			work.waitUntilExecuted(lockListener);

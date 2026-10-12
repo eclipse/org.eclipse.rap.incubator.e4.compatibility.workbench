@@ -23,19 +23,16 @@ import org.eclipse.ui.services.IDisposable;
 
 /**
  * @since 3.4
- *
  */
 public class SlavePageService implements IPageService, IDisposable {
 
-	private IPageService parent;
-	private ListenerList<IPageListener> pageListeners = new ListenerList<>(ListenerList.IDENTITY);
-	private ListenerList<IPerspectiveListener> perspectiveListeners = new ListenerList<>(
-			ListenerList.IDENTITY);
+	private final IPageService parent;
+	private final ListenerList<IPageListener> pageListeners = new ListenerList<>(ListenerList.IDENTITY);
+	private final ListenerList<IPerspectiveListener> perspectiveListeners = new ListenerList<>(ListenerList.IDENTITY);
 
 	public SlavePageService(IPageService parent) {
 		if (parent == null) {
-			throw new IllegalArgumentException(
-					"Parent IPageService cannot be null"); //$NON-NLS-1$
+			throw new IllegalArgumentException("Parent IPageService cannot be null"); //$NON-NLS-1$
 		}
 		this.parent = parent;
 	}

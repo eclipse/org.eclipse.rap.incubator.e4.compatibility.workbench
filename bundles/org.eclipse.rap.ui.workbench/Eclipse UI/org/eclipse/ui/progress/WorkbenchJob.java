@@ -16,25 +16,24 @@ package org.eclipse.ui.progress;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.rap.ui.internal.progress.ProgressUtil;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 /**
- * WorkbenchJob is a type of job that implements a done listener
- * and does the shutdown checks before scheduling. This is used if
- * a job is not meant to run when the Workbench is shutdown.
+ * WorkbenchJob is a type of job that implements a done listener and does the
+ * shutdown checks before scheduling. This is used if a job is not meant to run
+ * when the Workbench is shutdown.
+ *
  * @since 3.0
  */
 public abstract class WorkbenchJob extends UIJob {
 
     /**
-     * Create a new instance of the receiver with the
-     * supplied display and name.
-     * Normally this constructor would not be used as
-     * it is best to let the job find the display from
-     *  the workbench
-     * @param jobDisplay Display. The display to run the
-     * 		job with.
+	 * Create a new instance of the receiver with the supplied display and name.
+	 * Normally this constructor would not be used as it is best to let the job find
+	 * the display from the workbench
+	 *
+	 * @param jobDisplay Display. The display to run the job with.
      * @param name String
      */
     public WorkbenchJob(Display jobDisplay, String name) {
@@ -43,8 +42,8 @@ public abstract class WorkbenchJob extends UIJob {
     }
 
     /**
-     * Add a new instance of the receiver with the
-     * supplied name.
+	 * Add a new instance of the receiver with the supplied name.
+	 *
      * @param name String
      */
     public WorkbenchJob(String name) {
@@ -53,9 +52,8 @@ public abstract class WorkbenchJob extends UIJob {
     }
 
     /**
-     * Add a job change listeners that handles a done
-     * event if the result was IStatus.OK.
-     *
+	 * Add a job change listeners that handles a done event if the result was
+	 * IStatus.OK.
      */
     private void addDefaultJobChangeListener() {
         addJobChangeListener(new JobChangeAdapter() {
@@ -64,11 +62,7 @@ public abstract class WorkbenchJob extends UIJob {
 			public void done(IJobChangeEvent event) {
 
                 //Abort if it is not running
-// RAP [fappel]: use sesssion aware approach
-//                if (!PlatformUI.isWorkbenchRunning()) {
-//					return;
-//				}
-				if (!ProgressUtil.isWorkbenchRunning(getDisplay())) {
+				if (!PlatformUI.isWorkbenchRunning()) {
 					return;
 				}
 
@@ -80,10 +74,10 @@ public abstract class WorkbenchJob extends UIJob {
     }
 
     /**
-     * Perform done with the supplied event. This will
-     * only occur if the returned status was OK.
-     * This is called only if the job is finished with an IStatus.OK
+	 * Perform done with the supplied event. This will only occur if the returned
+	 * status was OK. This is called only if the job is finished with an IStatus.OK
      * result and the workbench is still running.
+	 *
      * @param event IJobChangeEvent
      */
     public void performDone(IJobChangeEvent event) {
@@ -92,17 +86,12 @@ public abstract class WorkbenchJob extends UIJob {
 
     @Override
 	public boolean shouldSchedule() {
-// RAP [fappel]: session aware implementation
-//      return super.shouldSchedule() && PlatformUI.isWorkbenchRunning();
-      return    super.shouldSchedule()
-				&& ProgressUtil.isWorkbenchRunning(getDisplay());
+		return super.shouldSchedule() && PlatformUI.isWorkbenchRunning();
     }
 
     @Override
 	public boolean shouldRun() {
-// RAP [fappel]: session aware implementation
-//      return super.shouldRun() && PlatformUI.isWorkbenchRunning();
-		return super.shouldRun() && ProgressUtil.isWorkbenchRunning(getDisplay());
+		return super.shouldRun() && PlatformUI.isWorkbenchRunning();
 	}
 
 }

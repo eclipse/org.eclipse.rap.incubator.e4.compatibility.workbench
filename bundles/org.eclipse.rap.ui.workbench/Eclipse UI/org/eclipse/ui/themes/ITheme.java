@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2015 IBM Corporation and others.
+ * Copyright (c) 2004, 2019 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -14,20 +14,21 @@
 package org.eclipse.ui.themes;
 
 import java.util.Set;
-
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 
 /**
- * A theme is a collection of colors, fonts and supporting data that may
- * be used by plugins to help provide uniform look and feel to their components.
- * The workbench has a default theme (one whos id has the value {@link org.eclipse.ui.themes.IThemeManager#DEFAULT_THEME})
- * that defines the initial values for a collection of fonts and colors.  Other
- * themes may extend and override the default theme to provide new values.
+ * A theme is a collection of colors, fonts and supporting data that may be used
+ * by plugins to help provide uniform look and feel to their components. The
+ * workbench has a default theme (one whos id has the value
+ * {@link org.eclipse.ui.themes.IThemeManager#DEFAULT_THEME}) that defines the
+ * initial values for a collection of fonts and colors. Other themes may extend
+ * and override the default theme to provide new values.
  *
  * <p>
- * Clients may obtain themes via {@link org.eclipse.ui.themes.IThemeManager#getTheme(String)}.
+ * Clients may obtain themes via
+ * {@link org.eclipse.ui.themes.IThemeManager#getTheme(String)}.
  * </p>
  *
  * <p>
@@ -41,11 +42,10 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 public interface ITheme {
 
     /**
-     * Adds a property listener to the theme.  Any events fired by the
-     * underlying registries will cause an event to be fired.  This event is the
-     * same event that was fired by the registry.  As such, the "source"
-     * attribute of the event will not be this theme, but rather the color or
-     * font registry.
+	 * Adds a property listener to the theme. Any events fired by the underlying
+	 * registries will cause an event to be fired. This event is the same event that
+	 * was fired by the registry. As such, the "source" attribute of the event will
+	 * not be this theme, but rather the color or font registry.
      *
      * @param listener the listener to add
      */
@@ -61,8 +61,8 @@ public interface ITheme {
      * Get arbitrary data associated with this theme.
      *
      * @param key the key
-     * @return the data, or the default value <code>false</code> if none exists
-     * or if the value cannot be treated as a boolean.
+	 * @return the data, or the default value <code>false</code> if none exists or
+	 *         if the value cannot be treated as a boolean.
      */
     boolean getBoolean(String key);
 
@@ -91,8 +91,8 @@ public interface ITheme {
      * Get arbitrary data associated with this theme.
      *
      * @param key the key
-     * @return the data, or the default value <code>0</code> if none exists or
-     * if the value cannot be treated as an integer.
+	 * @return the data, or the default value <code>0</code> if none exists or if
+	 *         the value cannot be treated as an integer.
      */
     int getInt(String key);
 
@@ -116,7 +116,7 @@ public interface ITheme {
      *
      * @return the Set of keys
      */
-    Set keySet();
+	Set<String> keySet();
 
     /**
      * Removes a property listener from the theme.

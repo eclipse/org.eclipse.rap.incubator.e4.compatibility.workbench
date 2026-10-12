@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2018 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -46,7 +43,6 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 /**
  * Abstract wizard page class from which an import or export wizard can be chosen.
  *
- * @since 3.2
  *
  */
 public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
@@ -58,8 +54,8 @@ public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
 	/*
 	 * Class to create a control that shows a categorized tree of wizard types.
 	 */
-	protected static class CategorizedWizardSelectionTree {
-		private static final int SIZING_LISTS_HEIGHT = 200;
+	protected class CategorizedWizardSelectionTree {
+		private final static int SIZING_LISTS_HEIGHT = 200;
 
 		private IWizardCategory wizardCategories;
 		private String message;
@@ -115,7 +111,6 @@ public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
 	                | SWT.V_SCROLL | SWT.BORDER, new WizardPatternFilter(), true);
 	        viewer = filteredTree.getViewer();
 	        filteredTree.setFont(parent.getFont());
-			filteredTree.setQuickSelectionMode(true);
 
 	        viewer.setContentProvider(new WizardContentProvider());
 			viewer.setLabelProvider(new WorkbenchLabelProvider());
@@ -126,8 +121,9 @@ public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
 
 	        if (wizardCategories != null) {
 	            if (wizardCategories.getParent() == null) {
-					for (IWizardCategory wizardCategory : wizardCategories.getCategories()) {
-						inputArray.add(wizardCategory);
+	                IWizardCategory [] children = wizardCategories.getCategories();
+	                for (int i = 0; i < children.length; i++) {
+                		inputArray.add(children[i]);
 	                }
 	            } else {
 	                expandTop = true;
@@ -188,7 +184,10 @@ public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
 		setTitle(WorkbenchMessages.get().Select);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
+	 */
 	public void createControl(Composite parent) {
 	    Font font = parent.getFont();
 
@@ -296,7 +295,6 @@ public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
      */
 	private IWizardNode createWizardNode(IWizardDescriptor element) {
         return new WorkbenchWizardNode(this, element) {
-            @Override
 			public IWorkbenchWizard createWizard() throws CoreException {
                 return wizardElement.createWizard();
             }
@@ -326,9 +324,9 @@ public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
         List categoriesToExpand = new ArrayList(expandedCategoryPaths.length);
 
         if (wizardCategories != null) {
-            for (String expandedCategoryPath : expandedCategoryPaths) {
+            for (int i = 0; i < expandedCategoryPaths.length; i++) {
                 IWizardCategory category = wizardCategories
-                        .findCategory(new Path(expandedCategoryPath));
+                        .findCategory(new Path(expandedCategoryPaths[i]));
                 if (category != null) {
 					categoriesToExpand.add(category);
 				}
@@ -379,10 +377,10 @@ public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
     protected void storeExpandedCategories(String setting, TreeViewer viewer) {
         Object[] expandedElements = viewer.getExpandedElements();
         List expandedElementPaths = new ArrayList(expandedElements.length);
-        for (Object expandedElement : expandedElements) {
-            if (expandedElement instanceof IWizardCategory) {
+        for (int i = 0; i < expandedElements.length; ++i) {
+            if (expandedElements[i] instanceof IWizardCategory) {
 				expandedElementPaths
-                        .add(((IWizardCategory) expandedElement)
+                        .add(((IWizardCategory) expandedElements[i])
                                 .getPath().toString());
 			}
         }
@@ -396,7 +394,8 @@ public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
      * order to recreate this page's state in the next instance of this page.
      */
     protected void storeSelectedCategoryAndWizard(String setting, TreeViewer viewer) {
-		Object selected = viewer.getStructuredSelection().getFirstElement();
+        Object selected = ((IStructuredSelection) viewer
+                .getSelection()).getFirstElement();
 
         if (selected != null) {
             if (selected instanceof IWizardCategory) {
@@ -420,7 +419,10 @@ public abstract class ImportExportPage extends WorkbenchWizardSelectionPage{
     	// do nothing by default - subclasses should override
     }
 
-    @Override
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.wizard.IWizardPage#getNextPage()
+     */
 	public IWizardPage getNextPage() {
     	ITriggerPoint triggerPoint = getTriggerPoint();
 

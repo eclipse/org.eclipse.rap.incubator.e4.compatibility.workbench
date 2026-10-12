@@ -30,8 +30,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
  * entirely from xml and will not require the activation of its defining
  * plug-in.
  */
-class LightweightDecoratorDefinition extends DecoratorDefinition implements
-		IObjectContributor {
+class LightweightDecoratorDefinition extends DecoratorDefinition implements IObjectContributor {
 
 	private static final String ATT_LOCATION = "location"; //$NON-NLS-1$
 
@@ -82,8 +81,8 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 	private static final String BOTTOM_LEFT_STRING = "BOTTOM_LEFT"; //$NON-NLS-1$
 
 	/**
-	 * The DeclarativeDecorator is the internal decorator supplied by the
-	 * decorator definition.
+	 * The DeclarativeDecorator is the internal decorator supplied by the decorator
+	 * definition.
 	 */
 	private ILightweightLabelDecorator decorator;
 
@@ -93,8 +92,7 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 
 	private String[] objectClasses;
 
-	LightweightDecoratorDefinition(String identifier,
-			IConfigurationElement element) {
+	LightweightDecoratorDefinition(String identifier, IConfigurationElement element) {
 		super(identifier, element);
 	}
 
@@ -105,8 +103,7 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 	 *
 	 * @return Returns a ILabelDecorator
 	 */
-	protected ILightweightLabelDecorator internalGetDecorator()
-			throws CoreException {
+	protected ILightweightLabelDecorator internalGetDecorator() throws CoreException {
 		if (labelProviderCreationFailed) {
 			return null;
 		}
@@ -116,19 +113,19 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 		if (decorator == null) {
 
 			if (isDeclarative()) {
-				decorator = new DeclarativeDecorator(definingElement,
-						getIconLocation());
+				decorator = new DeclarativeDecorator(definingElement, getIconLocation());
 			} else {
 
 				SafeRunner.run(new ISafeRunnable() {
 					@Override
 					public void run() {
 						try {
-							decorator = (ILightweightLabelDecorator) WorkbenchPlugin
-									.createExtension(definingElement,
+							decorator = (ILightweightLabelDecorator) WorkbenchPlugin.createExtension(definingElement,
 											DecoratorDefinition.ATT_CLASS);
-							decorator.addListener(WorkbenchPlugin.getDefault()
-									.getDecoratorManager());
+							DecoratorManager decoratorManager = WorkbenchPlugin.getDefault().getDecoratorManager();
+							if (decoratorManager != null) {
+								decorator.addListener(decoratorManager);
+							}
 						} catch (CoreException exception) {
 							exceptions[0] = exception;
 						}
@@ -175,8 +172,7 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 	}
 
 	@Override
-	protected IBaseLabelProvider internalGetLabelProvider()
-			throws CoreException {
+	protected IBaseLabelProvider internalGetLabelProvider() throws CoreException {
 		return internalGetDecorator();
 	}
 
@@ -187,16 +183,15 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 
 	/**
 	 * Returns the quadrant.One of the following constants in
-	 * DecoratorRegistryReader: TOP_LEFT TOP_RIGHT BOTTOM_LEFT BOTTOM_RIGHT
-	 * UNDERLAY REPLACE
+	 * DecoratorRegistryReader: TOP_LEFT TOP_RIGHT BOTTOM_LEFT BOTTOM_RIGHT UNDERLAY
+	 * REPLACE
 	 *
 	 * @return int
 	 */
 	public int getQuadrant() {
 		if (!hasReadQuadrant) {
 			hasReadQuadrant = true;
-			quadrant = getLocationConstant(definingElement
-					.getAttribute(ATT_LOCATION), definingElement);
+			quadrant = getLocationConstant(definingElement.getAttribute(ATT_LOCATION), definingElement);
 		}
 		return quadrant;
 	}
@@ -207,8 +202,7 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 	 *
 	 * @since 3.1
 	 */
-	private int getLocationConstant(String locationDefinition,
-			IConfigurationElement element) {
+	private int getLocationConstant(String locationDefinition, IConfigurationElement element) {
 
 		// Backwards compatibility
 		if (locationDefinition == null) {
@@ -236,11 +230,12 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 
 	/**
 	 * Decorate the element using the decoration to store the result.
-	 * @param element
-	 * @param decoration
 	 */
 	public void decorate(Object element, IDecoration decoration) {
 		try {
+			if (!isEnabled()) {
+				return;
+			}
 			// Internal decorator might be null so be prepared
 			ILightweightLabelDecorator currentDecorator = internalGetDecorator();
 			if(currentDecorator == null) {
@@ -250,14 +245,12 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 			if (isAdaptable()) {
 				String[] classes = getObjectClasses();
 				for (String className : classes) {
-					Object adapted = LegacyResourceSupport.getAdapter(element,
-							className);
+					Object adapted = LegacyResourceSupport.getAdapter(element, className);
 					if (adapted != null) {
 						currentDecorator.decorate(adapted, decoration);
 					}
 				}
-			}
-			else if (element != null) {
+			} else if (element != null) {
 				currentDecorator.decorate(element, decoration);
 			}
 		} catch (CoreException exception) {
@@ -299,8 +292,7 @@ class LightweightDecoratorDefinition extends DecoratorDefinition implements
 	/**
 	 * Get the object classes to which this decorator is registered.
 	 *
-	 * @return String [] the object classes to which this decorator is
-	 *         registered
+	 * @return String [] the object classes to which this decorator is registered
 	 */
 	public String[] getObjectClasses() {
 		if (objectClasses == null) {

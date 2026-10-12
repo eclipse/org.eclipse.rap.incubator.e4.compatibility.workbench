@@ -14,7 +14,6 @@
 package org.eclipse.ui.internal.themes;
 
 import java.util.Hashtable;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.swt.graphics.RGB;
@@ -22,13 +21,14 @@ import org.eclipse.ui.themes.ColorUtil;
 import org.eclipse.ui.themes.IColorFactory;
 
 /**
- * A <code>IColorFactory</code> that may be used to select a colour with
- * a higher contrast.  The colors to blend are specified as per method
- * number two in  {@link org.eclipse.core.runtime.IExecutableExtension}.
+ * A <code>IColorFactory</code> that may be used to select a colour with a
+ * higher contrast. The colors to blend are specified as per method number two
+ * in {@link org.eclipse.core.runtime.IExecutableExtension}.
  * <p>
  * Example usage:
- * <br/>
- * <code>
+ * </p>
+ *
+ * <pre>
  * &lt;colorDefinition
  *     label="Red/Blue Contrast"
  *     id="example.redblueblend"&gt;
@@ -40,11 +40,10 @@ import org.eclipse.ui.themes.IColorFactory;
  *          &lt;parameter name="background2" value="COLOR_BLUE" /&gt;
  *     &lt;/colorFactory&gt;
  * &lt;/colorDefinition&gt;
- * </code>
- * </p>
+ * </pre>
  *
  * <p>
- * This will select whichever of Red or Blue has a higher contrst with black.
+ * This will select whichever of Red or Blue has a higher contrast with black.
  * The color values may be specified as RGB triples or as SWT constants.
  * </p>
  *
@@ -55,8 +54,7 @@ public class RGBContrastFactory implements IColorFactory, IExecutableExtension {
     private String fg, bg1, bg2;
 
     /**
-     * Returns the intensity of an RGB component using the
-     * sRGB gamma function.
+	 * Returns the intensity of an RGB component using the sRGB gamma function.
      *
      * @param val Value to convert.
      * @return Light intensity of the component.
@@ -77,8 +75,7 @@ public class RGBContrastFactory implements IColorFactory, IExecutableExtension {
     }
 
     /**
-     * Returns a measure of the lightness in the perceptual colourspace
-     * IPT.
+	 * Returns a measure of the lightness in the perceptual colour space IPT.
      *
      * @param color The colour in sRGB
      * @return Lightness in IPT space.
@@ -114,8 +111,8 @@ public class RGBContrastFactory implements IColorFactory, IExecutableExtension {
     @Override
 	public RGB createColor() {
         /**
-         * Determine which pair has a higher contrast by selecting
-         * the colour with the furthest distance in lightness.
+		 * Determine which pair has a higher contrast by selecting the colour with the
+		 * furthest distance in lightness.
          */
         RGB cfg, cbg1, cbg2;
 
@@ -146,20 +143,19 @@ public class RGBContrastFactory implements IColorFactory, IExecutableExtension {
     }
 
     /**
-     * This executable extension requires parameters to be explicitly declared
-     * via the second method described in the <code>IExecutableExtension</code>
+	 * This executable extension requires parameters to be explicitly declared via
+	 * the second method described in the <code>IExecutableExtension</code>
      * documentation.  This class expects that there will be three parameters,
      * <code>foreground</code>, <code>background1</code> and
-     * <code>background2</code>, that describe the two colors to be blended.
-     * These values may either be RGB triples or SWT constants.
+	 * <code>background2</code>, that describe the two colors to be blended. These
+	 * values may either be RGB triples or SWT constants.
      *
-     * @see org.eclipse.core.runtime.IExecutableExtension#setInitializationData(org.eclipse.core.runtime.IConfigurationElement, java.lang.String, java.lang.Object)
+	 * @see org.eclipse.core.runtime.IExecutableExtension#setInitializationData(org.eclipse.core.runtime.IConfigurationElement,
+	 *      java.lang.String, java.lang.Object)
      */
     @Override
-	public void setInitializationData(IConfigurationElement config,
-            String propertyName, Object data) throws CoreException {
-        if (data instanceof Hashtable) {
-            Hashtable table = (Hashtable) data;
+	public void setInitializationData(IConfigurationElement config, String propertyName, Object data) {
+		if (data instanceof Hashtable table) {
             fg = (String) table.get("foreground"); //$NON-NLS-1$
             bg1 = (String) table.get("background1"); //$NON-NLS-1$
             bg2 = (String) table.get("background2"); //$NON-NLS-1$

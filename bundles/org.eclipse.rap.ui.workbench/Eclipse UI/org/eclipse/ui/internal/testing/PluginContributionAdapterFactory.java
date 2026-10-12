@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -39,8 +36,7 @@ import org.osgi.framework.FrameworkUtil;
  */
 public class PluginContributionAdapterFactory implements IAdapterFactory {
 
-	@Override
-	public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+	public Object getAdapter(Object adaptableObject, Class adapterType) {
 		if (adapterType != ContributionInfo.class) {
 			return null;
 		}
@@ -91,7 +87,7 @@ public class PluginContributionAdapterFactory implements IAdapterFactory {
 				elementType = ContributionInfoMessages.get().ContributionInfo_Unknown;
 			}
 
-			return adapterType.cast(new ContributionInfo(contribution.getPluginId(), elementType, null));
+			return new ContributionInfo(contribution.getPluginId(), elementType, null);
 		}
 		if (adaptableObject instanceof JobInfo) {
 			JobInfo jobInfo = (JobInfo) adaptableObject;
@@ -99,18 +95,17 @@ public class PluginContributionAdapterFactory implements IAdapterFactory {
 			if (job != null) {
 				Bundle bundle = FrameworkUtil.getBundle(job.getClass());
 				if (bundle != null) {
-//					return adapterType.cast(new ContributionInfo(bundle.getSymbolicName(),
-//							ContributionInfoMessages.ContributionInfo_Job, null));
-					return adapterType.cast(new ContributionInfo(bundle.getSymbolicName(),
-							ContributionInfoMessages.get().ContributionInfo_Job, null));
+//					return new ContributionInfo(bundle.getSymbolicName(),
+//							ContributionInfoMessages.ContributionInfo_Job, null);
+					return new ContributionInfo(bundle.getSymbolicName(),
+					        ContributionInfoMessages.get().ContributionInfo_Job, null);
 				}
 			}
 		}
 		return null;
 	}
 
-	@Override
-	public Class<?>[] getAdapterList() {
+	public Class[] getAdapterList() {
 		return new Class[] { ContributionInfo.class };
 	}
 

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2006, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -19,6 +16,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.eclipse.core.commands.Category;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.IExecutionListener;
@@ -47,7 +45,6 @@ import org.eclipse.ui.services.IServiceLocator;
  * <code>org.eclipse.ui.workbench</code> plug-in.
  * </p>
  *
- * @since 3.2
  */
 public class SlaveCommandService implements ICommandService, IUpdateService {
 
@@ -86,13 +83,13 @@ public class SlaveCommandService implements ICommandService, IUpdateService {
 	 * @param parent
 	 *            the parent service. This must not be <code>null</code>.
 	 */
-	public SlaveCommandService(ICommandService parent, String scopeName, IServiceLocator scopeValue) {
+	public SlaveCommandService(ICommandService parent, String scopeName,
+			IServiceLocator scopeValue) {
 		this(parent, scopeName, scopeValue, null);
 	}
 
 	public SlaveCommandService(ICommandService parent, String scopeName,
-			IServiceLocator scopeValue,
-			IEclipseContext context) {
+			IServiceLocator scopeValue, IEclipseContext context) {
 		if (parent == null) {
 			throw new NullPointerException(
 					"The parent command service must not be null"); //$NON-NLS-1$
@@ -103,7 +100,11 @@ public class SlaveCommandService implements ICommandService, IUpdateService {
 		fContext = context;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#addExecutionListener(org.eclipse.core.commands.IExecutionListener)
+	 */
 	public void addExecutionListener(IExecutionListener listener) {
 		if (!fExecutionListeners.contains(listener)) {
 			fExecutionListeners.add(listener);
@@ -111,118 +112,179 @@ public class SlaveCommandService implements ICommandService, IUpdateService {
 		fParentService.addExecutionListener(listener);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#defineUncategorizedCategory(java.lang.String,
+	 *      java.lang.String)
+	 */
 	public void defineUncategorizedCategory(String name, String description) {
 		fParentService.defineUncategorizedCategory(name, description);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#deserialize(java.lang.String)
+	 */
 	public ParameterizedCommand deserialize(
 			String serializedParameterizedCommand) throws NotDefinedException,
 			SerializationException {
 		return fParentService.deserialize(serializedParameterizedCommand);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.services.IDisposable#dispose()
+	 */
 	public void dispose() {
 		if (!fExecutionListeners.isEmpty()) {
 			Object[] array = fExecutionListeners.toArray();
-			for (Object element : array) {
-				removeExecutionListener((IExecutionListener) element);
+			for (int i = 0; i < array.length; i++) {
+				removeExecutionListener((IExecutionListener) array[i]);
 			}
 			fExecutionListeners.clear();
 		}
 		if (!fCallbackCache.isEmpty()) {
 			Object[] array = fCallbackCache.toArray();
-			for (Object element : array) {
-				unregisterElement((IElementReference) element);
+			for (int i = 0; i < array.length; i++) {
+				unregisterElement((IElementReference) array[i]);
 			}
 		}
-		fScopingValue = null;
-		fContext = null;
-		fParentService = null;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#getCategory(java.lang.String)
+	 */
 	public Category getCategory(String categoryId) {
 		return fParentService.getCategory(categoryId);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#getCommand(java.lang.String)
+	 */
 	public Command getCommand(String commandId) {
 		return fParentService.getCommand(commandId);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#getDefinedCategories()
+	 */
 	public Category[] getDefinedCategories() {
 		return fParentService.getDefinedCategories();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#getDefinedCategoryIds()
+	 */
 	public Collection getDefinedCategoryIds() {
 		return fParentService.getDefinedCategoryIds();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#getDefinedCommandIds()
+	 */
 	public Collection getDefinedCommandIds() {
 		return fParentService.getDefinedCommandIds();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#getDefinedCommands()
+	 */
 	public Command[] getDefinedCommands() {
 		return fParentService.getDefinedCommands();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#getDefinedParameterTypeIds()
+	 */
 	public Collection getDefinedParameterTypeIds() {
 		return fParentService.getDefinedParameterTypeIds();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#getDefinedParameterTypes()
+	 */
 	public ParameterType[] getDefinedParameterTypes() {
 		return fParentService.getDefinedParameterTypes();
 	}
 
-	@Override
 	public final String getHelpContextId(final Command command)
 			throws NotDefinedException {
 		return fParentService.getHelpContextId(command);
 	}
 
-	@Override
 	public final String getHelpContextId(final String commandId)
 			throws NotDefinedException {
 		return fParentService.getHelpContextId(commandId);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#getParameterType(java.lang.String)
+	 */
 	public ParameterType getParameterType(String parameterTypeId) {
 		return fParentService.getParameterType(parameterTypeId);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#readRegistry()
+	 */
 	public void readRegistry() {
 		fParentService.readRegistry();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#removeExecutionListener(org.eclipse.core.commands.IExecutionListener)
+	 */
 	public void removeExecutionListener(IExecutionListener listener) {
 		fExecutionListeners.remove(listener);
 		fParentService.removeExecutionListener(listener);
 	}
 
-	@Override
 	public final void setHelpContextId(final IHandler handler,
 			final String helpContextId) {
 		fParentService.setHelpContextId(handler, helpContextId);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#refreshElements(java.lang.String,
+	 *      java.util.Map)
+	 */
 	public void refreshElements(String commandId, Map filter) {
 		fParentService.refreshElements(commandId, filter);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#registerElementForCommand(org.eclipse.core.commands.ParameterizedCommand,
+	 *      org.eclipse.ui.menus.UIElement)
+	 */
 	public IElementReference registerElementForCommand(
 			ParameterizedCommand command, UIElement element)
 			throws NotDefinedException {
@@ -242,14 +304,22 @@ public class SlaveCommandService implements ICommandService, IUpdateService {
 		return ref;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#registerElement(org.eclipse.ui.commands.IElementReference)
+	 */
 	public void registerElement(IElementReference elementReference) {
 		fCallbackCache.add(elementReference);
 		elementReference.getParameters().put(fScopingName, fScopingValue);
 		fParentService.registerElement(elementReference);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.ICommandService#unregisterElement(org.eclipse.ui.commands.IElementReference)
+	 */
 	public void unregisterElement(IElementReference elementReference) {
 		fCallbackCache.remove(elementReference);
 		fParentService.unregisterElement(elementReference);

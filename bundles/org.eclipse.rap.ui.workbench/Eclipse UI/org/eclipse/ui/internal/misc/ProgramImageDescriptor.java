@@ -23,13 +23,13 @@ import org.eclipse.ui.internal.WorkbenchImages;
  * An image descriptor that loads its data from a program file.
  */
 public class ProgramImageDescriptor extends ImageDescriptor {
-    private String filename;
+	private final String filename;
 
-    private int offset;
+	private final int offset;
 
     /**
-     * Creates a new ImageDescriptor. The image is loaded
-     * from a file with the given name <code>name</code>.
+	 * Creates a new ImageDescriptor. The image is loaded from a file with the given
+	 * name <code>name</code>.
      */
     public ProgramImageDescriptor(String fullPath, int offsetInFile) {
         filename = fullPath;
@@ -41,45 +41,31 @@ public class ProgramImageDescriptor extends ImageDescriptor {
      */
     @Override
 	public boolean equals(Object o) {
-        if (!(o instanceof ProgramImageDescriptor)) {
+		if (!(o instanceof ProgramImageDescriptor other)) {
             return false;
         }
-        ProgramImageDescriptor other = (ProgramImageDescriptor) o;
         return filename.equals(other.filename) && offset == other.offset;
     }
 
     /**
-     * Returns an SWT Image that is described by the information
-     * in this descriptor.  Each call returns a new Image.
+	 * Returns an SWT Image that is described by the information in this descriptor.
+	 * Each call returns a new Image.
      */
     public Image getImage() {
         return createImage();
     }
 
-    // RAP [DM]
-//    /**
-//     * Returns an SWT Image that is described by the information
-//     * in this descriptor.
-//     */
-//    @Override
-//	public ImageData getImageData(int zoom) {
-//        /*This is a user defined offset into the file which always
-//         *returns us the defualt - return the default regardless*/
-//
-//        return WorkbenchImages.getImageDescriptor(ISharedImages.IMG_OBJ_FILE)
-//				.getImageData(zoom);
-//    }    
     /**
-     * Returns an SWT Image that is described by the information
-     * in this descriptor.
+	 * Returns an SWT Image that is described by the information in this descriptor.
      */
     @Override
-    public ImageData getImageData() {
-        /*This is a user defined offset into the file which always
-         *returns us the defualt - return the default regardless*/
+	public ImageData getImageData(int zoom) {
+		/*
+		 * This is a user defined offset into the file which always returns us the
+		 * defualt - return the default regardless
+		 */
 
-        return WorkbenchImages.getImageDescriptor(ISharedImages.IMG_OBJ_FILE)
-                .getImageData();
+		return WorkbenchImages.getImageDescriptor(ISharedImages.IMG_OBJ_FILE).getImageData(zoom);
     }
 
     /**

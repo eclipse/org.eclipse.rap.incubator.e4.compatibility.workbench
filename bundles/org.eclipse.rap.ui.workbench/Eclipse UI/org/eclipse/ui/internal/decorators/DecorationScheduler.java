@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -23,11 +20,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ResourceManager;
 import org.eclipse.jface.viewers.DecorationContext;
@@ -75,12 +72,13 @@ public class DecorationScheduler {
 
 	UIJob updateJob;
 
-	private Collection removedListeners = Collections.synchronizedSet(new HashSet());
-
-	private Job clearJob;
-
 	// RAP [rh] need display to be able to later fake service context
 	private final Display display;
+
+  private Collection removedListeners = Collections
+			.synchronizedSet(new HashSet());
+
+	private Job clearJob;
 
 	// Static used for the updates to indicate an update is required
 	static final int NEEDS_INIT = -1;
@@ -114,9 +112,11 @@ public class DecorationScheduler {
 	 *            the decoration context
 	 */
 
-	public String decorateWithText(String text, Object element, Object adaptedElement, IDecorationContext context) {
+	public String decorateWithText(String text, Object element,
+			Object adaptedElement, IDecorationContext context) {
 
-		DecorationResult decoration = getResult(element, adaptedElement, context);
+		DecorationResult decoration = getResult(element, adaptedElement,
+				context);
 
 		if (decoration == null) {
 			return text;
@@ -141,18 +141,21 @@ public class DecorationScheduler {
 	 *            The decoration context
 	 */
 
-	synchronized void queueForDecoration(Object element, Object adaptedElement, boolean forceUpdate,
-			String undecoratedText, IDecorationContext context) {
+	synchronized void queueForDecoration(Object element, Object adaptedElement,
+			boolean forceUpdate, String undecoratedText,
+			IDecorationContext context) {
 
 		Assert.isNotNull(context);
-		DecorationReference reference = (DecorationReference) awaitingDecorationValues.get(element);
+		DecorationReference reference = (DecorationReference) awaitingDecorationValues
+				.get(element);
 		if (reference != null) {
 			if (forceUpdate) {// Make sure we don't loose a force
 				reference.setForceUpdate(forceUpdate);
 			}
 			reference.addContext(context);
 		} else {
-			reference = new DecorationReference(element, adaptedElement, context);
+			reference = new DecorationReference(element, adaptedElement,
+					context);
 			reference.setForceUpdate(forceUpdate);
 			reference.setUndecoratedText(undecoratedText);
 			awaitingDecorationValues.put(element, reference);
@@ -162,12 +165,18 @@ public class DecorationScheduler {
 			}
 			if (decorationJob.getState() == Job.SLEEPING) {
                 // RAP [rh] fake service context
-				RWT.getUISession(display).exec(() -> decorationJob.wakeUp());
+                RWT.getUISession( display ).exec( new Runnable() {
+                  public void run() {
+                    decorationJob.wakeUp();
+                  }
+                } );
             }
 			// RAP [rh] fake service context
-
-			RWT.getUISession(display).exec(() -> decorationJob.schedule());
-
+            RWT.getUISession( display ).exec( new Runnable() {
+              public void run() {
+                decorationJob.schedule();
+              }
+            } );
 		}
 
 	}
@@ -185,10 +194,11 @@ public class DecorationScheduler {
 	 * @param manager
 	 *
 	 */
-	public Image decorateWithOverlays(Image image, Object element, Object adaptedElement, IDecorationContext context,
-			ResourceManager manager) {
+	public Image decorateWithOverlays(Image image, Object element,
+			Object adaptedElement, IDecorationContext context, ResourceManager manager) {
 
-		DecorationResult decoration = getResult(element, adaptedElement, context);
+		DecorationResult decoration = getResult(element, adaptedElement,
+				context);
 
 		if (decoration == null) {
 			return image;
@@ -209,7 +219,8 @@ public class DecorationScheduler {
 	 *            The deocration context
 	 * @return DecorationResult or <code>null</code>
 	 */
-	private DecorationResult getResult(Object element, Object adaptedElement, IDecorationContext context) {
+	private DecorationResult getResult(Object element, Object adaptedElement,
+			IDecorationContext context) {
 
 		// We do not support decoration of null
 		if (element == null) {
@@ -262,7 +273,6 @@ public class DecorationScheduler {
 
 		// RAP [rh] fake service context
 		RWT.getUISession(display).exec(new Runnable() {
-			@Override
 			public void run() {
 				// Give it a bit of a lag for other updates to occur
 				updateJob.schedule(UPDATE_DELAY);
@@ -296,20 +306,17 @@ public class DecorationScheduler {
 	 * Create the Thread used for running decoration.
 	 */
 	private void createDecorationJob() {
-		decorationJob = new Job(WorkbenchMessages.get().DecorationScheduler_CalculationJobName) {
-
+    decorationJob = new Job(
+        WorkbenchMessages.get().DecorationScheduler_CalculationJobName) {
 			/*
 			 * (non-Javadoc)
 			 *
-			 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.
-			 * IProgressMonitor)
+       * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
 			 */
-			@Override
 			public IStatus run(final IProgressMonitor monitor) {
 				final IStatus[] result = { null };
 				// RAP [rh] fake service context
 				RWT.getUISession(display).exec(new Runnable() {
-					@Override
 					public void run() {
 						result[0] = doRun(monitor);
 					}
@@ -326,21 +333,21 @@ public class DecorationScheduler {
 				}
 
 				while (updatesPending()) {
-
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
 						// Cancel and try again if there was an error
 						// RAP [rh] fake service context
 						RWT.getUISession(display).exec(new Runnable() {
-							@Override
 							public void run() {
 								decorationJob.schedule();
 							}
 						});
+
 						return Status.CANCEL_STATUS;
 					}
 				}
+
 				// RAP [if] Scheduler could be shutdown at this point
 				synchronized (DecorationScheduler.this) {
 					if (shutdown) {
@@ -348,22 +355,30 @@ public class DecorationScheduler {
 					}
 				}
 
-				SubMonitor subMonitor = SubMonitor.convert(monitor);
-				subMonitor.setTaskName(WorkbenchMessages.get().DecorationScheduler_CalculatingTask);
+        monitor.beginTask(
+            WorkbenchMessages.get().DecorationScheduler_CalculatingTask,
+            100);
 				// will block if there are no resources to be decorated
 				DecorationReference reference;
-
+        monitor.worked(5);
+        int workCount = 5;
 				while ((reference = nextElement()) != null) {
 
-					SubMonitor loopMonitor = subMonitor.setWorkRemaining(100).split(1);
+          // Count up to 90 to give the appearance of updating
+          if (workCount < 90) {
+            monitor.worked(1);
+            workCount++;
+          }
+
+          monitor.subTask(reference.getSubTask());
 					Object element = reference.getElement();
 					boolean force = reference.shouldForceUpdate();
 					IDecorationContext[] contexts = reference.getContexts();
-					loopMonitor.setWorkRemaining(contexts.length);
-					for (IDecorationContext context : contexts) {
+          for (int i = 0; i < contexts.length; i++) {
+            IDecorationContext context = contexts[i];
 						ensureResultCached(element, force, context);
-						loopMonitor.split(1);
 					}
+
 					// Only notify listeners when we have exhausted the
 					// queue of decoration requests.
 					synchronized (DecorationScheduler.this) {
@@ -372,6 +387,8 @@ public class DecorationScheduler {
 						}
 					}
 				}
+        monitor.worked(100 - workCount);
+        monitor.done();
 				return Status.OK_STATUS;
 			}
 
@@ -396,9 +413,11 @@ public class DecorationScheduler {
 				}
 
 				if (!elementIsCached) {
-					DecorationBuilder cacheResult = new DecorationBuilder(context);
+					DecorationBuilder cacheResult = new DecorationBuilder(
+							context);
 					// Calculate the decoration
-					decoratorManager.getLightweightManager().getDecorations(element, cacheResult);
+					decoratorManager.getLightweightManager().getDecorations(
+							element, cacheResult);
 
 					// If we should update regardless then put a result
 					// anyways
@@ -413,7 +432,8 @@ public class DecorationScheduler {
 						// Add the decoration even if it's empty in
 						// order to indicate that the decoration is
 						// ready
-						internalPutResult(element, context, cacheResult.createResult());
+						internalPutResult(element, context, cacheResult
+								.createResult());
 
 						// Add an update for only the original element
 						// to
@@ -427,17 +447,24 @@ public class DecorationScheduler {
 				}
 			}
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.core.runtime.jobs.Job#belongsTo(java.lang.Object)
+			 */
 			public boolean belongsTo(Object family) {
 				return DecoratorManager.FAMILY_DECORATE == family;
 			}
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.core.runtime.jobs.Job#shouldRun()
+			 */
 			public boolean shouldRun() {
 				final boolean[] result = { false };
 				// RAP [rh] fake service context
 				RWT.getUISession(display).exec(new Runnable() {
-					@Override
 					public void run() {
 						// result[ 0 ] = PatformUI.isWorkbenchRunning();
 						result[0] = !shutdown && PlatformUI.isWorkbenchRunning();
@@ -483,20 +510,28 @@ public class DecorationScheduler {
 	}
 
 	private Job getClearJob() {
-		Job clear = new Job(WorkbenchMessages.get().DecorationScheduler_ClearResultsJob) {
+		Job clear = new Job(
+				WorkbenchMessages.get().DecorationScheduler_ClearResultsJob) {
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
+			 */
 			protected IStatus run(IProgressMonitor monitor) {
 				resultCache.clear();
 				return Status.OK_STATUS;
 			}
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.core.runtime.jobs.Job#shouldRun()
+			 */
 			public boolean shouldRun() {
 				final boolean[] result = { false };
 				// RAP [rh] fake service context
 				RWT.getUISession(display).exec(new Runnable() {
-					@Override
 					public void run() {
 						result[0] = PlatformUI.isWorkbenchRunning();
 					}
@@ -516,7 +551,8 @@ public class DecorationScheduler {
 	 * @return WorkbenchJob
 	 */
 	private WorkbenchJob getUpdateJob() {
-		WorkbenchJob job = new WorkbenchJob(WorkbenchMessages.get().DecorationScheduler_UpdateJobName) {
+		WorkbenchJob job = new WorkbenchJob(
+				WorkbenchMessages.get().DecorationScheduler_UpdateJobName) {
 
 			int currentIndex = NEEDS_INIT;
 
@@ -524,7 +560,6 @@ public class DecorationScheduler {
 
 			ILabelProviderListener[] listeners;
 
-			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
 
 				synchronized (DecorationScheduler.this) {
@@ -548,7 +583,9 @@ public class DecorationScheduler {
 				    return Status.OK_STATUS;
 				}
 
-				monitor.beginTask(WorkbenchMessages.get().DecorationScheduler_UpdatingTask, IProgressMonitor.UNKNOWN);
+				monitor.beginTask(
+						WorkbenchMessages.get().DecorationScheduler_UpdatingTask,
+						IProgressMonitor.UNKNOWN);
 
 				long startTime = System.currentTimeMillis();
 				while (currentIndex < listeners.length) {
@@ -562,7 +599,8 @@ public class DecorationScheduler {
 					}
 
 					// If it is taking long enough for the user to notice then
-					// cancel the updates.
+					// cancel the
+					// updates.
 					if ((System.currentTimeMillis() - startTime) >= UPDATE_DELAY / 2) {
 						break;
 					}
@@ -579,9 +617,7 @@ public class DecorationScheduler {
 					listeners = EMPTY_LISTENER_LIST;
 				} else {
 					// RAP [rh] fake service context
-
 					RWT.getUISession(display).exec(new Runnable() {
-						@Override
 						public void run() {
 							schedule(UPDATE_DELAY);// Reschedule if we are not done
 						}
@@ -610,24 +646,33 @@ public class DecorationScheduler {
 				removedListeners.clear();
 				currentIndex = 0;
 				synchronized (pendingKey) {
-					Object[] elements = pendingUpdate.toArray(new Object[pendingUpdate.size()]);
+					Object[] elements = pendingUpdate
+							.toArray(new Object[pendingUpdate.size()]);
 					pendingUpdate.clear();
-					labelProviderChangedEvent = new LabelProviderChangedEvent(decoratorManager, elements);
+					labelProviderChangedEvent = new LabelProviderChangedEvent(
+							decoratorManager, elements);
 				}
 				listeners = decoratorManager.getListeners();
 			}
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.core.runtime.jobs.Job#belongsTo(java.lang.Object)
+			 */
 			public boolean belongsTo(Object family) {
 				return DecoratorManager.FAMILY_DECORATE == family;
 			}
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.core.runtime.jobs.Job#shouldRun()
+			 */
 			public boolean shouldRun() {
 				final boolean[] result = { false };
 				// RAP [rh] fake service context
 				RWT.getUISession(display).exec(new Runnable() {
-					@Override
 					public void run() {
 						result[0] = PlatformUI.isWorkbenchRunning();
 					}
@@ -663,7 +708,8 @@ public class DecorationScheduler {
 	 *         not been decorated yet.
 	 */
 	public Color getBackgroundColor(Object element, Object adaptedElement) {
-		DecorationResult decoration = getResult(element, adaptedElement, DecorationContext.DEFAULT_CONTEXT);
+		DecorationResult decoration = getResult(element, adaptedElement,
+				DecorationContext.DEFAULT_CONTEXT);
 
 		if (decoration == null) {
 			return null;
@@ -682,7 +728,8 @@ public class DecorationScheduler {
 	 *         not been decorated yet.
 	 */
 	public Font getFont(Object element, Object adaptedElement) {
-		DecorationResult decoration = getResult(element, adaptedElement, DecorationContext.DEFAULT_CONTEXT);
+		DecorationResult decoration = getResult(element, adaptedElement,
+				DecorationContext.DEFAULT_CONTEXT);
 
 		if (decoration == null) {
 			return null;
@@ -701,7 +748,8 @@ public class DecorationScheduler {
 	 *         not been decorated yet.
 	 */
 	public Color getForegroundColor(Object element, Object adaptedElement) {
-		DecorationResult decoration = getResult(element, adaptedElement, DecorationContext.DEFAULT_CONTEXT);
+		DecorationResult decoration = getResult(element, adaptedElement,
+				DecorationContext.DEFAULT_CONTEXT);
 
 		if (decoration == null) {
 			return null;

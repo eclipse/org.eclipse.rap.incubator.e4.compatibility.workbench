@@ -53,9 +53,9 @@ public final class KeywordRegistry implements IExtensionChangeHandler {
 	}
 
 	/**
-	 * Map of id->labels.
+	 * Map of id-&gt;labels.
 	 */
-	private Map internalKeywordMap = new HashMap();
+	private final Map internalKeywordMap = new HashMap();
 
 	/**
 	 * Private constructor.
@@ -75,15 +75,15 @@ public final class KeywordRegistry implements IExtensionChangeHandler {
 				String name = element.getAttribute(ATT_LABEL);
 				String id = element.getAttribute(ATT_ID);
 				internalKeywordMap.put(id, name);
-				PlatformUI.getWorkbench().getExtensionTracker().registerObject(
-						extension, id, IExtensionTracker.REF_WEAK);
+				PlatformUI.getWorkbench().getExtensionTracker().registerObject(extension, id,
+						IExtensionTracker.REF_WEAK);
 			}
 		}
 	}
 
 	private IExtensionPoint getExtensionPointFilter() {
-		return Platform.getExtensionRegistry().getExtensionPoint(
-				PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_KEYWORDS);
+		return Platform.getExtensionRegistry().getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
+				IWorkbenchRegistryConstants.PL_KEYWORDS);
 	}
 
 	/**

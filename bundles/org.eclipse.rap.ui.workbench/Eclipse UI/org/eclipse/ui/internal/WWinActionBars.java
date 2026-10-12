@@ -20,10 +20,11 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.IActionBars2;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.services.IServiceLocator;
 
 public class WWinActionBars implements IActionBars2 {
-    private WorkbenchWindow window;
+	private final WorkbenchWindow window;
 
     /**
      * PerspActionBars constructor comment.
@@ -42,7 +43,6 @@ public class WWinActionBars implements IActionBars2 {
 
     /**
      * Returns the cool bar manager.
-     *
      */
     @Override
 	public ICoolBarManager getCoolBarManager() {
@@ -62,8 +62,8 @@ public class WWinActionBars implements IActionBars2 {
     }
 
     /**
-     * Returns the menu manager.  If items are added or
-     * removed from the manager be sure to call <code>updateActionBars</code>.
+	 * Returns the menu manager. If items are added or removed from the manager be
+	 * sure to call <code>updateActionBars</code>.
      *
      * @return the menu manager
      */
@@ -78,8 +78,8 @@ public class WWinActionBars implements IActionBars2 {
 	}
 
     /**
-     * Returns the status line manager.  If items are added or
-     * removed from the manager be sure to call <code>updateActionBars</code>.
+	 * Returns the status line manager. If items are added or removed from the
+	 * manager be sure to call <code>updateActionBars</code>.
      *
      * @return the status line manager
      */
@@ -90,7 +90,6 @@ public class WWinActionBars implements IActionBars2 {
 
     /**
      * Returns the tool bar manager.
-     *
      */
     @Override
 	public IToolBarManager getToolBarManager() {
@@ -103,22 +102,21 @@ public class WWinActionBars implements IActionBars2 {
      * Add a handler for a window action.
      *
      * The standard action ID's for the workbench are defined in
-     * <code>IWorkbenchActions</code>.
+	 * <code>IWorkbenchActionConstants</code>.
      *
-     * @see IWorkbenchActions
+	 * @see IWorkbenchActionConstants
      *
      * @param actionID an action ID declared in the registry
-     * @param handler an action which implements the action ID.
-     *		<code>null</code> may be passed to deregister a handler.
+	 * @param handler  an action which implements the action ID. <code>null</code>
+	 *                 may be passed to deregister a handler.
      */
     @Override
 	public void setGlobalActionHandler(String actionID, IAction handler) {
     }
 
 	/**
-     * Commits all UI changes.  This should be called
-     * after additions or subtractions have been made to a
-     * menu, status line, or toolbar.
+	 * Commits all UI changes. This should be called after additions or subtractions
+	 * have been made to a menu, status line, or toolbar.
      */
     @Override
 	public void updateActionBars() {

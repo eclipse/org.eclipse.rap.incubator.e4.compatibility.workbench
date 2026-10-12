@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -22,15 +19,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -38,7 +35,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.util.Assert;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
@@ -49,15 +45,15 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 
 public final class Util {
 
-    public static final SortedMap EMPTY_SORTED_MAP = Collections
+    public final static SortedMap EMPTY_SORTED_MAP = Collections
             .unmodifiableSortedMap(new TreeMap());
 
-    public static final SortedSet EMPTY_SORTED_SET = Collections
+    public final static SortedSet EMPTY_SORTED_SET = Collections
             .unmodifiableSortedSet(new TreeSet());
 
-    public static final String ZERO_LENGTH_STRING = ""; //$NON-NLS-1$
+    public final static String ZERO_LENGTH_STRING = ""; //$NON-NLS-1$
 
-    public static final String[] EMPTY_STRING_ARRAY = new String[0];
+    public final static String[] EMPTY_STRING_ARRAY = new String[0];
 
     /**
      * Ensures that a string is not null. Converts null strings into empty
@@ -173,7 +169,7 @@ public final class Util {
 
             if (l != r) {
 				return l - r;
-			}
+			} else {
 			for (int i = 0; i < l; i++) {
 				int compareTo = compare(left[i], right[i]);
 
@@ -184,6 +180,7 @@ public final class Util {
 
 			return 0;
         }
+    }
     }
 
     public static int compare(int left, int right) {
@@ -203,9 +200,10 @@ public final class Util {
 
             if (l != r) {
 				return l - r;
-			}
+			} else {
 			for (int i = 0; i < l; i++) {
-				int compareTo = compare((Comparable) left.get(i), (Comparable) right.get(i));
+                    int compareTo = compare((Comparable) left.get(i),
+                            (Comparable) right.get(i));
 
 				if (compareTo != 0) {
 					return compareTo;
@@ -214,6 +212,7 @@ public final class Util {
 
 			return 0;
         }
+    }
     }
 
     public static int compare(Object left, Object right) {
@@ -245,7 +244,7 @@ public final class Util {
      *         <code>null</code>. Otherwise, the left identity hash code
      *         minus the right identity hash code.
      */
-    public static int compareIdentity(Object left, Object right) {
+    public static final int compareIdentity(Object left, Object right) {
         if (left == null && right == null) {
 			return 0;
 		} else if (left == null) {
@@ -258,26 +257,32 @@ public final class Util {
 		}
     }
 
-	public static void diff(Map<?, ?> left, Map<?, ?> right, Set leftOnly, Set different,
+    public static void diff(Map left, Map right, Set leftOnly, Set different,
             Set rightOnly) {
         if (left == null || right == null || leftOnly == null
                 || different == null || rightOnly == null) {
 			throw new NullPointerException();
 		}
 
-		for (Entry<?, ?> leftEntry : left.entrySet()) {
-			Object key = leftEntry.getKey();
+        Iterator iterator = left.keySet().iterator();
+
+        while (iterator.hasNext()) {
+            Object key = iterator.next();
 
             if (!right.containsKey(key)) {
 				leftOnly.add(key);
-			} else if (!Util.equals(leftEntry.getValue(), right.get(key))) {
+			} else if (!Util.equals(left.get(key), right.get(key))) {
 				different.add(key);
 			}
         }
 
-		for (Object rightKey : right.keySet()) {
-			if (!left.containsKey(rightKey)) {
-				rightOnly.add(rightKey);
+        iterator = right.keySet().iterator();
+
+        while (iterator.hasNext()) {
+            Object key = iterator.next();
+
+            if (!left.containsKey(key)) {
+				rightOnly.add(key);
 			}
         }
     }
@@ -312,7 +317,7 @@ public final class Util {
     public static boolean endsWith(List left, List right, boolean equals) {
         if (left == null || right == null) {
 			return false;
-		}
+		} else {
 		int l = left.size();
 		int r = right.size();
 
@@ -328,11 +333,12 @@ public final class Util {
 
 		return true;
     }
+    }
 
     public static boolean endsWith(Object[] left, Object[] right, boolean equals) {
         if (left == null || right == null) {
 			return false;
-		}
+		} else {
 		int l = left.length;
 		int r = right.length;
 
@@ -347,6 +353,7 @@ public final class Util {
 		}
 
 		return true;
+    }
     }
 
     public static boolean equals(boolean left, boolean right) {
@@ -377,7 +384,7 @@ public final class Util {
 	 *         elements at the same position are equal; <code>false</code>
 	 *         otherwise.
 	 */
-	public static boolean equals(final Object[] leftArray,
+	public static final boolean equals(final Object[] leftArray,
 			final Object[] rightArray) {
 		if (leftArray == rightArray) {
 			return true;
@@ -632,7 +639,6 @@ public final class Util {
      * @param array1
      * @param array2
      * @return
-     * @since 3.1
      */
     public static Object[] appendArray(Object[] array1, Object[] array2) {
         Object[] result = new Object[array1.length + array2.length];
@@ -653,6 +659,31 @@ public final class Util {
 		return string == null ? null : string.intern();
 	}
 
+	/**
+	 * Returns the result of converting a list of comma-separated tokens into an array.
+	 * Used as a replacement for <code>String.split(String)</code>, to allow compilation
+	 * against JCL Foundation (bug 80053).
+	 * 
+	 * @param prop the initial comma-separated string
+	 * @param separator the separator characters
+	 * @return the array of string tokens
+	 * @since 3.1
+	 */
+	public static String[] getArrayFromList(String prop, String separator) {
+		if (prop == null || prop.trim().equals("")) { //$NON-NLS-1$
+			return new String[0];
+		}
+		ArrayList list = new ArrayList();
+		StringTokenizer tokens = new StringTokenizer(prop, separator); 
+		while (tokens.hasMoreTokens()) {
+			String token = tokens.nextToken().trim();
+			if (!token.equals("")) { //$NON-NLS-1$
+				list.add(token);
+			}
+		}
+		return list.isEmpty() ? new String[0] : (String[]) list.toArray(new String[list.size()]);
+	}
+	
 	/**
 	 * Two {@link String}s presented in a list form.
 	 * This method can be used to form a longer list by providing a list for
@@ -698,11 +729,11 @@ public final class Util {
 	 */
 	public static String createList(Object[] items) {
 		String list = null;
-		for (Object item : items) {
+		for (int i = 0; i < items.length; i++) {
 			if(list == null) {
-				list = item.toString();
+				list = items[i].toString();
 			} else {
-				list = createList(list, item.toString());
+				list = createList(list, items[i].toString());
 			}
 		}
 		return safeString(list);
@@ -751,7 +782,7 @@ public final class Util {
 		IWorkbenchWindow windowToParentOn = activeWindow == null ? (workbench
 				.getWorkbenchWindowCount() > 0 ? workbench
 				.getWorkbenchWindows()[0] : null) : activeWindow;
-		return windowToParentOn == null ? null : windowToParentOn.getShell();
+		return windowToParentOn == null ? null : activeWindow.getShell();
 	}
 
 	/**
@@ -803,12 +834,19 @@ public final class Util {
 	}
 
 	/**
-	 * Foundation replacement for String.replaceAll(*).
+	 * Foundation replacement for <code>String#replaceAll(String,
+	 * String)</code>, but <strong>without support for regular
+	 * expressions</strong>.
 	 *
-	 * @param src the starting string.
-	 * @param find the string to find.
-	 * @param replacement the string to replace.
-	 * @return The new string.
+	 * @param src
+	 *            the original string
+	 * @param find
+	 *            the string to find
+	 * @param replacement
+	 *            the replacement string
+	 * @return the new string, with all occurrences of <code>find</code>
+	 *         replaced by <code>replacement</code> (not using regular
+	 *         expressions)
 	 * @since 3.3
 	 */
 	public static String replaceAll(String src, String find, String replacement) {

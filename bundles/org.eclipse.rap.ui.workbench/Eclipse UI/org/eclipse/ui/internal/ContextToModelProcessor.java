@@ -38,6 +38,7 @@ public class ContextToModelProcessor {
 
 	@Execute
 	void process(MApplication application, IEclipseContext context) {
+		contexts.clear();
 		gatherContexts(application.getRootContext());
 		ContextManager contextManager = context.get(ContextManager.class);
 		if (contextManager == null) {
@@ -45,9 +46,13 @@ public class ContextToModelProcessor {
 			context.set(ContextManager.class, contextManager);
 		}
 		ContextPersistence cp = new ContextPersistence(contextManager);
-		cp.reRead();
-		generateContexts(application, contextManager);
-		cp.dispose();
+		try {
+			cp.reRead();
+			generateContexts(application, contextManager);
+		} finally {
+			cp.dispose();
+			contexts.clear();
+		}
 	}
 
 	/**

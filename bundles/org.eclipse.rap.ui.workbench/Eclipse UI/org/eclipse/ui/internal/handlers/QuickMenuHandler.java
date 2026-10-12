@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2015 IBM Corporation and others.
+ * Copyright (c) 2008, 2026 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -18,9 +18,6 @@ package org.eclipse.ui.internal.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.ContributionManager;
 import org.eclipse.jface.action.IMenuListener2;
 import org.eclipse.jface.action.IMenuManager;
@@ -46,10 +43,8 @@ public class QuickMenuHandler extends AbstractHandler implements IMenuListener2 
 			if (!(menu instanceof ContributionManager)) {
 				return;
 			}
-			IMenuService service = PlatformUI.getWorkbench()
-					.getService(IMenuService.class);
-			service.populateContributionManager((ContributionManager) menu,
-					locationURI);
+			IMenuService service = PlatformUI.getWorkbench().getService(IMenuService.class);
+			service.populateContributionManager((ContributionManager) menu, locationURI);
 			menu.addMenuListener(QuickMenuHandler.this);
 		}
 
@@ -70,24 +65,16 @@ public class QuickMenuHandler extends AbstractHandler implements IMenuListener2 
 	@Override
 	public void dispose() {
 		if (creator != null) {
-			creator.dispose();
 			creator = null;
 		}
 	}
 
 	@Override
 	public void menuAboutToHide(final IMenuManager managerM) {
-		new UIJob("quickMenuCleanup") { //$NON-NLS-1$
-
-			@Override
-			public IStatus runInUIThread(IProgressMonitor monitor) {
-				IMenuService service = PlatformUI.getWorkbench()
-						.getService(IMenuService.class);
+		UIJob.create("quickMenuCleanup", m -> { //$NON-NLS-1$
+				IMenuService service = PlatformUI.getWorkbench().getService(IMenuService.class);
 				service.releaseContributions((ContributionManager) managerM);
-				return Status.OK_STATUS;
-			}
-
-		}.schedule();
+		}).schedule();
 	}
 
 	@Override

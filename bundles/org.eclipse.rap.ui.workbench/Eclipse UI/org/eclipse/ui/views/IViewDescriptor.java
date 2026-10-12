@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
+ * Copyright (c) 2000, 2025 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -21,11 +21,11 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPartDescriptor;
 
 /**
- * This is a view descriptor. It provides a "description" of a given
- * given view so that the view can later be constructed.
+ * This is a view descriptor. It provides a "description" of a given given view
+ * so that the view can later be constructed.
  * <p>
- * The view registry provides facilities to map from an extension
- * to a IViewDescriptor.
+ * The view registry provides facilities to map from an extension to a
+ * IViewDescriptor.
  * </p>
  * <p>
  * This interface is not intended to be implemented by clients.
@@ -45,10 +45,10 @@ public interface IViewDescriptor extends IWorkbenchPartDescriptor, IAdaptable {
     IViewPart createView() throws CoreException;
 
     /**
-     * Returns an array of strings that represent
-     * view's category path. This array will be used
-     * for hierarchical presentation of the
-     * view in places like submenus.
+	 * Returns an array of strings that represent view's category path. This array
+	 * will be used for hierarchical presentation of the view in places like
+	 * submenus.
+	 *
      * @return array of category tokens or null if not specified.
      */
     String[] getCategoryPath();
@@ -65,25 +65,30 @@ public interface IViewDescriptor extends IWorkbenchPartDescriptor, IAdaptable {
      *
      * @return the id
      */
-    @Override String getId();
+	@Override
+	String getId();
 
     /**
      * Returns the descriptor for the icon to show for this view.
      */
-    @Override ImageDescriptor getImageDescriptor();
+	@Override
+	ImageDescriptor getImageDescriptor();
 
     /**
      * Returns the label to show for this view.
      *
      * @return the label
      */
-    @Override String getLabel();
+	@Override
+	String getLabel();
 
     /**
      * Returns the default fast view width ratio for this view.
      *
      * @return the fast view width ratio
+	 * @deprecated discontinued support for fast views
      */
+	@Deprecated(since = "2025-06", forRemoval = true)
     float getFastViewWidthRatio();
 
     /**

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -14,7 +11,10 @@
 package org.eclipse.ui.dialogs;
 
 import java.util.List;
+
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -32,7 +32,7 @@ import org.eclipse.swt.widgets.Table;
  * <code>IStructuredContentProvider</code> to provide the elements and
  * <code>ILabelProvider</code> to provide their labels.
  *
- * @since 2.1
+ * @since 1.0
  */
 public class ListDialog extends SelectionDialog {
     private IStructuredContentProvider fContentProvider;
@@ -93,7 +93,6 @@ public class ListDialog extends SelectionDialog {
         return fTableViewer;
     }
 
-    @Override
 	protected void createButtonsForButtonBar(Composite parent) {
         if (!fAddCancelButton) {
 			createButton(parent, IDialogConstants.OK_ID,
@@ -103,7 +102,6 @@ public class ListDialog extends SelectionDialog {
 		}
     }
 
-    @Override
 	protected Control createDialogArea(Composite container) {
         Composite parent = (Composite) super.createDialogArea(container);
         createMessageArea(parent);
@@ -111,10 +109,12 @@ public class ListDialog extends SelectionDialog {
         fTableViewer.setContentProvider(fContentProvider);
         fTableViewer.setLabelProvider(fLabelProvider);
         fTableViewer.setInput(fInput);
-        fTableViewer.addDoubleClickListener(event -> {
+        fTableViewer.addDoubleClickListener(new IDoubleClickListener() {
+            public void doubleClick(DoubleClickEvent event) {
 		    if (fAddCancelButton) {
 				okPressed();
 			}
+            }
 		});
         List initialSelection = getInitialElementSelections();
         if (initialSelection != null) {
@@ -141,10 +141,10 @@ public class ListDialog extends SelectionDialog {
     /*
      * Overrides method from Dialog
      */
-    @Override
 	protected void okPressed() {
         // Build a list of selected children.
-		IStructuredSelection selection = fTableViewer.getStructuredSelection();
+        IStructuredSelection selection = (IStructuredSelection) fTableViewer
+                .getSelection();
         setResult(selection.toList());
         super.okPressed();
     }

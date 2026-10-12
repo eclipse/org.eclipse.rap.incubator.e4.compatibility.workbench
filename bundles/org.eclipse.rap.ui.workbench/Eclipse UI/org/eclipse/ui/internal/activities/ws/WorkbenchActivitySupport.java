@@ -137,17 +137,17 @@ public class WorkbenchActivitySupport implements IWorkbenchActivitySupport, IExt
                                             //two work units - updating the window bars, and updating view bars
                                             monitor
                                                     .beginTask(
-                                                            ActivityMessages.ManagerTask, 2);
+                                                            ActivityMessages.get().ManagerTask, 2);
 
                                             monitor
-                                                    .subTask(ActivityMessages.ManagerWindowSubTask);
+                                                    .subTask(ActivityMessages.get().ManagerWindowSubTask);
 
                                             //update window managers...
                                             updateWindowBars(window);
                                             monitor.worked(1);
 
                                             monitor
-                                                    .subTask(ActivityMessages.ManagerViewsSubTask);
+                                                    .subTask(ActivityMessages.get().ManagerViewsSubTask);
                                             // update all of the (realized) views in all of the pages
                                             IWorkbenchPage[] pages = window
                                                     .getPages();
@@ -415,7 +415,7 @@ public class WorkbenchActivitySupport implements IWorkbenchActivitySupport, IExt
 		String brandingId = BrandingUtil.getCurrentBrandingId();
 		if (brandingId != null) {
 			TriggerPointAdvisorDescriptor descriptor = TriggerPointAdvisorRegistry.getInstance()
-					.getAdvisorForBranding(brandingId);
+					.getAdvisorForProduct(brandingId);
 			if (descriptor != null) {
 				try {
 					advisor = descriptor.createAdvisor();
@@ -478,3 +478,4 @@ public class WorkbenchActivitySupport implements IWorkbenchActivitySupport, IExt
         return clone;
     }
 }
+

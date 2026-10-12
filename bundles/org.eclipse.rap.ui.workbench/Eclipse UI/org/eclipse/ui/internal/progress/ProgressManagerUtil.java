@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2017 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2003, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -15,6 +12,7 @@ package org.eclipse.ui.internal.progress;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.Job;
@@ -23,17 +21,11 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.rap.rwt.internal.textsize.TextSizeUtil;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.*;
+import org.eclipse.ui.internal.*;
 import org.eclipse.ui.internal.misc.StatusUtil;
 import org.eclipse.ui.internal.util.BundleUtility;
 import org.eclipse.ui.progress.IProgressConstants;
@@ -45,7 +37,6 @@ import org.eclipse.ui.views.IViewDescriptor;
  */
 
 public class ProgressManagerUtil {
-
 	/**
 	 * A constant used by the progress support to determine if an operation is
 	 * too short to show progress.
@@ -122,7 +113,7 @@ public class ProgressManagerUtil {
 	 *
 	 * @param window
 	 */
-	static void openProgressView(IWorkbenchWindow window) {
+	static void openProgressView(WorkbenchWindow window) {
 		IWorkbenchPage page = window.getActivePage();
 		if (page == null) {
 			return;
@@ -483,7 +474,6 @@ public class ProgressManagerUtil {
 			 *
 			 * @see org.eclipse.jface.window.IShellProvider#getShell()
 			 */
-			@Override
 			public Shell getShell() {
 				return getDefaultParent();
 			}

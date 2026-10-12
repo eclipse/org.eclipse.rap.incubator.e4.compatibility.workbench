@@ -15,7 +15,6 @@ package org.eclipse.ui.internal;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.IActionBars;
@@ -25,14 +24,13 @@ import org.eclipse.ui.internal.registry.IActionSet;
 import org.eclipse.ui.services.IDisposable;
 
 /**
- * A PluginActionSet is a proxy for an action set defined in XML.
- * It creates a PluginAction for each action and does the required
- * cleanup on dispose.
+ * A PluginActionSet is a proxy for an action set defined in XML. It creates a
+ * PluginAction for each action and does the required cleanup on dispose.
  */
 public class PluginActionSet implements IActionSet {
-    private ActionSetDescriptor desc;
+	private final ActionSetDescriptor desc;
 
-    private ArrayList pluginActions = new ArrayList(4);
+	private final ArrayList<IAction> pluginActions = new ArrayList<>(4);
 
     private ActionSetActionBars bars;
 
@@ -73,7 +71,7 @@ public class PluginActionSet implements IActionSet {
      */
     @Override
 	public void dispose() {
-        Iterator iter = pluginActions.iterator();
+		Iterator<IAction> iter = pluginActions.iterator();
         while (iter.hasNext()) {
             WWinPluginAction action = (WWinPluginAction) iter.next();
             action.dispose();
@@ -86,8 +84,6 @@ public class PluginActionSet implements IActionSet {
 		}
     }
 
-    /**
-     */
     /* package */ActionSetActionBars getBars() {
         return bars;
     }

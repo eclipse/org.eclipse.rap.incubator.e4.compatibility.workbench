@@ -14,7 +14,7 @@
 
 package org.eclipse.ui.internal.handlers;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
@@ -36,7 +36,6 @@ import org.eclipse.ui.internal.registry.PerspectiveRegistry;
  * @author Prakash G.R.
  *
  * @since 3.7
- *
  */
 public class SavePerspectiveHandler extends AbstractHandler {
 
@@ -67,11 +66,10 @@ public class SavePerspectiveHandler extends AbstractHandler {
 	 * Save a singleton over itself.
 	 */
 	private void saveSingleton(IWorkbenchPage page) {
-	    String[] buttons = new String[] { IDialogConstants.get().OK_LABEL, IDialogConstants.get().CANCEL_LABEL };
 		MessageDialog d = new MessageDialog(page.getWorkbenchWindow().getShell(),
 				WorkbenchMessages.get().SavePerspective_overwriteTitle, null,
 				WorkbenchMessages.get().SavePerspective_singletonQuestion, MessageDialog.QUESTION,
-				buttons, 0);
+				new String[] { IDialogConstants.get().OK_LABEL, IDialogConstants.get().CANCEL_LABEL }, 0);
 		if (d.open() == 0) {
 			page.savePerspective();
 		}
@@ -82,12 +80,10 @@ public class SavePerspectiveHandler extends AbstractHandler {
 	 */
 	private void saveNonSingleton(IWorkbenchPage page, PerspectiveDescriptor oldDesc) {
 		// Get reg.
-		PerspectiveRegistry reg = (PerspectiveRegistry) WorkbenchPlugin.getDefault()
-				.getPerspectiveRegistry();
+		PerspectiveRegistry reg = (PerspectiveRegistry) WorkbenchPlugin.getDefault().getPerspectiveRegistry();
 
 		// Get persp name.
-		SavePerspectiveDialog dlg = new SavePerspectiveDialog(page.getWorkbenchWindow().getShell(),
-				reg);
+		SavePerspectiveDialog dlg = new SavePerspectiveDialog(page.getWorkbenchWindow().getShell(), reg);
 		// Look up the descriptor by id again to ensure it is still valid.
 		IPerspectiveDescriptor description = reg.findPerspectiveWithId(oldDesc.getId());
 		dlg.setInitialSelection(description);
@@ -101,8 +97,7 @@ public class SavePerspectiveHandler extends AbstractHandler {
 			String name = dlg.getPerspName();
 			newDesc = reg.createPerspective(name, (PerspectiveDescriptor) description);
 			if (newDesc == null) {
-				MessageDialog.openError(dlg.getShell(),
-						WorkbenchMessages.get().SavePerspective_errorTitle,
+				MessageDialog.openError(dlg.getShell(), WorkbenchMessages.get().SavePerspective_errorTitle,
 						WorkbenchMessages.get().SavePerspective_errorMessage);
 				return;
 			}

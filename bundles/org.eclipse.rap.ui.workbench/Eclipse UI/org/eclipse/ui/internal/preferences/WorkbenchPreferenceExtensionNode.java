@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -17,12 +14,11 @@
 
 package org.eclipse.ui.internal.preferences;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.rap.rwt.RWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.internal.registry.KeywordRegistry;
@@ -33,12 +29,15 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  * The WorkbenchPreferenceExtensionNode is the abstract class for all property
  * and page nodes in the workbench.
  *
- * @since 3.1
  */
 public abstract class WorkbenchPreferenceExtensionNode extends WorkbenchPreferenceExpressionNode
     implements IComparableContribution {
 
-	private Collection<String> keywordReferences;
+  // RAP [fappel]: key to save page on the session to allow multiple sessions
+  private static final String ID_PAGE
+    = WorkbenchPreferenceExtensionNode.class.getName() + "#Page"; //$NON-NLS-1$
+  
+	private Collection keywordReferences;
 
 	private IConfigurationElement configurationElement;
 
@@ -46,14 +45,14 @@ public abstract class WorkbenchPreferenceExtensionNode extends WorkbenchPreferen
 
 	private Image image;
 
-	private Collection<String> keywordLabelCache;
+	private Collection keywordLabelCache;
 
 	private int priority;
 
 	private String pluginId;
 
 	/**
-	 * Create a new instance of the receiver.
+	 * Create a new instance of the reciever.
 	 *
 	 * @param id
 	 * @param configurationElement
@@ -69,13 +68,14 @@ public abstract class WorkbenchPreferenceExtensionNode extends WorkbenchPreferen
 	 *
 	 * @return Collection of <code>String</code>.  Never <code>null</code>.
 	 */
-	public Collection<String> getKeywordReferences() {
+	public Collection getKeywordReferences() {
 		if (keywordReferences == null) {
 			IConfigurationElement[] references = getConfigurationElement()
 					.getChildren(IWorkbenchRegistryConstants.TAG_KEYWORD_REFERENCE);
-			HashSet<String> list = new HashSet<>(references.length);
-			for (IConfigurationElement configElement : references) {
-				String id = configElement.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
+			HashSet list = new HashSet(references.length);
+			for (int i = 0; i < references.length; i++) {
+				IConfigurationElement page = references[i];
+				String id = page.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
 				if (id != null) {
 					list.add(id);
 				}
@@ -96,21 +96,23 @@ public abstract class WorkbenchPreferenceExtensionNode extends WorkbenchPreferen
 	 *
 	 * @return Collection of <code>String</code>.  Never <code>null</code>.
 	 */
-	public Collection<String> getKeywordLabels() {
+	public Collection getKeywordLabels() {
 		if (keywordLabelCache != null) {
 			return keywordLabelCache;
 		}
 
-		Collection<String> refs = getKeywordReferences();
+		Collection refs = getKeywordReferences();
 
-		if (refs.isEmpty()) {
-			keywordLabelCache = Collections.emptySet();
+		if(refs == Collections.EMPTY_SET) {
+			keywordLabelCache = Collections.EMPTY_SET; 
 			return keywordLabelCache;
 		}
 
-		keywordLabelCache = new ArrayList<>(refs.size());
-		for (String reference : refs) {
-			String label = KeywordRegistry.getInstance().getKeywordLabel(reference);
+		keywordLabelCache = new ArrayList(refs.size());
+		Iterator referenceIterator = refs.iterator();
+		while(referenceIterator.hasNext()){
+			Object label = KeywordRegistry.getInstance().getKeywordLabel(
+					(String) referenceIterator.next());
 			if(label != null) {
 				keywordLabelCache.add(label);
 			}
@@ -126,16 +128,25 @@ public abstract class WorkbenchPreferenceExtensionNode extends WorkbenchPreferen
 		keywordLabelCache = null;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.IPreferenceNode#disposeResources()
+	 */
 	public void disposeResources() {
         if (image != null) {
-            image.dispose();
+// RAP [fappel]: Resource disposal not available in RAP
+//            image.dispose();
             image = null;
+        }
+        if( getPage() != null ) {
+          getPage().dispose();
+          removePage();
         }
         super.disposeResources();
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.IPreferenceNode#getLabelImage()
+	 */
 	public Image getLabelImage() {
         if (image == null) {
         	ImageDescriptor desc = getImageDescriptor();
@@ -147,7 +158,9 @@ public abstract class WorkbenchPreferenceExtensionNode extends WorkbenchPreferen
     }
 
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.IPreferenceNode#getLabelText()
+	 */
 	public String getLabelText() {
 		return getConfigurationElement().getAttribute(IWorkbenchRegistryConstants.ATT_NAME);
 	}
@@ -157,7 +170,6 @@ public abstract class WorkbenchPreferenceExtensionNode extends WorkbenchPreferen
      *
      * @return the image descriptor
      */
-    @Override
 	public ImageDescriptor getImageDescriptor() {
     	if (imageDescriptor != null) {
 			return imageDescriptor;
@@ -180,30 +192,41 @@ public abstract class WorkbenchPreferenceExtensionNode extends WorkbenchPreferen
 		return configurationElement;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.activities.support.IPluginContribution#getLocalId()
+	 */
 	public String getLocalId() {
 		return getId();
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.activities.support.IPluginContribution#getPluginId()
+	 */
 	public String getPluginId() {
 		return pluginId;
 	}
 
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IComparableContribution#getAdapter(java.lang.Class)
+     */
+    public Object getAdapter(Class adapter)
+    {
         if (adapter == IConfigurationElement.class)
-			return adapter.cast(getConfigurationElement());
+            return getConfigurationElement();
         return null;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IComparableContribution#getLabel()
+     */
 	public String getLabel()
     {
         return getLabelText();
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IComparableContribution#getPriority()
+     */
 	public int getPriority()
     {
         return priority;
@@ -214,5 +237,19 @@ public abstract class WorkbenchPreferenceExtensionNode extends WorkbenchPreferen
         priority = pri;
     }
 
+    // RAP [fappel]: override to allow multiple sessions 
+    public void setPage( final IPreferencePage newPage ) {
+      RWT.getUISession().setAttribute( ID_PAGE + getId() , newPage );
+    }
+    
+    // RAP [fappel]: override to allow multiple sessions 
+    public IPreferencePage getPage() {
+      return ( IPreferencePage )RWT.getUISession().getAttribute( ID_PAGE  + getId() );
+    }
+    
+    // RAP [fappel]: allow to remove page from session store after disposal
+    private void removePage() {
+      RWT.getUISession().removeAttribute( ID_PAGE  + getId() );
+    }
 
 }

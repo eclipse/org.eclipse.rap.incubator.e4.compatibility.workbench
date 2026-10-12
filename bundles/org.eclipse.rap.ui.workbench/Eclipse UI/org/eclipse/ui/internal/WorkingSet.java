@@ -1,23 +1,19 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Tomasz Zarna <tomasz.zarna@tasktop.com> - Bug 37183
  *******************************************************************************/
 package org.eclipse.ui.internal;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.eclipse.core.runtime.Adapters;
+
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -38,7 +34,6 @@ import org.eclipse.ui.internal.util.Util;
  * a set of elements.
  *
  * @see org.eclipse.ui.IWorkingSet
- * @since 2.0
  */
 public class WorkingSet extends AbstractWorkingSet {
 	private static final String DEFAULT_ID = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
@@ -92,7 +87,6 @@ public class WorkingSet extends AbstractWorkingSet {
 	 * @return true=the object equals the receiver, the name is the same. false
 	 *         otherwise
 	 */
-	@Override
 	public boolean equals(Object object) {
 		if (this == object) {
 			return true;
@@ -107,26 +101,28 @@ public class WorkingSet extends AbstractWorkingSet {
 		return false;
 	}
 
-	@Override
-	public String toString() {
-		return "WS [name=" + getName() + ", elements=" + getElementsArray() + ", id=" + getId() + "]"; //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
 	public boolean isEditable() {
 		WorkingSetDescriptor descriptor = getDescriptor(null);
 		return descriptor != null && descriptor.isEditable();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IWorkingSet
+	 */
 	public String getId() {
 		return editPageId;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IWorkingSet#getImageDescriptor()
+	 */
 	public ImageDescriptor getImageDescriptor() {
 		WorkingSetDescriptor descriptor = getDescriptor(DEFAULT_ID);
 		if (descriptor == null) {
@@ -140,7 +136,6 @@ public class WorkingSet extends AbstractWorkingSet {
 	 *
 	 * @return the hash code.
 	 */
-	@Override
 	public int hashCode() {
 		int hashCode = getName().hashCode();
 
@@ -153,12 +148,12 @@ public class WorkingSet extends AbstractWorkingSet {
 	/**
 	 * Recreates the working set elements from the persistence memento.
 	 */
-	@Override
 	void restoreWorkingSet() {
 		IMemento[] itemMementos = workingSetMemento
 				.getChildren(IWorkbenchConstants.TAG_ITEM);
 		final Set items = new HashSet();
-		for (final IMemento itemMemento : itemMementos) {
+		for (int i = 0; i < itemMementos.length; i++) {
+			final IMemento itemMemento = itemMementos[i];
 			final String factoryID = itemMemento
 					.getString(IWorkbenchConstants.TAG_FACTORY_ID);
 
@@ -178,7 +173,6 @@ public class WorkingSet extends AbstractWorkingSet {
 					.run(new SafeRunnable(
 							"Unable to restore working set item - exception while invoking factory: " + factoryID) { //$NON-NLS-1$
 
-						@Override
 						public void run() throws Exception {
 							IAdaptable item = factory
 									.createElement(itemMemento);
@@ -203,7 +197,6 @@ public class WorkingSet extends AbstractWorkingSet {
 	 *
 	 * @see org.eclipse.ui.IPersistableElement#saveState(IMemento)
 	 */
-	@Override
 	public void saveState(IMemento memento) {
 		if (workingSetMemento != null) {
 			// just re-save the previous memento if the working set has
@@ -217,7 +210,8 @@ public class WorkingSet extends AbstractWorkingSet {
 			Iterator iterator = elements.iterator();
 			while (iterator.hasNext()) {
 				IAdaptable adaptable = (IAdaptable) iterator.next();
-				final IPersistableElement persistable = Adapters.adapt(adaptable, IPersistableElement.class);
+				final IPersistableElement persistable = (IPersistableElement) Util
+						.getAdapter(adaptable, IPersistableElement.class);
 				if (persistable != null) {
 					final IMemento itemMemento = memento
 							.createChild(IWorkbenchConstants.TAG_ITEM);
@@ -228,7 +222,6 @@ public class WorkingSet extends AbstractWorkingSet {
 							.run(new SafeRunnable(
 									"Problems occurred while saving persistable item state") { //$NON-NLS-1$
 
-								@Override
 								public void run() throws Exception {
 									persistable.saveState(itemMemento);
 								}
@@ -238,30 +231,35 @@ public class WorkingSet extends AbstractWorkingSet {
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IWorkingSet
+	 */
 	public void setElements(IAdaptable[] newElements) {
-		AbstractWorkingSet oldWorkingSet = clone();
 		internalSetElements(newElements);
-		fireWorkingSetChanged(IWorkingSetManager.CHANGE_WORKING_SET_CONTENT_CHANGE, oldWorkingSet);
+		fireWorkingSetChanged(
+				IWorkingSetManager.CHANGE_WORKING_SET_CONTENT_CHANGE, null);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IWorkingSet
+	 */
 	public void setId(String pageId) {
 		editPageId = pageId;
 	}
 
-	@Override
 	public boolean isVisible() {
 		return true;
 	}
 
-	@Override
 	public boolean isSelfUpdating() {
 		WorkingSetDescriptor descriptor = getDescriptor(null);
 		return descriptor != null && descriptor.getUpdaterClassName() != null;
 	}
 
-	@Override
 	public boolean isAggregateWorkingSet() {
 		return false;
 	}
@@ -288,7 +286,11 @@ public class WorkingSet extends AbstractWorkingSet {
 		return registry.getWorkingSetDescriptor(id);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IWorkingSet#adaptElements(org.eclipse.core.runtime.IAdaptable[])
+	 */
 	public IAdaptable[] adaptElements(IAdaptable[] objects) {
 		IWorkingSetManager manager = getManager();
 		if (manager instanceof WorkingSetManager) {

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2006, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -18,6 +15,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.eclipse.core.commands.IParameterValues;
+import org.eclipse.core.runtime.IRegistryChangeEvent;
+import org.eclipse.core.runtime.IRegistryChangeListener;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
@@ -39,18 +38,24 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * This is only intended for use within the
  * <code>org.eclipse.ui.workbench</code> plug-in.
  * </p>
- *
- * @since 3.2
  */
 public final class PreferencePageParameterValues implements IParameterValues {
 
 	public PreferencePageParameterValues() {
 		Platform.getExtensionRegistry().addRegistryChangeListener(
-				event -> {
+				new IRegistryChangeListener() {
+
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see org.eclipse.core.runtime.IRegistryChangeListener#registryChanged(org.eclipse.core.runtime.IRegistryChangeEvent)
+					 */
+					public void registryChanged(IRegistryChangeEvent event) {
 				    // RAP [bm]: namespace
 				    if (event.getExtensionDeltas(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 							IWorkbenchRegistryConstants.PL_PREFERENCES).length > 0) {
 						preferenceMap = null;
+					}
 					}
 				});
 	}
@@ -71,10 +76,12 @@ public final class PreferencePageParameterValues implements IParameterValues {
 	 *            preference page tree. This will be <code>null</code> for the
 	 *            root level preference page nodes.
 	 */
-	private void collectParameterValues(final Map values,
+	private final void collectParameterValues(final Map values,
 			final IPreferenceNode[] preferenceNodes, final String namePrefix) {
 
-		for (final IPreferenceNode preferenceNode : preferenceNodes) {
+		for (int i = 0; i < preferenceNodes.length; i++) {
+			final IPreferenceNode preferenceNode = preferenceNodes[i];
+
 			final String name;
 			if (namePrefix == null) {
 				name = preferenceNode.getLabelText();
@@ -90,8 +97,7 @@ public final class PreferencePageParameterValues implements IParameterValues {
 		}
 	}
 
-	@Override
-	public Map getParameterValues() {
+	public final Map getParameterValues() {
 		if (preferenceMap == null) {
 			preferenceMap = new TreeMap();
 

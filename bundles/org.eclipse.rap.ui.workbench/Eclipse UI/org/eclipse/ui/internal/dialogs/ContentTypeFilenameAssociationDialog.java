@@ -35,7 +35,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 
 /**
- * This class is used to prompt the user for a file name & extension.
+ * This class is used to prompt the user for a file name &amp; extension.
  */
 public class ContentTypeFilenameAssociationDialog extends TitleAreaDialog {
 
@@ -49,9 +49,9 @@ public class ContentTypeFilenameAssociationDialog extends TitleAreaDialog {
 
     private Button okButton;
 
-	private String title;
+	private final String title;
 
-	private String helpContextId;
+	private final String helpContextId;
 
 	private final String headerTitle;
 
@@ -78,7 +78,8 @@ public class ContentTypeFilenameAssociationDialog extends TitleAreaDialog {
      * @param label the label for the "file type" field
      * @since 3.4
      */
-    public ContentTypeFilenameAssociationDialog(Shell parentShell, String title, String helpContextId, String headerTitle, String message, String label) {
+	public ContentTypeFilenameAssociationDialog(Shell parentShell, String title, String helpContextId,
+			String headerTitle, String message, String label) {
     	super(parentShell);
     	this.title = title;
     	this.helpContextId = helpContextId;
@@ -96,7 +97,6 @@ public class ContentTypeFilenameAssociationDialog extends TitleAreaDialog {
         PlatformUI.getWorkbench().getHelpSystem().setHelp(shell, helpContextId);
     }
 
-
     @Override
 	protected Control createDialogArea(Composite parent) {
 		Composite parentComposite = (Composite) super.createDialogArea(parent);
@@ -107,8 +107,7 @@ public class ContentTypeFilenameAssociationDialog extends TitleAreaDialog {
 		setTitle(headerTitle);
 		setMessage(message2);
 
-		new Label(contents, SWT.LEFT)
-				.setText(label);
+		new Label(contents, SWT.LEFT).setText(label);
 
 		filenameField = new Text(contents, SWT.SINGLE | SWT.BORDER);
 		if (initialValue != null) {
@@ -125,20 +124,17 @@ public class ContentTypeFilenameAssociationDialog extends TitleAreaDialog {
 		Dialog.applyDialogFont(parentComposite);
 
 		Point defaultMargins = LayoutConstants.getMargins();
-		GridLayoutFactory.fillDefaults().numColumns(2).margins(
-				defaultMargins.x, defaultMargins.y).generateLayout(contents);
+		GridLayoutFactory.fillDefaults().numColumns(2).margins(defaultMargins.x, defaultMargins.y)
+				.generateLayout(contents);
 
 		return contents;
 	}
 
-
     @Override
 	protected void createButtonsForButtonBar(Composite parent) {
-        okButton = createButton(parent, IDialogConstants.OK_ID,
-				IDialogConstants.get().OK_LABEL, true);
+		okButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.get().OK_LABEL, true);
         okButton.setEnabled(false);
-        createButton(parent, IDialogConstants.CANCEL_ID,
-				IDialogConstants.get().CANCEL_LABEL, false);
+		createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.get().CANCEL_LABEL, false);
     }
 
     /**
@@ -148,7 +144,7 @@ public class ContentTypeFilenameAssociationDialog extends TitleAreaDialog {
         // We need kernel api to validate the extension or a filename
 
         // check for empty name and extension
-        if (filename.length() == 0) {
+		if (filename.isEmpty()) {
             setErrorMessage(null);
             return false;
         }
@@ -197,8 +193,7 @@ public class ContentTypeFilenameAssociationDialog extends TitleAreaDialog {
     /**
 	 * Sets the initial value that should be prepopulated in this dialog.
 	 *
-	 * @param initialValue
-	 *            the value to be displayed to the user
+	 * @param initialValue the value to be displayed to the user
 	 * @since 3.4
 	 */
     public void setInitialValue(String initialValue) {
@@ -209,7 +204,9 @@ public class ContentTypeFilenameAssociationDialog extends TitleAreaDialog {
 	protected IDialogSettings getDialogBoundsSettings() {
         IDialogSettings settings = WorkbenchPlugin.getDefault().getDialogSettings();
         IDialogSettings section = settings.getSection(DIALOG_SETTINGS_SECTION);
-        if (section == null) section = settings.addNewSection(DIALOG_SETTINGS_SECTION);
+		if (section == null) {
+			section = settings.addNewSection(DIALOG_SETTINGS_SECTION);
+		}
         return section;
     }
 

@@ -29,8 +29,7 @@ import org.eclipse.ui.branding.IBundleGroupConstants;
  * @see org.eclipse.ui.branding.IBundleGroupConstants
  * @since 3.0
  */
-public class BundleGroupProperties extends BrandingProperties implements
-        IBundleGroupConstants {
+public class BundleGroupProperties extends BrandingProperties implements IBundleGroupConstants {
 
     private final IBundleGroup bundleGroup;
 
@@ -59,8 +58,9 @@ public class BundleGroupProperties extends BrandingProperties implements
 	private String brandingVersion;
 
     /**
-     * This instance will return properties from the given bundle group.  The properties are
-     * retrieved in a lazy fashion and cached for later retrieval.
+	 * This instance will return properties from the given bundle group. The
+	 * properties are retrieved in a lazy fashion and cached for later retrieval.
+	 *
      * @param bundleGroup must not be null
      */
     public BundleGroupProperties(IBundleGroup bundleGroup) {
@@ -101,9 +101,9 @@ public class BundleGroupProperties extends BrandingProperties implements
     }
 
     /**
-     * A URL for the feature's welcome page (special XML-based format) ($nl$/
-     * prefix to permit locale-specific translations of entire file). Products
-     * designed to run "headless" typically would not have such a page.
+	 * A URL for the feature's welcome page (special XML-based format) ($nl$/ prefix
+	 * to permit locale-specific translations of entire file). Products designed to
+	 * run "headless" typically would not have such a page.
      */
     public URL getWelcomePageUrl() {
         if (welcomePageUrl == null) {
@@ -214,9 +214,9 @@ public class BundleGroupProperties extends BrandingProperties implements
     }
 
     /**
-     * A URL for the feature's welcome page (special XML-based format) ($nl$/
-     * prefix to permit locale-specific translations of entire file). Products
-     * designed to run "headless" typically would not have such a page.
+	 * A URL for the feature's welcome page (special XML-based format) ($nl$/ prefix
+	 * to permit locale-specific translations of entire file). Products designed to
+	 * run "headless" typically would not have such a page.
      */
     public static URL getWelcomePageUrl(IBundleGroup bundleGroup) {
         return getUrl(bundleGroup.getProperty(WELCOME_PAGE), null);
@@ -268,7 +268,6 @@ public class BundleGroupProperties extends BrandingProperties implements
 	/**
 	 * A Feature's branding plugin id.
 	 *
-	 * @param bundleGroup
 	 * @return the ID or <code>null</code> if not provided.
 	 */
 	public static String getBrandingBundleId(IBundleGroup bundleGroup) {
@@ -278,7 +277,6 @@ public class BundleGroupProperties extends BrandingProperties implements
 	/**
 	 * A Feature's branding plugin version.
 	 *
-	 * @param bundleGroup
 	 * @return the version, or <code>null</code> if not provided.
 	 */
 	public static String getBrandingBundleVersion(IBundleGroup bundleGroup) {

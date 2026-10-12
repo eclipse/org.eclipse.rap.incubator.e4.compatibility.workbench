@@ -41,12 +41,9 @@ import org.eclipse.ui.internal.WorkbenchMessages;
 public class NewContentTypeDialog extends TitleAreaDialog {
 
 	private String name;
-	private IContentTypeManager manager;
+	private final IContentTypeManager manager;
 	private ControlDecoration decorator;
 
-	/**
-	 * @param parentShell
-	 */
 	protected NewContentTypeDialog(Shell parentShell, IContentTypeManager manager, IContentType parent) {
 		super(parentShell);
 		this.manager = manager;
@@ -65,8 +62,7 @@ public class NewContentTypeDialog extends TitleAreaDialog {
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.
+	 * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.
 	 * Shell)
 	 */
 	@Override
@@ -95,8 +91,8 @@ public class NewContentTypeDialog extends TitleAreaDialog {
 			}
 		});
 		decorator = new ControlDecoration(nameText, SWT.TOP | SWT.LEFT);
-		decorator.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR)
-				.getImage());
+		decorator.setImage(
+				FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR).getImage());
 		decorator.setDescriptionText(WorkbenchMessages.get().ContentTypes_newContentTypeDialog_invalidContentTypeName);
 		decorator.hide();
 		setTitle(WorkbenchMessages.get().ContentTypes_newContentTypeDialog_title);

@@ -37,7 +37,7 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
  * IWorkbenchAdapter adapter used for navigation and display in the workbench.
  */
 public class FileSystemElement implements IAdaptable {
-    private String name;
+	private final String name;
 
     private Object fileSystemObject;
 
@@ -54,7 +54,7 @@ public class FileSystemElement implements IAdaptable {
 
     private FileSystemElement parent;
 
-    private IWorkbenchAdapter workbenchAdapter = new IWorkbenchAdapter() {
+	private final IWorkbenchAdapter workbenchAdapter = new IWorkbenchAdapter() {
         /**
          * Answer the children property of this element
          */
@@ -85,8 +85,7 @@ public class FileSystemElement implements IAdaptable {
         @Override
 		public ImageDescriptor getImageDescriptor(Object object) {
             if (isDirectory()) {
-                return WorkbenchImages
-                        .getImageDescriptor(ISharedImages.IMG_OBJ_FOLDER);
+				return WorkbenchImages.getImageDescriptor(ISharedImages.IMG_OBJ_FOLDER);
             }
 			return WorkbenchPlugin.getDefault().getEditorRegistry().getImageDescriptor(name);
 			// TODO: what are the implications for content types? Should I guess?
@@ -97,16 +96,12 @@ public class FileSystemElement implements IAdaptable {
      * Creates a new <code>FileSystemElement</code> and initializes it and its
      * parent if applicable.
      *
-     * @param name
-     *            The name of the element
-     * @param parent
-     *            The parent element. May be <code>null</code>
-     * @param isDirectory
-     *            if <code>true</code> this is representing a directory,
+	 * @param name        The name of the element
+	 * @param parent      The parent element. May be <code>null</code>
+	 * @param isDirectory if <code>true</code> this is representing a directory,
      *            otherwise it is a file.
      */
-    public FileSystemElement(String name, FileSystemElement parent,
-            boolean isDirectory) {
+	public FileSystemElement(String name, FileSystemElement parent, boolean isDirectory) {
         this.name = name;
         this.parent = parent;
         this.isDirectory = isDirectory;
@@ -118,8 +113,7 @@ public class FileSystemElement implements IAdaptable {
     /**
      * Adds the passed child to this object's collection of children.
      *
-     * @param child
-     *            FileSystemElement
+	 * @param child FileSystemElement
      */
     public void addChild(FileSystemElement child) {
         if (child.isDirectory()) {
@@ -158,9 +152,9 @@ public class FileSystemElement implements IAdaptable {
     }
 
     /**
-     * Answer the files property of this element. Answer an empty list if the
-     * files property is null. This method should not be used to add children to
-     * the receiver. Use addChild(FileSystemElement) instead.
+	 * Answer the files property of this element. Answer an empty list if the files
+	 * property is null. This method should not be used to add children to the
+	 * receiver. Use addChild(FileSystemElement) instead.
      *
      * @return AdaptableList The list of files parented by the receiver.
      */
@@ -183,9 +177,9 @@ public class FileSystemElement implements IAdaptable {
 
     /**
      * Returns a list of the folders that are immediate children of this folder.
-     * Answer an empty list if the folders property is null. This method should
-     * not be used to add children to the receiver. Use
-     * addChild(FileSystemElement) instead.
+	 * Answer an empty list if the folders property is null. This method should not
+	 * be used to add children to the receiver. Use addChild(FileSystemElement)
+	 * instead.
      *
      * @return AdapatableList The list of folders parented by the receiver.
      */
@@ -200,16 +194,16 @@ public class FileSystemElement implements IAdaptable {
     /**
      * Return the parent of this element.
      *
-     * @return the parent file system element, or <code>null</code> if this is
-     *         the root
+	 * @return the parent file system element, or <code>null</code> if this is the
+	 *         root
      */
     public FileSystemElement getParent() {
         return this.parent;
     }
 
     /**
-     * @return boolean <code>true</code> if this element represents a
-     *         directory, and <code>false</code> otherwise.
+	 * @return boolean <code>true</code> if this element represents a directory, and
+	 *         <code>false</code> otherwise.
      */
     public boolean isDirectory() {
         return isDirectory;
@@ -217,6 +211,7 @@ public class FileSystemElement implements IAdaptable {
 
     /**
      * Removes a sub-folder from this file system element.
+	 *
      * @param child The child to remove.
      */
     public void removeFolder(FileSystemElement child) {
@@ -230,8 +225,7 @@ public class FileSystemElement implements IAdaptable {
     /**
      * Set the file system object property of this element
      *
-     * @param value
-     *            the file system object
+	 * @param value the file system object
      */
     public void setFileSystemObject(Object value) {
         fileSystemObject = value;
@@ -239,6 +233,7 @@ public class FileSystemElement implements IAdaptable {
 
     /**
      * Sets the parent of this file system element.
+	 *
      * @param element The new parent.
      */
     public void setParent(FileSystemElement element) {

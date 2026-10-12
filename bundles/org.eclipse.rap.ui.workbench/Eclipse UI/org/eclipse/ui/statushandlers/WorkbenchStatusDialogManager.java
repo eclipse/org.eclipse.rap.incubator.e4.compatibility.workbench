@@ -14,8 +14,6 @@
 
 package org.eclipse.ui.statushandlers;
 
-import org.eclipse.ui.internal.statushandlers.IStatusDialogConstants;
-
 import java.util.Collection;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.QualifiedName;
@@ -25,6 +23,7 @@ import org.eclipse.jface.util.Policy;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.internal.statushandlers.IStatusDialogConstants;
 import org.eclipse.ui.internal.statushandlers.WorkbenchStatusDialogManagerImpl;
 import org.eclipse.ui.progress.IProgressConstants;
 
@@ -67,19 +66,18 @@ import org.eclipse.ui.progress.IProgressConstants;
  */
 public class WorkbenchStatusDialogManager {
 
-	static final QualifiedName HINT = new QualifiedName(
-			IStatusAdapterConstants.PROPERTY_PREFIX, "hint"); //$NON-NLS-1$
+	static final QualifiedName HINT = new QualifiedName(IStatusAdapterConstants.PROPERTY_PREFIX, "hint"); //$NON-NLS-1$
 
-	private WorkbenchStatusDialogManagerImpl manager;
+	private final WorkbenchStatusDialogManagerImpl manager;
 
 	/**
 	 * Creates workbench status dialog.
 	 *
-	 * @param displayMask
-	 *            the mask used to filter the handled <code>StatusAdapter</code>
-	 *            objects, the mask is a logical sum of status severities
-	 * @param dialogTitle
-	 *            the title of the dialog. If null, than default will be used.
+	 * @param displayMask the mask used to filter the handled
+	 *                    <code>StatusAdapter</code> objects, the mask is a logical
+	 *                    sum of status severities
+	 * @param dialogTitle the title of the dialog. If null, than default will be
+	 *                    used.
 	 */
 
 	public WorkbenchStatusDialogManager(int displayMask, String dialogTitle) {
@@ -89,41 +87,37 @@ public class WorkbenchStatusDialogManager {
 	/**
 	 * Creates workbench status dialog.
 	 *
-	 * @param parentShell
-	 *            the parent shell for the dialog. It may be null.
-	 * @param displayMask
-	 *            the mask used to filter the handled <code>StatusAdapter</code>
-	 *            objects, the mask is a logical sum of status severities
-	 * @param dialogTitle
-	 *            the title of the dialog. If null, than default will be used.
-	 * @deprecated As of 3.4 the <code>parentShell<code> is ignored
+	 * @param parentShell the parent shell for the dialog. It may be null.
+	 * @param displayMask the mask used to filter the handled
+	 *                    <code>StatusAdapter</code> objects, the mask is a logical
+	 *                    sum of status severities
+	 * @param dialogTitle the title of the dialog. If null, than default will be
+	 *                    used.
+	 * @deprecated As of 3.4 the <code>parentShell</code> is ignored
 	 * @see #WorkbenchStatusDialogManager(int, String)
 	 */
 	@Deprecated
-	public WorkbenchStatusDialogManager(Shell parentShell, int displayMask,
-			String dialogTitle) {
+	public WorkbenchStatusDialogManager(Shell parentShell, int displayMask, String dialogTitle) {
 		this(displayMask, dialogTitle);
 	}
 
 	/**
 	 * Creates workbench status dialog.
 	 *
-	 * @param dialogTitle
-	 *            the title of the dialog. If null, than default will be used.
+	 * @param dialogTitle the title of the dialog. If null, than default will be
+	 *                    used.
 	 */
 	public WorkbenchStatusDialogManager(String dialogTitle) {
-		this(IStatus.INFO | IStatus.WARNING | IStatus.ERROR | IStatus.CANCEL,
-				dialogTitle);
+		this(IStatus.INFO | IStatus.WARNING | IStatus.ERROR | IStatus.CANCEL, dialogTitle);
 	}
 
 	/**
 	 * Creates workbench status dialog.
 	 *
-	 * @param parentShell
-	 *            the parent shell for the dialog. It may be null.
-	 * @param dialogTitle
-	 *            the title of the dialog. If null, than default will be used.
-	 * @deprecated As of 3.4 the <code>parentShell<code> is ignored
+	 * @param parentShell the parent shell for the dialog. It may be null.
+	 * @param dialogTitle the title of the dialog. If null, than default will be
+	 *                    used.
+	 * @deprecated As of 3.4 the <code>parentShell</code> is ignored
 	 * @see #WorkbenchStatusDialogManager(String)
 	 */
 	@Deprecated
@@ -133,31 +127,28 @@ public class WorkbenchStatusDialogManager {
 
 	/**
 	 * <p>
-	 * Adds a new {@link StatusAdapter} to the status adapters list in the
-	 * dialog.
+	 * Adds a new {@link StatusAdapter} to the status adapters list in the dialog.
 	 * </p>
 	 * <p>
 	 * If the dialog is already visible, the status adapter will be shown
-	 * immediately. Otherwise, the dialog with the added status adapter will
-	 * show up, if all conditions below are false.
+	 * immediately. Otherwise, the dialog with the added status adapter will show
+	 * up, if all conditions below are false.
+	 * </p>
 	 * <ul>
 	 * <li>the status adapter has
-	 * {@link IProgressConstants#NO_IMMEDIATE_ERROR_PROMPT_PROPERTY} set to true</li>
+	 * {@link IProgressConstants#NO_IMMEDIATE_ERROR_PROMPT_PROPERTY} set to
+	 * true</li>
 	 * </ul>
-	 * </p>
 	 * <p>
-	 * All not shown status adapters will be displayed as soon as the dialog
-	 * shows up.
+	 * All not shown status adapters will be displayed as soon as the dialog shows
+	 * up.
 	 * </p>
 	 *
-	 * @param modal
-	 *            <code>true</code> if the dialog should be modal,
+	 * @param modal         <code>true</code> if the dialog should be modal,
 	 *            <code>false</code> otherwise
-	 * @param statusAdapter
-	 *            the status adapter
+	 * @param statusAdapter the status adapter
 	 */
-	public void addStatusAdapter(final StatusAdapter statusAdapter,
-			final boolean modal) {
+	public void addStatusAdapter(final StatusAdapter statusAdapter, final boolean modal) {
 		manager.addStatusAdapter(statusAdapter, modal);
 	}
 
@@ -165,13 +156,10 @@ public class WorkbenchStatusDialogManager {
 	 * Enables the default support area that shows stack trace of the exception
 	 * contained in the selected status.
 	 *
-	 * @param enable
-	 *            true enables, false disables default support
+	 * @param enable true enables, false disables default support
 	 */
 	public void enableDefaultSupportArea(boolean enable) {
-		manager.getDialogState().put(
-				IStatusDialogConstants.ENABLE_DEFAULT_SUPPORT_AREA,
-				Boolean.valueOf(enable));
+		manager.getDialogState().put(IStatusDialogConstants.ENABLE_DEFAULT_SUPPORT_AREA, Boolean.valueOf(enable));
 	}
 
 	/**
@@ -179,7 +167,7 @@ public class WorkbenchStatusDialogManager {
 	 *
 	 * @return collection of {@link StatusAdapter} objects
 	 */
-	public Collection getStatusAdapters() {
+	public Collection/* <StatusAdapter> */ getStatusAdapters() {
 		return manager.getStatusAdapters();
 	}
 
@@ -187,28 +175,25 @@ public class WorkbenchStatusDialogManager {
 	 * Sets the details area provider. If null is set, the default area provider
 	 * will be used.
 	 *
-	 * @param provider
-	 *            A details area provider to be set.
+	 * @param provider A details area provider to be set.
 	 */
 	public void setDetailsAreaProvider(AbstractStatusAreaProvider provider) {
-		manager.setProperty(IStatusDialogConstants.CUSTOM_DETAILS_PROVIDER,
-				provider);
+		manager.setProperty(IStatusDialogConstants.CUSTOM_DETAILS_PROVIDER, provider);
 	}
 
 	/**
-	 * Sets new label provider for the status list. This label provider is used
-	 * also to display the second message on the dialog if only one status is
-	 * available.
+	 * Sets new label provider for the status list. This label provider is used also
+	 * to display the second message on the dialog if only one status is available.
 	 *
 	 * <p>
-	 * This method is no longer recommended to use as it is impossible to
-	 * achieve consistent behavior after changing only one label provider.
+	 * This method is no longer recommended to use as it is impossible to achieve
+	 * consistent behavior after changing only one label provider.
 	 * </p>
 	 *
 	 * @deprecated As of 3.5 {@link #setMessageDecorator} is recommended.
 	 *
-	 * @param labelProvider
-	 *            a label provider to be used when displaying status adapters.
+	 * @param labelProvider a label provider to be used when displaying status
+	 *                      adapters.
 	 */
 	@Deprecated
 	public void setStatusListLabelProvider(ITableLabelProvider labelProvider) {
@@ -225,40 +210,36 @@ public class WorkbenchStatusDialogManager {
 	 * <li>use the default support area, if enabled</li>
 	 * </ol>
 	 *
-	 * @param provider
-	 *            Support provider to be set.
+	 * @param provider Support provider to be set.
 	 */
 	public void setSupportAreaProvider(AbstractStatusAreaProvider provider) {
-		manager.setProperty(IStatusDialogConstants.CUSTOM_SUPPORT_PROVIDER,
-				provider);
+		manager.setProperty(IStatusDialogConstants.CUSTOM_SUPPORT_PROVIDER, provider);
 	}
 
 	/**
 	 * <p>
-	 * This methods sets up the decorator, which is used to modify displayed
-	 * strings extracted from StatusAdapter. The decorator should be used to
-	 * remove technical codes from the dialog, f.e. following message
-	 * "<i>ERR2008 Invalid password</i>" can be translated into
-	 * "<i>Invalid password</i>".
+	 * This methods sets up the decorator, which is used to modify displayed strings
+	 * extracted from StatusAdapter. The decorator should be used to remove
+	 * technical codes from the dialog, f.e. following message "<i>ERR2008 Invalid
+	 * password</i>" can be translated into "<i>Invalid password</i>".
 	 * </p>
 	 * <p>
-	 * The decorator will be applied only to messages extracted from
-	 * StatusAdapter (predefined messages like
-	 * "This status has children statuses. See 'Details' for more information."
-	 * are not affected.
+	 * The decorator will be applied only to messages extracted from StatusAdapter
+	 * (predefined messages like "This status has children statuses. See 'Details'
+	 * for more information." are not affected.
 	 * </p>
 	 * <p>
 	 * This method should not be used together with
 	 * {@link #setStatusListLabelProvider(ITableLabelProvider)}.
 	 * </p>
 	 *
-	 * @param decorator
-	 *            - the decorator to be set. Only
+	 * @param decorator - the decorator to be set. Only
 	 *            {@link ILabelDecorator#decorateText(String, Object)} method
 	 *            will be used. This method should return <code>null</code> if
 	 *            and only if the first argument is null. StatusAdapter is
-	 *            passed as second parameter. Other methods should have default
-	 *            behavior as they may be used in future versions of the dialog.
+	 *                  passed as second parameter. Other methods should have
+	 *                  default behavior as they may be used in future versions of
+	 *                  the dialog.
 	 * @since 3.5
 	 */
 	public void setMessageDecorator(ILabelDecorator decorator){
@@ -268,12 +249,10 @@ public class WorkbenchStatusDialogManager {
 	/**
 	 * This method sets various properties on the manager.
 	 *
-	 * @param key
-	 *            a key of the property to be set.
-	 * @param value
-	 *            a value of the property to be set. The value must be of type
-	 *            specified by the property key. <code>null</code> should never
-	 *            be passed unless the property key javadoc allows for that.
+	 * @param key   a key of the property to be set.
+	 * @param value a value of the property to be set. The value must be of type
+	 *              specified by the property key. <code>null</code> should never be
+	 *              passed unless the property key javadoc allows for that.
 	 * @since 3.5
 	 */
 	public void setProperty(Object key, Object value){
@@ -283,22 +262,20 @@ public class WorkbenchStatusDialogManager {
 	/**
 	 * This method gets various dialog properties.
 	 *
-	 * @param key
-	 *            a key of the property to be get.
-	 * @return a value of the property. The value will be of type specified by
-	 *         the property key. <code>null</code> can be returned.
+	 * @param key a key of the property to be get.
+	 * @return a value of the property. The value will be of type specified by the
+	 *         property key. <code>null</code> can be returned.
 	 * @since 3.5
 	 */
 	public Object getProperty(Object key){
 		return manager.getProperty(key);
 	}
 
-
 	/**
 	 * This method makes the dialog to be similar to the JFace ErrorDialog. The
-	 * dialog handles {@link StatusAdapter}s wrapping {@link IStatus} with
-	 * severity {@link IStatus#OK}, does not display the link to the error log,
-	 * does not display the link to the support area but always opens it.
+	 * dialog handles {@link StatusAdapter}s wrapping {@link IStatus} with severity
+	 * {@link IStatus#OK}, does not display the link to the error log, does not
+	 * display the link to the support area but always opens it.
 	 *
 	 * @see ErrorDialog
 	 * @since 3.5

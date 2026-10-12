@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -15,9 +12,9 @@ package org.eclipse.ui.internal.dialogs;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.internal.misc.StatusUtil;
 import org.eclipse.ui.internal.preferences.WorkbenchPreferenceExtensionNode;
@@ -31,7 +28,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 public class PropertyPageNode extends WorkbenchPreferenceExtensionNode {
     private RegistryPageContributor contributor;
 
-	private IPreferencePage page;
+    private IWorkbenchPropertyPage page;
 
     private Image icon;
 
@@ -54,7 +51,6 @@ public class PropertyPageNode extends WorkbenchPreferenceExtensionNode {
      * it will be created by loading the class. If loading fails,
      * empty filler page will be created instead.
      */
-    @Override
 	public void createPage() {
         try {
             page = contributor.createPage(element);
@@ -68,7 +64,9 @@ public class PropertyPageNode extends WorkbenchPreferenceExtensionNode {
         setPage(page);
     }
 
-    @Override
+    /** (non-Javadoc)
+     * Method declared on IPreferenceNode.
+     */
 	public void disposeResources() {
 
         if (page != null) {
@@ -76,15 +74,17 @@ public class PropertyPageNode extends WorkbenchPreferenceExtensionNode {
             page = null;
         }
         if (icon != null) {
-            icon.dispose();
+// RAP [rh] Image#dispose()          
+//            icon.dispose();
             icon = null;
         }
+// RAP [rh] fix for bug 248365        
+        super.disposeResources();
     }
 
     /**
      * Returns page icon, if defined.
      */
-    @Override
 	public Image getLabelImage() {
         if (icon == null) {
             ImageDescriptor desc = contributor.getPageIcon();
@@ -98,7 +98,6 @@ public class PropertyPageNode extends WorkbenchPreferenceExtensionNode {
     /**
      * Returns page label as defined in the registry.
      */
-    @Override
 	public String getLabelText() {
         return contributor.getPageName();
     }

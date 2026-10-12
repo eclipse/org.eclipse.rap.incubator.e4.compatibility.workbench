@@ -14,8 +14,7 @@
 package org.eclipse.ui.internal.decorators;
 
 /**
- * FullTextDecoratorRunnable is the decorator that runs the text
- * decoration.
+ * FullTextDecoratorRunnable is the decorator that runs the text decoration.
  */
 public class FullTextDecoratorRunnable extends FullDecoratorRunnable {
     String result = null;
@@ -28,8 +27,8 @@ public class FullTextDecoratorRunnable extends FullDecoratorRunnable {
     }
 
     /**
-     * Get the result of the decoration or <code>null</code>
-     * if there was a failure.
+	 * Get the result of the decoration or <code>null</code> if there was a failure.
+	 *
      * @return the result
      */
     String getResult() {
@@ -37,15 +36,10 @@ public class FullTextDecoratorRunnable extends FullDecoratorRunnable {
     }
 
     /**
-     * Set the values of the initialString and the decorator
-     * and object that are going to be used to determine the
-     * result.
-     * @param initialString
-     * @param object
-     * @param definition
+	 * Set the values of the initialString and the decorator and object that are
+	 * going to be used to determine the result.
      */
-    void setValues(String initialString, Object object,
-            FullDecoratorDefinition definition) {
+	void setValues(String initialString, Object object, FullDecoratorDefinition definition) {
         setValues(object, definition);
         start = initialString;
         result = null;
@@ -53,6 +47,7 @@ public class FullTextDecoratorRunnable extends FullDecoratorRunnable {
 
 	/**
 	 * Clear decorator references.
+	 *
 	 * @since 3.1
 	 */
 	void clearReferences() {

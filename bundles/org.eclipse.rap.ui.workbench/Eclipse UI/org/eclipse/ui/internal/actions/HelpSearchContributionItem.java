@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -16,8 +13,8 @@ package org.eclipse.ui.internal.actions;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
+//import org.eclipse.swt.events.KeyAdapter;
+//import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Combo;
@@ -30,8 +27,6 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 /**
  * This is the contribution item that is used to add a help search field to
  * the cool bar.
- *
- * @since 3.1
  */
 public class HelpSearchContributionItem extends ControlContribution {
 	private static final String ID = "org.eclipse.ui.helpSearch"; //$NON-NLS-1$
@@ -63,7 +58,9 @@ public class HelpSearchContributionItem extends ControlContribution {
 		this.window = window;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.action.ControlContribution#createControl(org.eclipse.swt.widgets.Composite)
+	 */
 	protected Control createControl(Composite parent) {
 		combo = new Combo(parent, SWT.NONE);
 		combo.setToolTipText(WorkbenchMessages.get().WorkbenchWindow_searchCombo_toolTip);
@@ -73,28 +70,34 @@ public class HelpSearchContributionItem extends ControlContribution {
 			combo.setItems(items);
 		}
 		combo.setText(WorkbenchMessages.get().WorkbenchWindow_searchCombo_text);
-		combo.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-				if (e.character == SWT.CR) {
-					doSearch(combo.getText(), true);
-				}
-			}
-		});
-		combo.addSelectionListener(new SelectionAdapter()
-        {
-            public void widgetSelected(SelectionEvent e) 
-            {
+		// RAP [bm]: replaced keylistener with defaultSelected event
+//		combo.addKeyListener(new KeyAdapter() {
+//			public void keyReleased(KeyEvent e) {
+//				if (e.character == SWT.CR) {
+//					doSearch(combo.getText(), true);
+//				}
+//			}
+//		});
+		// RAPEND: [bm]
+		combo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
     			int index = combo.getSelectionIndex();
     			if (index != -1) {
     				doSearch(combo.getItem(index), false);
     			}
             }
+			// RAP [bm]: replacement for key listener
+			public void widgetDefaultSelected(SelectionEvent e) {
+				doSearch(combo.getText(), true);
+			}
+			// RAPEND: [bm]
 		});
 		return combo;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.action.ControlContribution#computeWidth(org.eclipse.swt.widgets.Control)
+	 */
 	protected int computeWidth(Control control) {
 		return control.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x;
 	}

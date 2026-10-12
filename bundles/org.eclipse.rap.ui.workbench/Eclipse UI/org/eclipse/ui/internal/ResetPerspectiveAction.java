@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -48,12 +45,16 @@ public class ResetPerspectiveAction extends PerspectiveAction {
 				IWorkbenchHelpContextIds.RESET_PERSPECTIVE_ACTION);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PerspectiveAction.
+     */
 	protected void run(IWorkbenchPage page, IPerspectiveDescriptor persp) {
         String message = NLS.bind(WorkbenchMessages.get().ResetPerspective_message, persp.getLabel() );
+        String[] buttons = new String[] { IDialogConstants.get().OK_LABEL,
+                IDialogConstants.get().CANCEL_LABEL };
         MessageDialog d = new MessageDialog(getWindow().getShell(),
                 WorkbenchMessages.get().ResetPerspective_title,
-				null, message, MessageDialog.QUESTION, new String[] { IDialogConstants.get().OK_LABEL, IDialogConstants.get().CANCEL_LABEL }, 0);
+                null, message, MessageDialog.QUESTION, buttons, 0);
         if (d.open() == 0) {
 			page.resetPerspective();
 		}

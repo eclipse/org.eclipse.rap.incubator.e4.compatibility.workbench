@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -15,6 +12,7 @@
 package org.eclipse.ui.internal;
 
 import java.util.ArrayList;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.AbstractGroupMarker;
@@ -126,7 +124,6 @@ public abstract class PluginActionBuilder extends RegistryReader {
      * Implements abstract method to handle the provided XML element
      * in the registry.
      */
-    @Override
 	protected boolean readElement(IConfigurationElement element) {
         String tag = element.getName();
 
@@ -339,12 +336,12 @@ public abstract class PluginActionBuilder extends RegistryReader {
 
             // Create separators.
             IConfigurationElement[] children = menuElement.getChildren();
-            for (IConfigurationElement element : children) {
-                String childName = element.getName();
+            for (int i = 0; i < children.length; i++) {
+                String childName = children[i].getName();
                 if (childName.equals(IWorkbenchRegistryConstants.TAG_SEPARATOR)) {
-                    contributeSeparator(newMenu, element);
+                    contributeSeparator(newMenu, children[i]);
                 } else if (childName.equals(IWorkbenchRegistryConstants.TAG_GROUP_MARKER)) {
-                    contributeGroupMarker(newMenu, element);
+                    contributeGroupMarker(newMenu, children[i]);
                 }
             }
         }

@@ -13,6 +13,7 @@
  *******************************************************************************/
 package org.eclipse.ui.internal;
 
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -31,8 +32,8 @@ public final class PendingSyncExec {
     }
 
     /**
-     * Attempts to acquire this semaphore.  Returns true if it was successfully acquired,
-     * and false otherwise.
+	 * Attempts to acquire this semaphore. Returns true if it was successfully
+	 * acquired, and false otherwise.
      */
 	private boolean acquire(long delay) throws InterruptedException {
 		return semaphore.tryAcquire(delay, TimeUnit.MILLISECONDS);
@@ -40,6 +41,12 @@ public final class PendingSyncExec {
 
     @Override
 	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof PendingSyncExec)) {
+			return false;
+		}
         return (runnable == ((PendingSyncExec) obj).runnable);
     }
 
@@ -91,7 +98,7 @@ public final class PendingSyncExec {
 
     @Override
 	public int hashCode() {
-        return runnable == null ? 0 : runnable.hashCode();
+		return Objects.hashCode(runnable);
     }
 
     public void setOperationThread(Thread operation) {

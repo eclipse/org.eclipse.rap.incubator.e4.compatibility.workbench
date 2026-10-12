@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -64,8 +61,8 @@ public class DecorationResult {
 	 * @return <code>true</code> if there are some non-null overlays
 	 */
 	private boolean hasOverlays(ImageDescriptor[] imageDescriptors) {
-		for (ImageDescriptor imageDescriptor : imageDescriptors) {
-			if (imageDescriptor != null) {
+		for (int i = 0; i < imageDescriptors.length; i++) {
+			if (imageDescriptors[i] != null) {
 				return true;
 			}
 		}
@@ -106,7 +103,7 @@ public class DecorationResult {
 			return text;
 		}
 
-		StringBuilder result = new StringBuilder();
+		StringBuffer result = new StringBuffer();
 
 		ListIterator prefixIterator = prefixes.listIterator();
 

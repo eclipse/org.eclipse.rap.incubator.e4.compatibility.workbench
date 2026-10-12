@@ -1,26 +1,22 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2007, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
- *     Friederike Schertel <friederike@schertel.org> - Bug 478336
- *     Patrik Suzzi <psuzzi@gmail.com> - Bug 504088
  ******************************************************************************/
 
 package org.eclipse.ui.internal;
 
-import java.util.List;
-
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ParameterizedCommand;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.commands.ICommandService;
@@ -31,34 +27,53 @@ import org.eclipse.ui.commands.ICommandService;
  * Replacement for CycleEditorAction
  * </p>
  *
- * @since 3.3
  */
-public class CycleEditorHandler extends FilteredTableBaseHandler {
+public class CycleEditorHandler extends CycleBaseHandler {
 
-	@Override
-	protected Object getInput(WorkbenchPage page) {
-		List<EditorReference> refs = page.getSortedEditorReferences();
-		return refs;
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.CycleBaseHandler#addItems(org.eclipse.swt.widgets.Table, org.eclipse.ui.internal.WorkbenchPage)
+	 */
+	protected void addItems(Table table, WorkbenchPage page) {
+		// TODO Auto-generated method stub
+        IEditorReference refs[] = page.getSortedEditors();
+        for (int i = refs.length - 1; i >= 0; i--) {
+            TableItem item = null;
+            item = new TableItem(table, SWT.NONE);
+            if (refs[i].isDirty()) {
+				item.setText("*" + refs[i].getTitle()); //$NON-NLS-1$
+			} else {
+				item.setText(refs[i].getTitle());
+			}
+            item.setImage(refs[i].getTitleImage());
+            item.setData(refs[i]);
+        }
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.CycleBaseHandler#getBackwardCommand()
+	 */
 	protected ParameterizedCommand getBackwardCommand() {
-		final ICommandService commandService = window.getWorkbench().getService(ICommandService.class);
+		final ICommandService commandService = (ICommandService) window.getWorkbench().getService(ICommandService.class);
 		final Command command = commandService.getCommand(IWorkbenchCommandConstants.WINDOW_PREVIOUS_EDITOR);
 		ParameterizedCommand commandBack = new ParameterizedCommand(command, null);
 		return commandBack;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.CycleBaseHandler#getForwardCommand()
+	 */
 	protected ParameterizedCommand getForwardCommand() {
-		final ICommandService commandService = window.getWorkbench().getService(ICommandService.class);
+		final ICommandService commandService = (ICommandService) window.getWorkbench().getService(ICommandService.class);
 		final Command command = commandService.getCommand(IWorkbenchCommandConstants.WINDOW_NEXT_EDITOR);
 		ParameterizedCommand commandF = new ParameterizedCommand(command, null);
 		return commandF;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.CycleBaseHandler#getTableHeader()
+	 */
 	protected String getTableHeader(IWorkbenchPart activePart) {
+		// TODO Auto-generated method stub
 		return WorkbenchMessages.get().CycleEditorAction_header;
 	}
 

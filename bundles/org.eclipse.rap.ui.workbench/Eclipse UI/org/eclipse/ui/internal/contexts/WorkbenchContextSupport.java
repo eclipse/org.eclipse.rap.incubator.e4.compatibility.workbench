@@ -119,15 +119,15 @@ public class WorkbenchContextSupport implements IWorkbenchContextSupport {
 		return contextService.getShellType(shell);
 	}
 
-	// RAP [bm]:
-//	public final boolean isKeyFilterEnabled() {
-//		return bindingService.isKeyFilterEnabled();
-//	}
-//
-//	public final void openKeyAssistDialog() {
-//		bindingService.openKeyAssistDialog();
-//	}
-	// RAPEND: [bm]
+	@Override
+	public final boolean isKeyFilterEnabled() {
+		return false;
+	}
+
+	@Override
+	public final void openKeyAssistDialog() {
+		// RAP does not install the desktop key-filter dialog.
+	}
 
 	@Override
 	public final boolean registerShell(final Shell shell, final int type) {
@@ -157,13 +157,14 @@ public class WorkbenchContextSupport implements IWorkbenchContextSupport {
 		}
 	}
 
-	// RAP [bm]:
-//	public final void setKeyFilterEnabled(final boolean enabled) {
-//		bindingService.setKeyFilterEnabled(enabled);
-//	}
+	@Override
+	public final void setKeyFilterEnabled(final boolean enabled) {
+		// RAP does not use the desktop key filter.
+	}
 
 	@Override
 	public final boolean unregisterShell(final Shell shell) {
 		return contextService.unregisterShell(shell);
 	}
 }
+

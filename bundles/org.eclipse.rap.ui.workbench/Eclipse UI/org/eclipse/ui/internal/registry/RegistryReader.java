@@ -1,24 +1,23 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Mickael Istria (Red Hat Inc) - [507295] orderExtensions
  *******************************************************************************/
 package org.eclipse.ui.internal.registry;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.e4.ui.internal.workbench.ExtensionsSort;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 
 /**
@@ -51,10 +50,9 @@ public abstract class RegistryReader {
      */
     protected static void logError(IConfigurationElement element, String text) {
         IExtension extension = element.getDeclaringExtension();
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         buf
-				.append("Plugin " + extension.getContributor().getName() + ", extension " //$NON-NLS-1$//$NON-NLS-2$
-						+ extension.getExtensionPointUniqueIdentifier());
+                .append("Plugin " + extension.getNamespace() + ", extension " + extension.getExtensionPointUniqueIdentifier());//$NON-NLS-2$//$NON-NLS-1$
         // look for an ID if available - this should help debugging
         String id = element.getAttribute("id"); //$NON-NLS-1$
         if (id != null) {
@@ -98,7 +96,21 @@ public abstract class RegistryReader {
      * @return ordered extensions
      */
     public static IExtension[] orderExtensions(IExtension[] extensions) {
-		return new ExtensionsSort().sort(extensions);
+        // By default, the order is based on plugin id sorted
+        // in ascending order. The order for a plugin providing
+        // more than one extension for an extension point is
+        // dependent in the order listed in the XML file.
+        IExtension[] sortedExtension = new IExtension[extensions.length];
+        System.arraycopy(extensions, 0, sortedExtension, 0, extensions.length);
+        Comparator comparer = new Comparator() {
+            public int compare(Object arg0, Object arg1) {
+                String s1 = ((IExtension) arg0).getNamespace();
+                String s2 = ((IExtension) arg1).getNamespace();
+                return s1.compareToIgnoreCase(s2);
+            }
+        };
+        Collections.sort(Arrays.asList(sortedExtension), comparer);
+        return sortedExtension;
     }
 
     /**
@@ -160,8 +172,8 @@ public abstract class RegistryReader {
 		}
         IExtension[] extensions = point.getExtensions();
         extensions = orderExtensions(extensions);
-        for (IExtension extension : extensions) {
-			readExtension(extension);
+        for (int i = 0; i < extensions.length; i++) {
+			readExtension(extensions[i]);
 		}
     }
 
@@ -170,7 +182,6 @@ public abstract class RegistryReader {
      *
      * @param configElement the element
      * @return the description
-     * @since 3.1
      */
     public static String getDescription(IConfigurationElement configElement) {
 		IConfigurationElement[] children = configElement.getChildren(IWorkbenchRegistryConstants.TAG_DESCRIPTION);
@@ -190,7 +201,6 @@ public abstract class RegistryReader {
 	 * @param classAttributeName
 	 *            the name of the class attribute to check
 	 * @return the value of the attribute or nested class element
-	 * @since 3.1
 	 */
     public static String getClassValue(IConfigurationElement configElement, String classAttributeName) {
     	String className = configElement.getAttribute(classAttributeName);

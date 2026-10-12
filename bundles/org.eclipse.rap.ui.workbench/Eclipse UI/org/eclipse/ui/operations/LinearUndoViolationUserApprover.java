@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -25,7 +22,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPart2;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchMessages;
 
 /**
@@ -39,7 +36,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * This class may be instantiated by clients.
  * </p>
  *
- * @since 3.1
+ * @since 1.1
  */
 public final class LinearUndoViolationUserApprover extends
 		LinearUndoViolationDetector {
@@ -64,7 +61,14 @@ public final class LinearUndoViolationUserApprover extends
 		this.context = context;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.commands.operations.LinearUndoViolationDetector#allowLinearRedoViolation(org.eclipse.core.commands.operations.IUndoableOperation,
+	 *      org.eclipse.core.commands.operations.IUndoContext,
+	 *      org.eclipse.core.commands.operations.IOperationHistory,
+	 *      org.eclipse.core.runtime.IAdaptable)
+	 */
 	protected IStatus allowLinearRedoViolation(IUndoableOperation operation,
 			IUndoContext context, IOperationHistory history, IAdaptable uiInfo) {
 
@@ -76,11 +80,13 @@ public final class LinearUndoViolationUserApprover extends
 				WorkbenchMessages.get().Operations_linearRedoViolation,
 				getTitle(part), operation.getLabel());
 		final boolean [] proceed = new boolean[1];
-		PlatformUI.getWorkbench().getDisplay().syncExec(() -> {
+		Workbench.getInstance().getDisplay().syncExec(new Runnable() {
+			public void run() {
 			// Show a dialog.
 			part.setFocus();
 			proceed[0] = MessageDialog.openQuestion(part.getSite()
 					.getShell(), getTitle(part), message);
+			}
 		});
 
 		if (proceed[0]) {
@@ -106,7 +112,14 @@ public final class LinearUndoViolationUserApprover extends
 		return Status.CANCEL_STATUS;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.commands.operations.LinearUndoViolationDetector#allowLinearUndoViolation(org.eclipse.core.commands.operations.IUndoableOperation,
+	 *      org.eclipse.core.commands.operations.IUndoContext,
+	 *      org.eclipse.core.commands.operations.IOperationHistory,
+	 *      org.eclipse.core.runtime.IAdaptable)
+	 */
 	protected IStatus allowLinearUndoViolation(IUndoableOperation operation,
 			IUndoContext context, IOperationHistory history, IAdaptable uiInfo) {
 
@@ -118,11 +131,13 @@ public final class LinearUndoViolationUserApprover extends
 				WorkbenchMessages.get().Operations_linearUndoViolation,
 				getTitle(part), operation.getLabel());
 		final boolean [] proceed = new boolean[1];
-		PlatformUI.getWorkbench().getDisplay().syncExec(() -> {
+		Workbench.getInstance().getDisplay().syncExec(new Runnable() {
+			public void run() {
 			// Show a dialog.
 			part.setFocus();
 			proceed[0] = MessageDialog.openQuestion(part.getSite()
 					.getShell(), getTitle(part), message);
+			}
 		});
 
 		if (proceed[0]) {

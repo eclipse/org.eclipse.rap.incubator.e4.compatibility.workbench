@@ -57,8 +57,8 @@ public class ActionSetManager {
         }
     }
 
-    private HashMap actionSets = new HashMap();
-    private HashSet visibleItems = new HashSet();
+	private final HashMap actionSets = new HashMap();
+	private final HashSet visibleItems = new HashSet();
 
     public static final int PROP_VISIBLE = 0;
     public static final int PROP_HIDDEN = 1;
@@ -67,31 +67,25 @@ public class ActionSetManager {
     public static final int CHANGE_SHOW = 2;
     public static final int CHANGE_HIDE = 3;
 
-	private ListenerList<IPropertyListener> listeners = new ListenerList<>();
+	private final ListenerList<IPropertyListener> listeners = new ListenerList<>();
 	private IPropertyListener contextListener;
-	private Map activationsById = new HashMap();
-	private IContextService contextService;
+	private final Map activationsById = new HashMap();
+	private final IContextService contextService;
 
     public ActionSetManager(IServiceLocator locator) {
     	contextService = locator.getService(IContextService.class);
 		addListener(getContextListener());
     }
 
-    /**
-	 * @return
-	 */
 	private IPropertyListener getContextListener() {
 		if (contextListener == null) {
 			contextListener = (source, propId) -> {
-				if (source instanceof IActionSetDescriptor) {
-					IActionSetDescriptor desc = (IActionSetDescriptor) source;
+				if (source instanceof IActionSetDescriptor desc) {
 					String id = desc.getId();
 					if (propId == PROP_VISIBLE) {
-						activationsById.put(id, contextService
-								.activateContext(id));
+						activationsById.put(id, contextService.activateContext(id));
 					} else if (propId == PROP_HIDDEN) {
-						IContextActivation act = (IContextActivation) activationsById
-								.remove(id);
+						IContextActivation act = (IContextActivation) activationsById.remove(id);
 						if (act != null) {
 							contextService.deactivateContext(act);
 						}
@@ -190,13 +184,17 @@ public class ActionSetManager {
     public void change(IActionSetDescriptor descriptor, int changeType) {
         switch(changeType) {
         case CHANGE_SHOW:
-            showAction(descriptor); break;
+			showAction(descriptor);
+			break;
         case CHANGE_HIDE:
-            hideAction(descriptor); break;
+			hideAction(descriptor);
+			break;
         case CHANGE_MASK:
-            maskAction(descriptor); break;
+			maskAction(descriptor);
+			break;
         case CHANGE_UNMASK:
-            unmaskAction(descriptor); break;
+			unmaskAction(descriptor);
+			break;
         }
     }
 }

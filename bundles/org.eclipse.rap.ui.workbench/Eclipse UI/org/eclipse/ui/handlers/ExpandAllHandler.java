@@ -15,6 +15,7 @@
  ******************************************************************************/
 
 package org.eclipse.ui.handlers;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.runtime.Assert;
@@ -25,14 +26,15 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
  * Expand a tree viewer.
  * <p>
  * It can be used in a part's createPartControl(Composite) method:
+ * </p>
  *
  * <pre>
- * IHandlerService handlerService = (IHandlerService) getSite().getService(
- * 		IHandlerService.class);
+ * IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
  * expandHandler = new ExpandAllHandler(myViewer);
  * handlerService.activateHandler(ExpandAllHandler.COMMAND_ID, expandHandler);
  * </pre>
  *
+ * <p>
  * The part should dispose the handler in its own dispose() method. The part can
  * provide its own expand all handler if desired, or if it needs to delegate to
  * multiple tree viewers.
@@ -54,8 +56,7 @@ public class ExpandAllHandler extends AbstractHandler {
 	/**
 	 * Create the handler for this tree viewer.
 	 *
-	 * @param viewer
-	 *            The viewer to expand. Must not be <code>null</code>.
+	 * @param viewer The viewer to expand. Must not be <code>null</code>.
 	 */
 	public ExpandAllHandler(AbstractTreeViewer viewer) {
 		Assert.isNotNull(viewer);

@@ -14,9 +14,9 @@
 package org.eclipse.ui.actions;
 
 /**
- * Implements an algorithm for very simple pattern matching in a string.
- * There is only one feature: "*" may be used at the start or the end of the
- * pattern to represent "one or more characters".
+ * Implements an algorithm for very simple pattern matching in a string. There
+ * is only one feature: "*" may be used at the start or the end of the pattern
+ * to represent "one or more characters".
  */
 public final class SimpleWildcardTester {
     /**
@@ -34,7 +34,7 @@ public final class SimpleWildcardTester {
                 if (pattern.length() == 2) {
 					return true;
 				}
-                return str.indexOf(pattern.substring(1, pattern.length() - 1)) >= 0;
+				return str.contains(pattern.substring(1, pattern.length() - 1));
             }
             return str.endsWith(pattern.substring(1));
         } else if (pattern.endsWith("*")) {//$NON-NLS-1$

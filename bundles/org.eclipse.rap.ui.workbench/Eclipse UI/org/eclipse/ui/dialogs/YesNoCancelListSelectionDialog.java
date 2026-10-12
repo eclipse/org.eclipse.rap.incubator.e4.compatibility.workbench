@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2005 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -27,7 +24,6 @@ import org.eclipse.ui.internal.IWorkbenchHelpContextIds;
  *             to subclass the regular ListSelectionDialog, which uses
  *             OK/Cancel, and provide a separate checkbox if necessary.
  */
-@Deprecated
 public class YesNoCancelListSelectionDialog extends ListSelectionDialog {
     /**
      *
@@ -40,7 +36,6 @@ public class YesNoCancelListSelectionDialog extends ListSelectionDialog {
      * @param message
      * @deprecated see class comment
      */
-    @Deprecated
 	public YesNoCancelListSelectionDialog(
             org.eclipse.swt.widgets.Shell parentShell,
             Object input,
@@ -50,7 +45,9 @@ public class YesNoCancelListSelectionDialog extends ListSelectionDialog {
         super(parentShell, input, contentProvider, labelProvider, message);
     }
 
-    @Override
+    /*
+     * (non-Javadoc) Method declared on Dialog.
+     */
 	protected void buttonPressed(int buttonId) {
         switch (buttonId) {
         case IDialogConstants.YES_ID: {
@@ -68,14 +65,18 @@ public class YesNoCancelListSelectionDialog extends ListSelectionDialog {
         }
     }
 
-    @Override
+    /*
+     * (non-Javadoc) Method declared in Window.
+     */
 	protected void configureShell(Shell shell) {
         super.configureShell(shell);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(shell,
                 IWorkbenchHelpContextIds.YES_NO_CANCEL_LIST_SELECTION_DIALOG);
     }
 
-    @Override
+    /*
+     * (non-Javadoc) Method declared on Dialog.
+     */
 	protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.YES_ID,
                 IDialogConstants.get().YES_LABEL, true);

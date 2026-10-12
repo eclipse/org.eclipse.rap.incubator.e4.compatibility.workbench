@@ -1,16 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2007, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Simon Scholz <simon.scholz@vogella.com> - Bug 483528
  *******************************************************************************/
 package org.eclipse.ui.dialogs;
 
@@ -28,7 +24,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
  * Instances of this class provide a {@link WorkingSetConfigurationBlock}
  * wrapped with an SWT Group container.
  *
- * @since 3.4
+ * @since 1,1
  */
 public final class WorkingSetGroup {
 
@@ -56,8 +52,8 @@ public final class WorkingSetGroup {
 				false));
 		workingSetGroup.setLayout(new GridLayout(1, false));
 
-		workingSetBlock = new WorkingSetConfigurationBlock(WorkbenchPlugin.getDefault().getDialogSettings(),
-				workingSetTypes);
+		workingSetBlock = new WorkingSetConfigurationBlock(workingSetTypes,
+				WorkbenchPlugin.getDefault().getDialogSettings());
 		workingSetBlock.setWorkingSets(workingSetBlock
 				.findApplicableWorkingSets(currentSelection));
 		workingSetBlock.createContent(workingSetGroup);

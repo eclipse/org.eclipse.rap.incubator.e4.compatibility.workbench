@@ -22,7 +22,7 @@ import org.eclipse.ui.activities.ICategory;
 import org.eclipse.ui.activities.IIdentifier;
 
 public final class ProxyActivityManager extends AbstractActivityManager {
-    private IActivityManager activityManager;
+	private final IActivityManager activityManager;
 
     public ProxyActivityManager(IActivityManager activityManager) {
         if (activityManager == null) {
@@ -31,21 +31,8 @@ public final class ProxyActivityManager extends AbstractActivityManager {
 
         this.activityManager = activityManager;
 
-        this.activityManager
-                .addActivityManagerListener(activityManagerEvent -> {
-                  ActivityManagerEvent proxyActivityManagerEvent = new ActivityManagerEvent(
-				    ProxyActivityManager.this, activityManagerEvent
-				            .haveDefinedActivityIdsChanged(),
-				    activityManagerEvent
-				            .haveDefinedCategoryIdsChanged(),
-				    activityManagerEvent
-				            .haveEnabledActivityIdsChanged(),
-				    activityManagerEvent
-				            .getPreviouslyDefinedActivityIds(),
-				    activityManagerEvent
-				            .getPreviouslyDefinedCategoryIds(),
-				    activityManagerEvent
-				            .getPreviouslyEnabledActivityIds());
+		this.activityManager.addActivityManagerListener(activityManagerEvent -> {
+			ActivityManagerEvent proxyActivityManagerEvent = activityManagerEvent.copyFor(ProxyActivityManager.this);
                   fireActivityManagerChanged(proxyActivityManagerEvent);
                });
     }
@@ -79,4 +66,5 @@ public final class ProxyActivityManager extends AbstractActivityManager {
 	public IIdentifier getIdentifier(String identifierId) {
         return activityManager.getIdentifier(identifierId);
     }
+
 }

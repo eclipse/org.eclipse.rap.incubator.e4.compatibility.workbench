@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2018 IBM Corporation and others.
+ * Copyright (c) 2004, 2019 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -54,7 +54,8 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_ALLOW_MULTIPLE = "allowMultiple"; //$NON-NLS-1$
 
 	/**
-	 * Attribute that specifies whether a view gets restored upon workbench restart. Value <code>restorable</code>.
+	 * Attribute that specifies whether a view gets restored upon workbench restart.
+	 * Value <code>restorable</code>.
 	 */
 	String ATT_RESTORABLE = "restorable"; //$NON-NLS-1$
 
@@ -65,8 +66,7 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_CAN_FINISH_EARLY = "canFinishEarly"; //$NON-NLS-1$
 
 	/**
-	 * The name of the category attribute, which appears on a command
-	 * definition.
+	 * The name of the category attribute, which appears on a command definition.
 	 */
 	String ATT_CATEGORY = "category"; //$NON-NLS-1$
 
@@ -76,8 +76,8 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_CATEGORY_ID = "categoryId"; //$NON-NLS-1$
 
 	/**
-	 * The name of the attribute storing checkEnabled for the visibleWhen
-	 * element. Value <code>checkEnabled</code>.
+	 * The name of the attribute storing checkEnabled for the visibleWhen element.
+	 * Value <code>checkEnabled</code>.
 	 */
 	String ATT_CHECK_ENABLED = "checkEnabled"; //$NON-NLS-1$
 
@@ -107,19 +107,18 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_COMMAND_ID = "commandId"; //$NON-NLS-1$
 
 	/**
-	 * The name of the configuration attribute storing the scheme id for a
-	 * binding.
+	 * The name of the configuration attribute storing the scheme id for a binding.
 	 */
 	String ATT_CONFIGURATION = "configuration"; //$NON-NLS-1$
 
 	/**
-	 * Intro content detector class attribute (optional). Value <code>contentDetector</code>.
+	 * Intro content detector class attribute (optional). Value
+	 * <code>contentDetector</code>.
 	 */
 	String ATT_CONTENT_DETECTOR = "contentDetector"; //$NON-NLS-1$
 
 	/**
-	 * Editor content type id binding attribute. Value
-	 * <code>contentTypeId</code>.
+	 * Editor content type id binding attribute. Value <code>contentTypeId</code>.
 	 */
 	String ATT_CONTENT_TYPE_ID = "contentTypeId"; //$NON-NLS-1$
 
@@ -134,8 +133,8 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_CONTRIBUTOR_CLASS = "contributorClass"; //$NON-NLS-1$
 
 	/**
-	 * The name of the attribute storing the AbstractParameterValueConverter for
-	 * a commandParameterType.
+	 * The name of the attribute storing the AbstractParameterValueConverter for a
+	 * commandParameterType.
 	 */
 	String ATT_CONVERTER = "converter"; //$NON-NLS-1$
 
@@ -166,8 +165,7 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_DELETED = "deleted";//$NON-NLS-1$
 
 	/**
-	 * The name of the description attribute, which appears on named handle
-	 * objects.
+	 * The name of the description attribute, which appears on named handle objects.
 	 */
 	String ATT_DESCRIPTION = "description"; //$NON-NLS-1$
 
@@ -185,6 +183,17 @@ public interface IWorkbenchRegistryConstants {
 	 * Editor id attribute. Value <code>editorId</code>.
 	 */
 	String ATT_EDITOR_ID = "editorId"; //$NON-NLS-1$
+
+
+	/**
+	 * Editor onboarding image attribute. Value <code>editorOnboardingImage</code>.
+	 */
+	String ATT_EDITOR_ONBOARDING_IMAGE = "editorOnboardingImage"; //$NON-NLS-1$
+
+	/**
+	 * Editor onboarding text attribute. Value <code>editorOnboardingText</code>.
+	 */
+	String ATT_EDITOR_ONBOARDING_TEXT = "editorOnboardingText"; //$NON-NLS-1$
 
 	/**
 	 * Enables-for attribute. Value <code>enablesFor</code>.
@@ -248,10 +257,15 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_ID = "id"; //$NON-NLS-1$
 
 	/**
-	 * The name of the image style attribute, which is used on location elements
-	 * in the menus extension point.
+	 * The name of the image style attribute, which is used on location elements in
+	 * the menus extension point.
 	 */
 	String ATT_IMAGE_STYLE = "imageStyle"; //$NON-NLS-1$
+
+	/**
+	 * Action attribute. Value <code>initialEnabled</code>.
+	 */
+	String ATT_INITIAL_ENABLED = "initialEnabled"; //$NON-NLS-1$
 
 	/**
 	 * Is-editable attribute. Value <code>isEditable</code>.
@@ -266,14 +280,13 @@ public interface IWorkbenchRegistryConstants {
 	/**
 	 * The name of the attribute storing the identifier for the active key
 	 * configuration identifier. This provides legacy support for the
-	 * <code>activeKeyConfiguration</code> element in the commands extension
-	 * point.
+	 * <code>activeKeyConfiguration</code> element in the commands extension point.
 	 */
 	String ATT_KEY_CONFIGURATION_ID = "keyConfigurationId"; //$NON-NLS-1$
 
 	/**
-	 * The name of the attribute storing the trigger sequence for a binding.
-	 * This is called a 'keySequence' for legacy reasons.
+	 * The name of the attribute storing the trigger sequence for a binding. This is
+	 * called a 'keySequence' for legacy reasons.
 	 */
 	String ATT_KEY_SEQUENCE = "keySequence"; //$NON-NLS-1$
 
@@ -323,8 +336,8 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_MNEMONIC = "mnemonic"; //$NON-NLS-1$
 
 	/**
-	 * The name of the minimized attribute, which appears
-	 * when adding a view in a perspectiveExtension.
+	 * The name of the minimized attribute, which appears when adding a view in a
+	 * perspectiveExtension.
 	 */
 	String ATT_MINIMIZED = "minimized"; //$NON-NLS-1$
 
@@ -359,8 +372,7 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_OBJECTCLASS = "objectClass";//$NON-NLS-1$
 
 	/**
-	 * The name of the optional attribute, which appears on parameter
-	 * definitions.
+	 * The name of the optional attribute, which appears on parameter definitions.
 	 */
 	String ATT_OPTIONAL = "optional"; //$NON-NLS-1$
 
@@ -386,8 +398,8 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_PARENT_ID = "parentId"; //$NON-NLS-1$
 
 	/**
-	 * The name of the deprecated parent scope attribute, which appears on
-	 * contexts definitions.
+	 * The name of the deprecated parent scope attribute, which appears on contexts
+	 * definitions.
 	 */
 	String ATT_PARENT_SCOPE = "parentScope"; //$NON-NLS-1$
 
@@ -423,8 +435,8 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_PROJECT = "project";//$NON-NLS-1$ /**
 
 	/**
-	 * The name of the pulldown attribute, which indicates whether the class is
-	 * a pulldown delegate.
+	 * The name of the pulldown attribute, which indicates whether the class is a
+	 * pulldown delegate.
 	 */
 	String ATT_PULLDOWN = "pulldown"; //$NON-NLS-1$
 
@@ -454,14 +466,13 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_RETARGET = "retarget";//$NON-NLS-1$
 
 	/**
-	 * The name of the returnTypeId attribute, which appears on command
-	 * elements.
+	 * The name of the returnTypeId attribute, which appears on command elements.
 	 */
 	String ATT_RETURN_TYPE_ID = "returnTypeId"; //$NON-NLS-1$
 
 	/**
-	 * The name of the attribute storing the identifier for the active scheme.
-	 * This is called a 'keyConfigurationId' for legacy reasons.
+	 * The name of the attribute storing the identifier for the active scheme. This
+	 * is called a 'keyConfigurationId' for legacy reasons.
 	 */
 	String ATT_SCHEME_ID = "schemeId"; //$NON-NLS-1$
 
@@ -471,8 +482,7 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_SCOPE = "scope"; //$NON-NLS-1$
 
 	/**
-	 * The name of the separatorsVisible attribute, which appears on group
-	 * elements.
+	 * The name of the separatorsVisible attribute, which appears on group elements.
 	 */
 	String ATT_SEPARATORS_VISIBLE = "separatorsVisible"; //$NON-NLS-1$
 
@@ -509,8 +519,8 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_STATE = "state";//$NON-NLS-1$
 
 	/**
-	 * The name of the string attribute (key sequence) for a binding in the
-	 * commands extension point.
+	 * The name of the string attribute (key sequence) for a binding in the commands
+	 * extension point.
 	 */
 	String ATT_STRING = "string"; //$NON-NLS-1$
 
@@ -523,6 +533,11 @@ public interface IWorkbenchRegistryConstants {
 	 * Target attribute. Value <code>targetID</code>.
 	 */
 	String ATT_TARGET_ID = "targetID";//$NON-NLS-1$
+
+	/**
+	 * Text attribute. Value <code>text</code>.
+	 */
+	String ATT_TEXT = "text"; //$NON-NLS-1$
 
 	/**
 	 * Toolbar path attribute. Value <code>toolbarPath</code>.
@@ -541,8 +556,7 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_TYPE = "type"; //$NON-NLS-1$
 
 	/**
-	 * The name of the typeId attribute, which appears on commandParameter
-	 * elements.
+	 * The name of the typeId attribute, which appears on commandParameter elements.
 	 */
 	String ATT_TYPE_ID = "typeId"; //$NON-NLS-1$
 
@@ -564,14 +578,19 @@ public interface IWorkbenchRegistryConstants {
 
 	/**
 	 * The prefix that all auto-generated identifiers start with. This makes the
-	 * identifier recognizable as auto-generated, and further helps ensure that
-	 * it does not conflict with existing identifiers.
+	 * identifier recognizable as auto-generated, and further helps ensure that it
+	 * does not conflict with existing identifiers.
 	 */
 	String AUTOGENERATED_PREFIX = "AUTOGEN:::"; //$NON-NLS-1$
 
 	/**
-	 * The legacy extension point (2.1.x and earlier) for specifying a key
-	 * binding scheme.
+	 * The empty editor command id element. Value <code>emptyEditorCommandId</code>.
+	 */
+	String ELEM_EMPTY_EDITOR_COMMAND_ID = "emptyEditorCommandId"; //$NON-NLS-1$
+
+	/**
+	 * The legacy extension point (2.1.x and earlier) for specifying a key binding
+	 * scheme.
 	 *
 	 * @since 3.1.1
 	 */
@@ -600,8 +619,8 @@ public interface IWorkbenchRegistryConstants {
 	String PL_ACTIVITYSUPPORT = "activitySupport"; //$NON-NLS-1$
 
 	/**
-	 * The extension point (3.1 and later) for specifying bindings, such as
-	 * keyboard shortcuts.
+	 * The extension point (3.1 and later) for specifying bindings, such as keyboard
+	 * shortcuts.
 	 *
 	 * @since 3.1.1
 	 */
@@ -620,8 +639,8 @@ public interface IWorkbenchRegistryConstants {
 
 	/**
 	 * The extension point (2.1.x and later) for specifying a command. A lot of
-	 * other things have appeared first in this extension point and then been
-	 * moved to their own extension point.
+	 * other things have appeared first in this extension point and then been moved
+	 * to their own extension point.
 	 *
 	 * @since 3.1.1
 	 */
@@ -718,116 +737,80 @@ public interface IWorkbenchRegistryConstants {
 
 	String PL_WORKINGSETS = "workingSets"; //$NON-NLS-1$
 
+	String PL_QUICK_ACCESS = "quickAccess"; //$NON-NLS-1$
+
 	/**
 	 * The name of the deprecated accelerator configurations extension point.
 	 */
-	String EXTENSION_ACCELERATOR_CONFIGURATIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE
-			+ '.' + PL_ACCELERATOR_CONFIGURATIONS;
+	String EXTENSION_ACCELERATOR_CONFIGURATIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.'
+			+ PL_ACCELERATOR_CONFIGURATIONS;
 
 	/**
 	 * The name of the accelerator scopes extension point.
 	 */
-	String EXTENSION_ACCELERATOR_SCOPES = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE
-			+ '.' + PL_ACCELERATOR_SCOPES;
+	String EXTENSION_ACCELERATOR_SCOPES = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_ACCELERATOR_SCOPES;
 
 	/**
 	 * The name of the action definitions extension point.
 	 */
-	String EXTENSION_ACTION_DEFINITIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE
-			+ '.' + PL_ACTION_DEFINITIONS;
+	String EXTENSION_ACTION_DEFINITIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_ACTION_DEFINITIONS;
 
 	/**
 	 * The name of the <code>org.eclipse.ui.actionSets</code> extension point.
 	 */
-	String EXTENSION_ACTION_SETS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE
-			+ '.' + IWorkbenchRegistryConstants.PL_ACTION_SETS;
+	String EXTENSION_ACTION_SETS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.'
+			+ IWorkbenchRegistryConstants.PL_ACTION_SETS;
 
 	/**
 	 * The name of the bindings extension point.
 	 */
-	String EXTENSION_BINDINGS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.'
-			+ PL_BINDINGS;
+	String EXTENSION_BINDINGS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_BINDINGS;
 
 	/**
 	 * The name of the commands extension point.
 	 */
-	String EXTENSION_COMMAND_IMAGES = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE
-			+ '.' + PL_COMMAND_IMAGES;
+	String EXTENSION_COMMAND_IMAGES = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_COMMAND_IMAGES;
 
 	/**
 	 * The name of the commands extension point, and the name of the key for the
 	 * commands preferences.
 	 */
-	String EXTENSION_COMMANDS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.'
-			+ PL_COMMANDS;
+	String EXTENSION_COMMANDS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_COMMANDS;
 
 	/**
 	 * The name of the contexts extension point.
 	 */
-	String EXTENSION_CONTEXTS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.'
-			+ PL_CONTEXTS;
+	String EXTENSION_CONTEXTS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_CONTEXTS;
 
 	/**
-	 * The name of the <code>org.eclipse.ui.editorActions</code> extension
-	 * point.
+	 * The name of the <code>org.eclipse.ui.editorActions</code> extension point.
 	 */
-	String EXTENSION_EDITOR_ACTIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE
-			+ '.' + PL_EDITOR_ACTIONS;
+	String EXTENSION_EDITOR_ACTIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_EDITOR_ACTIONS;
 
 	/**
 	 * The name of the commands extension point.
 	 */
-	String EXTENSION_HANDLERS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.'
-			+ PL_HANDLERS;
+	String EXTENSION_HANDLERS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_HANDLERS;
 
 	/**
 	 * The name of the <code>org.eclipse.ui.menus</code> extension point.
 	 */
-	String EXTENSION_MENUS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.'
-			+ PL_MENUS;
+	String EXTENSION_MENUS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_MENUS;
 
 	/**
 	 * The name of the <code>org.eclipse.ui.menus2</code> extension point.
 	 */
-	String COMMON_MENU_ADDITIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.'
-			+ PL_MENUS + '2';
+	String COMMON_MENU_ADDITIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_MENUS + '2';
 
 	/**
 	 * The name of the <code>org.eclipse.ui.popupMenus</code> extension point.
 	 */
-	String EXTENSION_POPUP_MENUS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE
-			+ '.' + PL_POPUP_MENU;
+	String EXTENSION_POPUP_MENUS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_POPUP_MENU;
 
 	/**
-	 * The name of the <code>org.eclipse.ui.viewActions</code> extension
-	 * point.
+	 * The name of the <code>org.eclipse.ui.viewActions</code> extension point.
 	 */
-	String EXTENSION_VIEW_ACTIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE
-			+ '.' + PL_VIEW_ACTIONS;
-
-	/**
-	 * The constant for the position attribute corresponding to
-	 * {@link SOrder#POSITION_AFTER}.
-	 */
-	String POSITION_AFTER = "after"; //$NON-NLS-1$
-
-	/**
-	 * The constant for the position attribute corresponding to
-	 * {@link SOrder#POSITION_BEFORE}.
-	 */
-	String POSITION_BEFORE = "before"; //$NON-NLS-1$
-
-	/**
-	 * The constant for the position attribute corresponding to
-	 * {@link SOrder#POSITION_END}.
-	 */
-	String POSITION_END = "end"; //$NON-NLS-1$
-
-	/**
-	 * The constant for the position attribute corresponding to
-	 * {@link SOrder#POSITION_START}.
-	 */
-	String POSITION_START = "start"; //$NON-NLS-1$
+	String EXTENSION_VIEW_ACTIONS = PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.' + PL_VIEW_ACTIONS;
 
 	/**
 	 * The action style for drop-down menus.
@@ -845,9 +828,9 @@ public interface IWorkbenchRegistryConstants {
 	String STYLE_TOGGLE = "toggle"; //$NON-NLS-1$
 
 	/**
-	 * The name of the deprecated accelerator configuration element. This
-	 * element was used in 2.1.x and earlier to define groups of what are now
-	 * called schemes.
+	 * The name of the deprecated accelerator configuration element. This element
+	 * was used in 2.1.x and earlier to define groups of what are now called
+	 * schemes.
 	 */
 	String TAG_ACCELERATOR_CONFIGURATION = "acceleratorConfiguration"; //$NON-NLS-1$
 
@@ -886,8 +869,7 @@ public interface IWorkbenchRegistryConstants {
 	String TAG_SEQUENCE_MODIFIER = "sequenceModifier"; //$NON-NLS-1$
 
 	/**
-	 * The name of the active when element, which appears on a handler
-	 * definition.
+	 * The name of the active when element, which appears on a handler definition.
 	 */
 	String TAG_ACTIVE_WHEN = "activeWhen"; //$NON-NLS-1$
 
@@ -923,8 +905,7 @@ public interface IWorkbenchRegistryConstants {
 	String TAG_CATEGORYDEFINITION = "themeElementCategory"; //$NON-NLS-1$
 
 	/**
-	 * Category presentation tag. Value <code>categoryPresentationBinding</code>
-	 * .
+	 * Category presentation tag. Value <code>categoryPresentationBinding</code> .
 	 *
 	 * @deprecated used by the removal presentation API
 	 */
@@ -1016,8 +997,12 @@ public interface IWorkbenchRegistryConstants {
 	String TAG_EDITOR_CONTRIBUTION = "editorContribution"; //$NON-NLS-1$
 
 	/**
-	 * The name of the enabled when element, which appears on a handler
-	 * definition.
+	 * Editor onboarding command. Value <code>editorOnboardingCommand</code>.
+	 */
+	String TAG_EDITOR_ONBOARDING_COMMAND = "editorOnboardingCommand"; //$NON-NLS-1$
+
+	/**
+	 * The name of the enabled when element, which appears on a handler definition.
 	 */
 	String TAG_ENABLED_WHEN = "enabledWhen"; //$NON-NLS-1$
 
@@ -1103,8 +1088,8 @@ public interface IWorkbenchRegistryConstants {
 
 	/**
 	 * The name of the deprecated key configuration element in the commands
-	 * extension point. This element has been replaced with the scheme element
-	 * in the bindings extension point.
+	 * extension point. This element has been replaced with the scheme element in
+	 * the bindings extension point.
 	 */
 	String TAG_KEY_CONFIGURATION = "keyConfiguration"; //$NON-NLS-1$
 
@@ -1114,8 +1099,7 @@ public interface IWorkbenchRegistryConstants {
 	String TAG_LOCATION = "location"; //$NON-NLS-1$
 
 	/**
-	 * The name of the element defining the insertion point for menu
-	 * additions.
+	 * The name of the element defining the insertion point for menu additions.
 	 *
 	 * @since 3.3
 	 */
@@ -1206,7 +1190,6 @@ public interface IWorkbenchRegistryConstants {
 	 */
 	String TAG_SEPARATOR = "separator"; //$NON-NLS-1$
 
-
 	/**
 	 * Tag for the settings transfer entry.
 	 */
@@ -1225,14 +1208,15 @@ public interface IWorkbenchRegistryConstants {
 	/**
 	 * The name of the element describing splash handlers. Value
 	 * <code>splashHandler</code>.
+	 *
 	 * @since 3.3
 	 */
 	String TAG_SPLASH_HANDLER = "splashHandler"; //$NON-NLS-1$
 
-
 	/**
 	 * The name of the element describing splash handler product bindings. Value
 	 * <code>splashHandlerProductBinding</code>.
+	 *
 	 * @since 3.3
 	 */
 	String TAG_SPLASH_HANDLER_PRODUCT_BINDING = "splashHandlerProductBinding"; //$NON-NLS-1$
@@ -1273,8 +1257,8 @@ public interface IWorkbenchRegistryConstants {
 	String TAG_VIEW = "view";//$NON-NLS-1$
 
 	/**
-	 * E4 view tag, used in the <code>org.eclipse.ui.view</code> extension point
-	 * to point to a POJO class. Value <code>e4view</code>.
+	 * E4 view tag, used in the <code>org.eclipse.ui.view</code> extension point to
+	 * point to a POJO class. Value <code>e4view</code>.
 	 */
 	String TAG_E4VIEW = "e4view";//$NON-NLS-1$
 
@@ -1378,4 +1362,11 @@ public interface IWorkbenchRegistryConstants {
 	String ATT_COLOR_AND_FONT_ID = "colorAndFontId"; //$NON-NLS-1$
 
 	String ATT_OS_VERSION = "os_version"; //$NON-NLS-1$
+
+	/**
+	 * See {@link PerspectiveDescriptor#getDefaultShowIn()}
+	 *
+	 * @since 3.123
+	 */
+	String ATT_DEFAULT_SHOW_IN = "defaultShowIn"; //$NON-NLS-1$
 }

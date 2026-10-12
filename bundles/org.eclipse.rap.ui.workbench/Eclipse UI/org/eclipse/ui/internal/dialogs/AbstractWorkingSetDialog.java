@@ -1,17 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *      IBM Corporation - initial API and implementation
- * 		Sebastian Davids <sdavids@gmx.de> - Bug 19346
- *      Lars Vogel <Lars.Vogel@vogella.com> - Bug 481473
+ * 		Sebastian Davids <sdavids@gmx.de> - Fix for bug 19346 - Dialog font
+ *   	should be activated and used by other components.
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
@@ -50,9 +47,9 @@ import org.eclipse.ui.internal.registry.WorkingSetRegistry;
 /**
  * Abstract baseclass for various working set dialogs.
  *
- * @since 3.2
  */
-public abstract class AbstractWorkingSetDialog extends SelectionDialog implements IWorkingSetSelectionDialog {
+public abstract class AbstractWorkingSetDialog extends SelectionDialog
+		implements IWorkingSetSelectionDialog {
 
 	private static final int ID_NEW = IDialogConstants.CLIENT_ID + 1;
 	private static final int ID_DETAILS = ID_NEW + 1;
@@ -72,24 +69,24 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 
 	private IWorkingSet[] result;
 
-	private List<IWorkingSet> addedWorkingSets;
+	private List addedWorkingSets;
 
-	private List<IWorkingSet> removedWorkingSets;
+	private List removedWorkingSets;
 
-	private Map<IWorkingSet, IWorkingSet> editedWorkingSets;
+	private Map editedWorkingSets;
 
-	private List<IWorkingSet> removedMRUWorkingSets;
+	private List removedMRUWorkingSets;
 
-	private Set<String> workingSetIds;
+	private Set workingSetIds;
 
 	private boolean canEdit;
 
 	protected AbstractWorkingSetDialog(Shell parentShell, String[] workingSetIds, boolean canEdit) {
 		super(parentShell);
 		if (workingSetIds != null) {
-			this.workingSetIds = new HashSet<>();
-			for (String workingSetId : workingSetIds) {
-				this.workingSetIds.add(workingSetId);
+			this.workingSetIds = new HashSet();
+			for (int i = 0; i < workingSetIds.length; i++) {
+				this.workingSetIds.add(workingSetIds[i]);
 			}
 		}
 		this.canEdit = canEdit;
@@ -100,7 +97,7 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 *
 	 * @return the supported working set types
 	 */
-	protected Set<String> getSupportedWorkingSetIds() {
+	protected Set getSupportedWorkingSetIds() {
 		return workingSetIds;
 	}
 
@@ -119,56 +116,48 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 		GridData data = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.GRAB_VERTICAL);
 		buttonComposite.setLayoutData(data);
 
-		newButton = createButton(buttonComposite, ID_NEW, WorkbenchMessages.get().WorkingSetSelectionDialog_newButton_label,
+		newButton = createButton(buttonComposite, ID_NEW,
+				WorkbenchMessages.get().WorkingSetSelectionDialog_newButton_label,
 				false);
-		newButton.addSelectionListener(new SelectionAdapter()
-        {
-		    /** {@inheritDoc} */
-		    @Override
-		    public void widgetSelected(SelectionEvent e)
-		    {
+		newButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
 		        createWorkingSet();
 		    }
         });
 
 		if (canEdit) {
-			detailsButton = createButton(buttonComposite, ID_DETAILS,
-					WorkbenchMessages.get().WorkingSetSelectionDialog_detailsButton_label, false);
+			detailsButton = createButton(
+					buttonComposite,
+					ID_DETAILS,
+					WorkbenchMessages.get().WorkingSetSelectionDialog_detailsButton_label,
+					false);
 			detailsButton.setEnabled(false);
-			detailsButton.addSelectionListener(new SelectionAdapter()
-	        {
-	            /** {@inheritDoc} */
-	            @Override
-	            public void widgetSelected(SelectionEvent e)
-	            {
+			detailsButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
 	                editSelectedWorkingSet();
 	            }
 	        });
 
-			removeButton = createButton(buttonComposite, ID_REMOVE,
-					WorkbenchMessages.get().WorkingSetSelectionDialog_removeButton_label, false);
+			removeButton = createButton(
+					buttonComposite,
+					ID_REMOVE,
+					WorkbenchMessages.get().WorkingSetSelectionDialog_removeButton_label,
+					false);
 			removeButton.setEnabled(false);
-			removeButton.addSelectionListener(new SelectionAdapter()
-            {
-                /** {@inheritDoc} */
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                { 
+			removeButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
                     removeSelectedWorkingSets();
                 }
             });
 		}
 
-		layout.numColumns = 1; // must manually reset the number of columns
-								// because createButton increments it - we want
-								// these buttons to be laid out vertically.
+		layout.numColumns = 1; // must manually reset the number of columns because createButton increments it - we want these buttons to be laid out vertically.
 	}
 
 	/**
 	 * Add the select/deselect buttons.
 	 *
-	 * @param composite
-	 *            Composite to add the buttons to
+	 * @param composite Composite to add the buttons to
 	 */
 	protected void addSelectionButtons(Composite composite) {
 		Composite buttonComposite = new Composite(composite, SWT.NONE);
@@ -179,26 +168,24 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 		GridData data = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
 		buttonComposite.setLayoutData(data);
 
-		selectAllButton = createButton(buttonComposite, ID_SELECTALL, WorkbenchMessages.get().SelectionDialog_selectLabel,
+		selectAllButton = createButton(
+				buttonComposite,
+				ID_SELECTALL,
+				WorkbenchMessages.get().SelectionDialog_selectLabel,
 				false);
-		selectAllButton.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+		selectAllButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
                 selectAllSets();
             }
         });
 
-		deselectAllButton = createButton(buttonComposite, ID_DESELECTALL,
-				WorkbenchMessages.get().SelectionDialog_deselectLabel, false);
-		deselectAllButton.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+		deselectAllButton = createButton(
+				buttonComposite,
+				ID_DESELECTALL,
+				WorkbenchMessages.get().SelectionDialog_deselectLabel,
+				false);
+		deselectAllButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
                 deselectAllSets();
             }
         });
@@ -221,18 +208,22 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 * @see org.eclipse.ui.dialogs.IWorkingSetPage
 	 */
 	void editSelectedWorkingSet() {
-		IWorkingSetManager manager = WorkbenchPlugin.getDefault().getWorkingSetManager();
-		IWorkingSet editWorkingSet = getSelectedWorkingSets().get(0);
-		IWorkingSetEditWizard wizard = manager.createWorkingSetEditWizard(editWorkingSet);
+		IWorkingSetManager manager = WorkbenchPlugin.getDefault()
+				.getWorkingSetManager();
+		IWorkingSet editWorkingSet = (IWorkingSet) getSelectedWorkingSets()
+				.get(0);
+		IWorkingSetEditWizard wizard = manager
+				.createWorkingSetEditWizard(editWorkingSet);
 		WizardDialog dialog = new WizardDialog(getShell(), wizard);
-		IWorkingSet originalWorkingSet = editedWorkingSets.get(editWorkingSet);
+		IWorkingSet originalWorkingSet = (IWorkingSet) editedWorkingSets
+				.get(editWorkingSet);
 		boolean firstEdit = originalWorkingSet == null;
 
 		// save the original working set values for restoration when selection
 		// dialog is cancelled.
 		if (firstEdit) {
-			originalWorkingSet = new WorkingSet(editWorkingSet.getName(), editWorkingSet.getLabel(),
-					editWorkingSet.getElements());
+			originalWorkingSet = new WorkingSet(editWorkingSet.getName(),
+					editWorkingSet.getLabel(), editWorkingSet.getElements());
 		} else {
 			editedWorkingSets.remove(editWorkingSet);
 		}
@@ -253,10 +244,12 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 * Opens a working set wizard for creating a new working set.
 	 */
 	void createWorkingSet() {
-		IWorkingSetManager manager = WorkbenchPlugin.getDefault().getWorkingSetManager();
+		IWorkingSetManager manager = WorkbenchPlugin.getDefault()
+				.getWorkingSetManager();
 		String ids[] = null;
 		if (workingSetIds != null) {
-			ids = workingSetIds.toArray(new String[workingSetIds.size()]);
+			ids = (String[]) workingSetIds.toArray(new String[workingSetIds
+					.size()]);
 		}
 		IWorkingSetNewWizard wizard = manager.createWorkingSetNewWizard(ids);
 		// the wizard can never be null since we have at least a resource
@@ -272,20 +265,18 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 			manager.addWorkingSet(workingSet);
 			addedWorkingSets.add(workingSet);
 			availableWorkingSetsChanged();
-			workingSetAdded(workingSet);
 		}
 	}
 
-	protected abstract List<IWorkingSet> getSelectedWorkingSets();
+	protected abstract List getSelectedWorkingSets();
 
 	/**
 	 * Notifies the dialog that there has been a change to the sets available
 	 * for use. In other words, the user has either added, deleted or renamed a
 	 * set.
 	 * <p>
-	 * Subclasses should override, but should call
-	 * <code>super.availableWorkingSetsChanged</code> to update the selection
-	 * button enablements.
+     * Subclasses should override, but should call <code>super.availableWorkingSetsChanged</code>
+     * to update the selection button enablements.
 	 * </p>
 	 */
 	protected void availableWorkingSetsChanged() {
@@ -298,38 +289,30 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 		}
 	}
 
-	/**
-	 * Notifies the dialog that the given working set was added to the sets
-	 * available for use. In other words, the user has just added the given
-	 * working set.
-	 *
-	 * <p>
-	 * This implementation doesn't do anything. Subclasses can override it to
-	 * auto-select the added working set.
-	 * </p>
-	 *
-	 * @param addedSet
-	 *            the added working set.
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.dialogs.IWorkingSetSelectionDialog#getSelection()
 	 */
-	protected void workingSetAdded(IWorkingSet addedSet) {
-	}
-
-	@Override
 	public IWorkingSet[] getSelection() {
 		return result;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.dialogs.IWorkingSetSelectionDialog#setSelection(org.eclipse.ui.IWorkingSet[])
+	 */
 	public void setSelection(IWorkingSet[] selection) {
 		result = selection;
 	}
 
-	@Override
+	/**
+	 * Overrides method in Dialog
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#open()
+	 */
 	public int open() {
-		addedWorkingSets = new ArrayList<>();
-		removedWorkingSets = new ArrayList<>();
-		editedWorkingSets = new HashMap<>();
-		removedMRUWorkingSets = new ArrayList<>();
+		addedWorkingSets = new ArrayList();
+		removedWorkingSets = new ArrayList();
+		editedWorkingSets = new HashMap();
+		removedMRUWorkingSets = new ArrayList();
 		return super.open();
 	}
 
@@ -339,7 +322,7 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 *
 	 * @return the working sets
 	 */
-	protected final List<IWorkingSet> getAddedWorkingSets() {
+	protected final List getAddedWorkingSets() {
 		return addedWorkingSets;
 	}
 
@@ -349,7 +332,7 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 *
 	 * @return the working sets
 	 */
-	protected final Map<IWorkingSet, IWorkingSet> getEditedWorkingSets() {
+	protected final Map getEditedWorkingSets() {
 		return editedWorkingSets;
 	}
 
@@ -359,7 +342,7 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 *
 	 * @return the working sets
 	 */
-	protected final List<IWorkingSet> getRemovedMRUWorkingSets() {
+	protected final List getRemovedMRUWorkingSets() {
 		return removedMRUWorkingSets;
 	}
 
@@ -369,7 +352,7 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 *
 	 * @return the working sets
 	 */
-	protected final List<IWorkingSet> getRemovedWorkingSets() {
+	protected final List getRemovedWorkingSets() {
 		return removedWorkingSets;
 	}
 
@@ -377,10 +360,11 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 * Updates the modify buttons' enabled state based on the current seleciton.
 	 */
 	protected void updateButtonAvailability() {
-		List<IWorkingSet> selection = getSelectedWorkingSets();
-		boolean hasSelection = !selection.isEmpty();
+		List selection = getSelectedWorkingSets();
+		boolean hasSelection = selection != null && !selection.isEmpty();
 		boolean hasSingleSelection = hasSelection;
-		WorkingSetRegistry registry = WorkbenchPlugin.getDefault().getWorkingSetRegistry();
+		WorkingSetRegistry registry = WorkbenchPlugin.getDefault()
+				.getWorkingSetRegistry();
 
 		newButton.setEnabled(registry.hasNewPageWorkingSetDescriptor());
 
@@ -391,12 +375,13 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 		if (hasSelection) {
 			hasSingleSelection = selection.size() == 1;
 			if (hasSingleSelection) {
-				selectedWorkingSet = selection.get(0);
+				selectedWorkingSet = (IWorkingSet) selection
+						.get(0);
 			}
 		}
-		if (canEdit) {
-			detailsButton.setEnabled(hasSingleSelection && selectedWorkingSet.isEditable());
-		}
+		if (canEdit)
+			detailsButton.setEnabled(hasSingleSelection
+				&& selectedWorkingSet.isEditable());
 
 		getOkButton().setEnabled(true);
 	}
@@ -405,7 +390,7 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 * Removes the selected working sets from the workbench.
 	 */
 	protected void removeSelectedWorkingSets() {
-		List<IWorkingSet> selection = getSelectedWorkingSets();
+		List selection = getSelectedWorkingSets();
 		removeSelectedWorkingSets(selection);
 	}
 
@@ -416,17 +401,19 @@ public abstract class AbstractWorkingSetDialog extends SelectionDialog implement
 	 * @param selection
 	 *            the sets
 	 */
-	protected void removeSelectedWorkingSets(List<IWorkingSet> selection) {
-		IWorkingSetManager manager = WorkbenchPlugin.getDefault().getWorkingSetManager();
+	protected void removeSelectedWorkingSets(List selection) {
+		IWorkingSetManager manager = WorkbenchPlugin.getDefault()
+				.getWorkingSetManager();
 		Iterator iter = selection.iterator();
 		while (iter.hasNext()) {
 			IWorkingSet workingSet = (IWorkingSet) iter.next();
 			if (getAddedWorkingSets().contains(workingSet)) {
 				getAddedWorkingSets().remove(workingSet);
 			} else {
-				IWorkingSet[] recentWorkingSets = manager.getRecentWorkingSets();
-				for (IWorkingSet recentWorkingSet : recentWorkingSets) {
-					if (workingSet.equals(recentWorkingSet)) {
+				IWorkingSet[] recentWorkingSets = manager
+						.getRecentWorkingSets();
+				for (int i = 0; i < recentWorkingSets.length; i++) {
+					if (workingSet.equals(recentWorkingSets[i])) {
 						getRemovedMRUWorkingSets().add(workingSet);
 						break;
 					}

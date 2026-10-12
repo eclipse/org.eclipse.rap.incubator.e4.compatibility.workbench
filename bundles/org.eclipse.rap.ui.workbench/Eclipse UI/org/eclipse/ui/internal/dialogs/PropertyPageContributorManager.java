@@ -1,17 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Oakland Software (Francis Upton) <francisu@ieee.org> - bug 219273
- *     James Blackburn (Broadcom Corp.) - Bug 294628 multiple selection
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
@@ -20,15 +16,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
 import org.eclipse.jface.preference.PreferenceNode;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.rap.rwt.SingletonUtil;
 import org.eclipse.ui.internal.ObjectContributorManager;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
@@ -43,7 +38,7 @@ public class PropertyPageContributorManager extends ObjectContributorManager {
 // RAP [rst]
 //  private static PropertyPageContributorManager sharedInstance = null;
 
-	private static class CategorizedPageNode {
+	private class CategorizedPageNode {
 		RegistryPageContributor contributor;
 
 		CategorizedPageNode parent;
@@ -73,30 +68,15 @@ public class PropertyPageContributorManager extends ObjectContributorManager {
 	 * contributors and sequentially invoke them to contribute to the property
 	 * page manager. Matching algorithm will also check subclasses and
 	 * implemented interfaces.
-	 *
-	 * If object is an IStructuredSelection then attempt to match all the
-	 * contained objects.
-	 *
 	 * @param manager
 	 * @param object
 	 * @return true if contribution took place, false otherwise.
 	 */
 	public boolean contribute(PropertyPageManager manager, Object object) {
 
-		Collection result = null;
-		if (object instanceof IStructuredSelection) {
-			Object[] objs = ((IStructuredSelection) object).toArray();
-			for (Object obj : objs) {
-				List contribs = getContributors(obj);
-				if (result == null)
-					result = new LinkedHashSet(contribs);
-				else
-					result.retainAll(contribs);
-			}
-		} else
-			result = getContributors(object);
+		List result = getContributors(object);
 
-		if (result == null || result.isEmpty()) {
+		if (result == null || result.size() == 0) {
 			return false;
 		}
 
@@ -151,7 +131,7 @@ public class PropertyPageContributorManager extends ObjectContributorManager {
 	 * @param nodes
 	 * @return List of CategorizedPageNode
 	 */
-	private List buildNodeList(Collection nodes) {
+	private List buildNodeList(List nodes) {
 		Hashtable mapping = new Hashtable();
 
 		Iterator nodesIterator = nodes.iterator();
@@ -199,11 +179,14 @@ public class PropertyPageContributorManager extends ObjectContributorManager {
 		reader.registerPropertyPages(Platform.getExtensionRegistry());
 	}
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.dynamicHelpers.IExtensionChangeHandler#addExtension(org.eclipse.core.runtime.dynamicHelpers.IExtensionTracker, org.eclipse.core.runtime.IExtension)
+     */
 	public void addExtension(IExtensionTracker tracker, IExtension extension) {
-		for (IConfigurationElement addedElement : extension.getConfigurationElements()) {
+        IConfigurationElement[] addedElements = extension.getConfigurationElements();
+        for (int i = 0; i < addedElements.length; i++) {
             PropertyPagesRegistryReader reader = new PropertyPagesRegistryReader(this);
-            reader.readElement(addedElement);
+            reader.readElement(addedElements[i]);
         }
     }
 
@@ -213,8 +196,6 @@ public class PropertyPageContributorManager extends ObjectContributorManager {
 	 * @return Collection of PropertyPageContribution
 	 */
 	public Collection getApplicableContributors(Object element) {
-		if (element instanceof IStructuredSelection)
-			return getApplicableContributors((IStructuredSelection) element);
 		Collection contributors = getContributors(element);
 		Collection result = new ArrayList();
 		for (Iterator iter = contributors.iterator(); iter.hasNext();) {
@@ -226,38 +207,9 @@ public class PropertyPageContributorManager extends ObjectContributorManager {
 		return result;
 	}
 
-	/**
-	 * Get applicable contributors for multiple selection
-	 *
-	 * @param selection
-	 * @return Collection of applicable property page contributors
-	 * @since 3.7
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.ObjectContributorManager#getExtensionPointFilter()
 	 */
-	public Collection getApplicableContributors(IStructuredSelection selection) {
-		Iterator it = selection.iterator();
-		Collection result = null;
-		while (it.hasNext()) {
-			Object element = it.next();
-			Collection collection = getApplicableContributors(element);
-			if (result == null)
-				result = new LinkedHashSet(collection);
-			else
-				result.retainAll(collection);
-		}
-		if (result != null && !result.isEmpty() && selection.size() > 1) {
-			// only add contributors which can handle multi selection
-			it = result.iterator();
-			while (it.hasNext()) {
-				RegistryPageContributor contrib = (RegistryPageContributor) it
-						.next();
-				if (!contrib.supportsMultipleSelection())
-					it.remove();
-			}
-		}
-		return result;
-	}
-
-	@Override
 	protected String getExtensionPointFilter() {
 		return IWorkbenchRegistryConstants.PL_PROPERTY_PAGES;
 	}

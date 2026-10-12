@@ -26,13 +26,11 @@ import org.eclipse.ui.SubActionBars;
 import org.eclipse.ui.internal.PartSite;
 
 /**
- * A <code>RetargetAction</code> tracks the active part in the workbench.
- * Each RetargetAction has an ID.  If the active part provides an action
- * handler for the ID the enable and check state of the RetargetAction
- * is determined from the enable and check state of the handler.  If the
- * active part does not provide an action handler then this action is
- * disabled.
- * </p>
+ * A <code>RetargetAction</code> tracks the active part in the workbench. Each
+ * RetargetAction has an ID. If the active part provides an action handler for
+ * the ID the enable and check state of the RetargetAction is determined from
+ * the enable and check state of the handler. If the active part does not
+ * provide an action handler then this action is disabled.
  * <p>
  * <b>Note:</b> instances of this class add themselves as listeners to their
  * action handler. It is important for the creator of a retarget action to call
@@ -46,8 +44,7 @@ import org.eclipse.ui.internal.PartSite;
  * @since 2.0
  * @noextend This class is not intended to be subclassed by clients.
  */
-public class RetargetAction extends PartEventAction implements
-        ActionFactory.IWorkbenchAction {
+public class RetargetAction extends PartEventAction implements ActionFactory.IWorkbenchAction {
 
     /**
      * The help listener assigned to this action, or <code>null</code> if none.
@@ -58,7 +55,7 @@ public class RetargetAction extends PartEventAction implements
 
     private IAction handler;
 
-    private IPropertyChangeListener propertyChangeListener = event -> RetargetAction.this.propagateChange(event);
+	private final IPropertyChangeListener propertyChangeListener = RetargetAction.this::propagateChange;
 
     /**
      * Constructs a RetargetAction with the given action id and text.
@@ -75,9 +72,9 @@ public class RetargetAction extends PartEventAction implements
      *
      * @param actionID the retargetable action id
      * @param text the action's text, or <code>null</code> if there is no text
-     * @param style one of <code>AS_PUSH_BUTTON</code>, <code>AS_CHECK_BOX</code>,
-     * 		<code>AS_DROP_DOWN_MENU</code>, <code>AS_RADIO_BUTTON</code>, and
-     * 		<code>AS_UNSPECIFIED</code>
+	 * @param style    one of <code>AS_PUSH_BUTTON</code>,
+	 *                 <code>AS_CHECK_BOX</code>, <code>AS_DROP_DOWN_MENU</code>,
+	 *                 <code>AS_RADIO_BUTTON</code>, and <code>AS_UNSPECIFIED</code>
      * @since 3.0
      */
     public RetargetAction(String actionID, String text, int style) {
@@ -136,8 +133,7 @@ public class RetargetAction extends PartEventAction implements
     }
 
     /**
-     * A workbench part has been activated. Try to connect
-     * to it.
+	 * A workbench part has been activated. Try to connect to it.
      *
      * @param part the workbench part that has been activated
      */
@@ -233,9 +229,8 @@ public class RetargetAction extends PartEventAction implements
     /**
      * Returns the action handler. This method was made public in 3.0.
      *
-     * @return The current action handling this retargettable action. This
-     *         handler will be <code>null</code> if there is no current
-     *         handler.
+	 * @return The current action handling this retargettable action. This handler
+	 *         will be <code>null</code> if there is no current handler.
      */
     public IAction getActionHandler() {
         return handler;
@@ -278,8 +273,7 @@ public class RetargetAction extends PartEventAction implements
         }
 
 		// Notify listeners that the handler has changed.
-        firePropertyChange(IHandlerAttributes.ATTRIBUTE_HANDLED, oldHandler,
-                newHandler);
+		firePropertyChange(IHandlerAttributes.ATTRIBUTE_HANDLED, oldHandler, newHandler);
     }
 
     @Override
@@ -295,8 +289,8 @@ public class RetargetAction extends PartEventAction implements
 
     /**
      * The <code>RetargetAction</code> implementation of this method declared on
-     * <code>IAction</code> stores the help listener in a local field. The
-     * supplied listener is only used if there is no hanlder.
+	 * <code>IAction</code> stores the help listener in a local field. The supplied
+	 * listener is only used if there is no hanlder.
      */
     @Override
 	public void setHelpListener(HelpListener listener) {

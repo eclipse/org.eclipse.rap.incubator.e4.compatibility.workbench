@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2018 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -15,6 +12,7 @@ package org.eclipse.ui.activities;
 
 import java.util.Hashtable;
 import java.util.Properties;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.jface.dialogs.Dialog;
@@ -42,7 +40,7 @@ import org.eclipse.ui.internal.activities.ws.ActivityMessages;
  * @see #ACTIVITY_NAME
  * @see #ACTIVITY_PROMPT_BUTTON
  * @see #ACTIVITY_PROMPT_BUTTON_TOOLTIP
- * @since 3.1
+ * @since 1.1
  */
 public final class ActivitiesPreferencePage extends PreferencePage implements
         IWorkbenchPreferencePage, IExecutableExtension {
@@ -79,8 +77,8 @@ public final class ActivitiesPreferencePage extends PreferencePage implements
      */
     protected void createActivityPromptPref(Composite composite) {
         activityPromptButton = new Button(composite, SWT.CHECK);
-        activityPromptButton.setText(strings.getProperty(ACTIVITY_PROMPT_BUTTON, ActivityMessages.activityPromptButton));
-        activityPromptButton.setToolTipText(strings.getProperty(ACTIVITY_PROMPT_BUTTON_TOOLTIP, ActivityMessages.activityPromptToolTip));
+        activityPromptButton.setText(strings.getProperty(ACTIVITY_PROMPT_BUTTON, ActivityMessages.get().activityPromptButton)); 
+        activityPromptButton.setToolTipText(strings.getProperty(ACTIVITY_PROMPT_BUTTON_TOOLTIP, ActivityMessages.get().activityPromptToolTip));
 
         setActivityButtonState();
     }
@@ -93,7 +91,9 @@ public final class ActivitiesPreferencePage extends PreferencePage implements
                 IPreferenceConstants.SHOULD_PROMPT_FOR_ENABLEMENT));
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
+     */
 	protected Control createContents(Composite parent) {
     	initializeDialogUnits(parent);
 
@@ -119,13 +119,17 @@ public final class ActivitiesPreferencePage extends PreferencePage implements
         return composite;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
+     */
 	public void init(IWorkbench aWorkbench) {
         this.workbench = aWorkbench;
         setPreferenceStore(WorkbenchPlugin.getDefault().getPreferenceStore());
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.preference.IPreferencePage#performOk()
+     */
 	public boolean performOk() {
         enabler.updateActivityStates();
         workbench.getActivitySupport().setEnabledActivityIds(workingCopy.getEnabledActivityIds());
@@ -137,7 +141,9 @@ public final class ActivitiesPreferencePage extends PreferencePage implements
         return true;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.preference.PreferencePage#performDefaults()
+     */
 	protected void performDefaults() {
         enabler.restoreDefaults();
         activityPromptButton.setSelection(getPreferenceStore()
@@ -146,10 +152,12 @@ public final class ActivitiesPreferencePage extends PreferencePage implements
         super.performDefaults();
     }
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.IExecutableExtension#setInitializationData(org.eclipse.core.runtime.IConfigurationElement, java.lang.String, java.lang.Object)
+	 */
 	public void setInitializationData(IConfigurationElement config, String propertyName, Object data) {
 		if (data instanceof Hashtable) {
-			strings.putAll((Hashtable<?, ?>) data);
+			strings.putAll((Hashtable)data);
 		}
 	}
 }

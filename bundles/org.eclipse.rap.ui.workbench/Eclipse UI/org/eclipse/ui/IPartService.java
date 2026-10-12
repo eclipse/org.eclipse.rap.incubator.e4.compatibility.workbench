@@ -14,17 +14,18 @@
 package org.eclipse.ui;
 
 /**
- * A part service tracks the creation and activation of parts within a
- * workbench page.
+ * A part service tracks the creation and activation of parts within a workbench
+ * page.
  * <p>
  * This service can be acquired from your service locator:
+ * </p>
+ *
  * <pre>
  * 	IPartService service = (IPartService) getSite().getService(IPartService.class);
  * </pre>
- * <ul>
- * <li>This service is not available globally, only from the workbench window level down.</li>
- * </ul>
- * </p>
+ *
+ * This service is not available globally, only from the workbench window level
+ * down.
  *
  * @see IWorkbenchPage
  * @see org.eclipse.ui.services.IServiceLocator#getService(Class)
@@ -33,12 +34,12 @@ package org.eclipse.ui;
 public interface IPartService {
 
     /**
-     * Adds the given listener for part lifecycle events.
-     * Has no effect if an identical listener is already registered.
+	 * Adds the given listener for part lifecycle events. Has no effect if an
+	 * identical listener is already registered.
 	 * <p>
-	 * <b>Note:</b> listeners should be removed when no longer necessary. If
-	 * not, they will be removed when the IServiceLocator used to acquire this
-	 * service is disposed.
+	 * <b>Note:</b> listeners should be removed when no longer necessary. If not,
+	 * they will be removed when the IServiceLocator used to acquire this service is
+	 * disposed.
 	 * </p>
      *
      * @param listener a part listener
@@ -47,17 +48,17 @@ public interface IPartService {
     void addPartListener(IPartListener listener);
 
     /**
-     * Adds the given listener for part lifecycle events.
-     * Has no effect if an identical listener is already registered.
+	 * Adds the given listener for part lifecycle events. Has no effect if an
+	 * identical listener is already registered.
      * <p>
-     * As of 3.5, the IPartListener2 can also implement IPageChangedListener
-     * to be notified about any parts that implement IPageChangeProvider and
-     * post PageChangedEvents.
+	 * As of 3.5, the IPartListener2 can also implement IPageChangedListener to be
+	 * notified about any parts that implement IPageChangeProvider and post
+	 * PageChangedEvents.
      * </p>
 	 * <p>
-	 * <b>Note:</b> listeners should be removed when no longer necessary. If
-	 * not, they will be removed when the IServiceLocator used to acquire this
-	 * service is disposed.
+	 * <b>Note:</b> listeners should be removed when no longer necessary. If not,
+	 * they will be removed when the IServiceLocator used to acquire this service is
+	 * disposed.
 	 * </p>
      *
      * @param listener a part listener
@@ -77,26 +78,24 @@ public interface IPartService {
     /**
      * Returns the active part reference.
      *
-     * @return the active part reference, or <code>null</code> if no part
-     * is currently active
+	 * @return the active part reference, or <code>null</code> if no part is
+	 *         currently active
      */
     IWorkbenchPartReference getActivePartReference();
 
     /**
-	 * Removes the given part listener. Has no effect if an identical listener
-	 * is not registered.
+	 * Removes the given part listener. Has no effect if an identical listener is
+	 * not registered.
 	 *
-	 * @param listener
-	 *            a part listener
+	 * @param listener a part listener
 	 */
     void removePartListener(IPartListener listener);
 
     /**
-	 * Removes the given part listener. Has no effect if an identical listener
-	 * is not registered.
+	 * Removes the given part listener. Has no effect if an identical listener is
+	 * not registered.
 	 *
-	 * @param listener
-	 *            a part listener
+	 * @param listener a part listener
 	 */
     void removePartListener(IPartListener2 listener);
 }

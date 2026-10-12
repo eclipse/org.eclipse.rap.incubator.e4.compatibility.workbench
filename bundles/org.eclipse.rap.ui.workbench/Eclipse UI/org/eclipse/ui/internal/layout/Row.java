@@ -26,10 +26,9 @@ public class Row {
     boolean grows = false;
 
     /**
-     * Size of this row. For growing rows, this is the relative size
-     * of the row with respect to other rows (ie: a row of size 100 is twice
-     * as wide as a row of size 50). For fixed rows, this is the absolute size
-     * of the row, in pixels.
+	 * Size of this row. For growing rows, this is the relative size of the row with
+	 * respect to other rows (ie: a row of size 100 is twice as wide as a row of
+	 * size 50). For fixed rows, this is the absolute size of the row, in pixels.
      */
     int size = 0;
 
@@ -39,10 +38,8 @@ public class Row {
     boolean largerThanChildren = true;
 
     /**
-     * Creates a fixed-size row with the given width (pixels).
-     * The preferred sizes of child controls are ignored.
-     *
-     * @param size
+	 * Creates a fixed-size row with the given width (pixels). The preferred sizes
+	 * of child controls are ignored.
      */
     public Row(int size) {
         largerThanChildren = false;
@@ -53,8 +50,6 @@ public class Row {
     /**
      * Creates a row that automatically computes its size based on the preferred
      * sizes of its children.
-     *
-     * @param growing
      */
     public Row(boolean growing) {
         this.grows = growing;
@@ -67,10 +62,11 @@ public class Row {
     /**
      * Creates a growing row.
      *
-     * @param sizeRatio determines the size of this row with respect to other growing rows
-     * (for example, a row with size = 3 will be 3x as large as a row with size = 1)
-     * @param largerThanChildren true iff the preferred size of this row should take into
-     * account the preferred sizes of its children.
+	 * @param size               determines the size of this row with respect to
+	 *                           other growing rows (for example, a row with size =
+	 *                           3 will be 3x as large as a row with size = 1)
+	 * @param largerThanChildren true iff the preferred size of this row should take
+	 *                           into account the preferred sizes of its children.
      */
     public Row(int size, boolean largerThanChildren) {
         this.grows = true;
@@ -90,9 +86,10 @@ public class Row {
     /**
      * Construct and return a growing row with custom properties
      *
-     * @param size relative size of this row with respect to other growing rows
-     * @param largerThanChildren true iff the preferred size of this row should
-     * be based on the preferred sizes of its children
+	 * @param size               relative size of this row with respect to other
+	 *                           growing rows
+	 * @param largerThanChildren true iff the preferred size of this row should be
+	 *                           based on the preferred sizes of its children
      * @return a new Row
      */
     public static Row growing(int size, boolean largerThanChildren) {
@@ -101,7 +98,8 @@ public class Row {
 
     /**
      * Construct and return a fixed-size row. The row will not grow when the layout
-     * is resized, and its size will be computed from the default sizes of its children.
+	 * is resized, and its size will be computed from the default sizes of its
+	 * children.
      *
      * @return a new Row
      */
@@ -111,7 +109,8 @@ public class Row {
 
     /**
      * Construct and return a fixed-size row. The row will always have the given
-     * width, regardless of the size of the layout or the preferred sizes of its children.
+	 * width, regardless of the size of the layout or the preferred sizes of its
+	 * children.
      *
      * @param pixels size of the row
      * @return a fixed-size row with the given width (in pixels)

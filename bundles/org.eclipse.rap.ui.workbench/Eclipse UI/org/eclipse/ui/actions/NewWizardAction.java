@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -14,7 +11,6 @@
 
 package org.eclipse.ui.actions;
 
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelection;
@@ -34,6 +30,7 @@ import org.eclipse.ui.internal.PerspectiveTracker;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.dialogs.NewWizard;
+import org.eclipse.ui.internal.util.Util;
 
 /**
  * Invoke the resource creation wizard selection Wizard.
@@ -49,6 +46,7 @@ import org.eclipse.ui.internal.dialogs.NewWizard;
  * action an opportunity to deregister its listeners and to perform any other
  * cleanup.
  * </p>
+ * @since 1.1
  * @noextend This class is not intended to be subclassed by clients.
  */
 public class NewWizardAction extends Action implements
@@ -115,7 +113,6 @@ public class NewWizardAction extends Action implements
      *
      * @deprecated use the constructor <code>NewWizardAction(IWorkbenchWindow)</code>
      */
-    @Deprecated
 	public NewWizardAction() {
         this(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
     }
@@ -152,13 +149,15 @@ public class NewWizardAction extends Action implements
 	 *            The title of the wizard window, otherwise <code>null</code>
 	 *            (default wizard window title).
 	 *
-	 * @since 3.6
+	 * @since 1.4
 	 */
 	public void setWizardWindowTitle(String windowTitle) {
 		this.windowTitle = windowTitle;
 	}
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IAction.
+     */
 	public void run() {
         if (workbenchWindow == null) {
             // action has been disposed
@@ -182,7 +181,7 @@ public class NewWizardAction extends Action implements
                         .getActivePart();
                 if (part instanceof IEditorPart) {
                     IEditorInput input = ((IEditorPart) part).getEditorInput();
-					Object resource = Adapters.adapt(input, resourceClass);
+                    Object resource = Util.getAdapter(input, resourceClass);
                     if (resource != null) {
                         selectionToPass = new StructuredSelection(resource);
                     }
@@ -213,7 +212,10 @@ public class NewWizardAction extends Action implements
         dialog.open();
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on ActionFactory.IWorkbenchAction.
+     * @since 3.0
+     */
 	public void dispose() {
         if (workbenchWindow == null) {
             // action has already been disposed

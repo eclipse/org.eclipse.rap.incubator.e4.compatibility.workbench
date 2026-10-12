@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -47,9 +44,17 @@ public class PagePartSelectionTracker extends AbstractPartSelectionTracker
      */
     private IWorkbenchPart fPart;
 
-    private ISelectionChangedListener selectionListener = event -> fireSelection(getPart(), event.getSelection());
+    private ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
+        public void selectionChanged(SelectionChangedEvent event) {
+            fireSelection(getPart(), event.getSelection());
+        }
+    };
 
-    private ISelectionChangedListener postSelectionListener = event -> firePostSelection(getPart(), event.getSelection());
+    private ISelectionChangedListener postSelectionListener = new ISelectionChangedListener() {
+        public void selectionChanged(SelectionChangedEvent event) {
+            firePostSelection(getPart(), event.getSelection());
+        }
+    };
 
     public PagePartSelectionTracker(IWorkbenchPage page, String partId) {
         super(partId);
@@ -72,7 +77,6 @@ public class PagePartSelectionTracker extends AbstractPartSelectionTracker
      * Disposes this selection provider - removes all listeners
      * currently registered.
      */
-    @Override
 	public void dispose() {
     	IWorkbenchPage page = getPage();
     	page.getWorkbenchWindow().removePerspectiveListener(this);
@@ -85,21 +89,18 @@ public class PagePartSelectionTracker extends AbstractPartSelectionTracker
     /*
      * @see IPartListener#partActivated(IWorkbenchPart)
      */
-    @Override
 	public void partActivated(IWorkbenchPart part) {
     }
 
     /*
      * @see IPartListener#partBroughtToTop(IWorkbenchPart)
      */
-    @Override
 	public void partBroughtToTop(IWorkbenchPart part) {
     }
 
     /**
      * @see IPartListener#partClosed(IWorkbenchPart)
      */
-    @Override
 	public void partClosed(IWorkbenchPart part) {
         if (getPartId(part).equals(getPartId())) {
             setPart(null, true);
@@ -109,14 +110,12 @@ public class PagePartSelectionTracker extends AbstractPartSelectionTracker
     /*
      * @see IPartListener#partDeactivated(IWorkbenchPart)
      */
-    @Override
 	public void partDeactivated(IWorkbenchPart part) {
     }
 
     /**
      * @see IPartListener#partOpened(IWorkbenchPart)
      */
-    @Override
 	public void partOpened(IWorkbenchPart part) {
         if (getPartId(part).equals(getPartId())) {
             setPart(part, true);
@@ -127,7 +126,6 @@ public class PagePartSelectionTracker extends AbstractPartSelectionTracker
      * Returns the id for the given part, taking into account
      * multi-view instances which may have a secondary id.
      *
-     * @since 3.0
      */
 	static String getPartId(IWorkbenchPart part) {
         String id = part.getSite().getId();
@@ -147,7 +145,6 @@ public class PagePartSelectionTracker extends AbstractPartSelectionTracker
      *
      * @see ISelectionChangedListener#selectionChanged
      */
-    @Override
 	public void selectionChanged(SelectionChangedEvent event) {
         fireSelection(getPart(), event.getSelection());
     }
@@ -183,7 +180,6 @@ public class PagePartSelectionTracker extends AbstractPartSelectionTracker
     /*
      * @see AbstractPartSelectionTracker#getSelection()
      */
-    @Override
 	public ISelection getSelection() {
         IWorkbenchPart part = getPart();
         if (part != null) {
@@ -250,17 +246,14 @@ public class PagePartSelectionTracker extends AbstractPartSelectionTracker
         }
     }
 
-	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 		// nothing to do
 	}
 
-	@Override
 	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
 		// nothing to do
 	}
 
-	@Override
 	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective,
 			IWorkbenchPartReference partRef, String changeId) {
 		if (partRef == null)
@@ -276,3 +269,4 @@ public class PagePartSelectionTracker extends AbstractPartSelectionTracker
 		}
 	}
 }
+

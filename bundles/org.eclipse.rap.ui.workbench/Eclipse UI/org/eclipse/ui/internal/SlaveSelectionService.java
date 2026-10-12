@@ -25,24 +25,19 @@ import org.eclipse.ui.services.IDisposable;
 
 /**
  * @since 3.4
- *
  */
 public class SlaveSelectionService implements ISelectionService, IDisposable {
 
-	private ListenerList<ISelectionListener> postListeners = new ListenerList<>(ListenerList.IDENTITY);
-	private ListenerList<ISelectionListener> listeners = new ListenerList<>(ListenerList.IDENTITY);
-	private Map<ISelectionListener, String> listenersToPartId = new HashMap<>();
-	private Map<ISelectionListener, String> postListenersToPartId = new HashMap<>();
+	private final ListenerList<ISelectionListener> postListeners = new ListenerList<>(ListenerList.IDENTITY);
+	private final ListenerList<ISelectionListener> listeners = new ListenerList<>(ListenerList.IDENTITY);
+	private final Map<ISelectionListener, String> listenersToPartId = new HashMap<>();
+	private final Map<ISelectionListener, String> postListenersToPartId = new HashMap<>();
 
-	private ISelectionService parentSelectionService;
+	private final ISelectionService parentSelectionService;
 
-	/**
-	 * @param parentSelectionService
-	 */
 	public SlaveSelectionService(ISelectionService parentSelectionService) {
 		if (parentSelectionService == null) {
-			throw new IllegalArgumentException(
-					"The parent selection service cannot be null"); //$NON-NLS-1$
+			throw new IllegalArgumentException("The parent selection service cannot be null"); //$NON-NLS-1$
 		}
 		this.parentSelectionService = parentSelectionService;
 	}
@@ -54,8 +49,7 @@ public class SlaveSelectionService implements ISelectionService, IDisposable {
 	}
 
 	@Override
-	public void addPostSelectionListener(String partId,
-			ISelectionListener listener) {
+	public void addPostSelectionListener(String partId, ISelectionListener listener) {
 		listenersToPartId.put(listener, partId);
 		parentSelectionService.addPostSelectionListener(partId, listener);
 	}
@@ -89,8 +83,7 @@ public class SlaveSelectionService implements ISelectionService, IDisposable {
 	}
 
 	@Override
-	public void removePostSelectionListener(String partId,
-			ISelectionListener listener) {
+	public void removePostSelectionListener(String partId, ISelectionListener listener) {
 		postListenersToPartId.remove(listener);
 		parentSelectionService.removePostSelectionListener(partId, listener);
 	}
@@ -102,8 +95,7 @@ public class SlaveSelectionService implements ISelectionService, IDisposable {
 	}
 
 	@Override
-	public void removeSelectionListener(String partId,
-			ISelectionListener listener) {
+	public void removeSelectionListener(String partId, ISelectionListener listener) {
 		listenersToPartId.remove(listener);
 		parentSelectionService.removeSelectionListener(partId, listener);
 	}

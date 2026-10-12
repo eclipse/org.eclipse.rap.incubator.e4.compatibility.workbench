@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -14,23 +11,20 @@
 
 package org.eclipse.ui.internal.commands;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionDelta;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IRegistryChangeEvent;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.internal.services.RegistryPersistence;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.framework.Bundle;
 
 /**
  * <p>
@@ -47,9 +41,8 @@ import org.osgi.framework.Bundle;
  * consulting with the Platform/UI team.
  * </p>
  *
- * @since 3.2
  */
-public final class CommandImagePersistence extends RegistryPersistence {
+final class CommandImagePersistence extends RegistryPersistence {
 
 	/**
 	 * The index of the image elements in the indexed array.
@@ -74,7 +67,7 @@ public final class CommandImagePersistence extends RegistryPersistence {
 	 *            The command service for the workbench; must not be
 	 *            <code>null</code>.
 	 */
-	private static void readImagesFromRegistry(
+	private static final void readImagesFromRegistry(
 			final IConfigurationElement[] configurationElements,
 			final int configurationElementCount,
 			final CommandImageManager commandImageManager,
@@ -170,13 +163,13 @@ public final class CommandImagePersistence extends RegistryPersistence {
 		this.commandService = commandService;
 	}
 
-	@Override
-	protected boolean isChangeImportant(final IRegistryChangeEvent event) {
+	protected final boolean isChangeImportant(final IRegistryChangeEvent event) {
 		// RAP [bm]:
 //      final IExtensionDelta[] imageDeltas = event.getExtensionDeltas(
 //              PlatformUI.PLUGIN_ID,
 //              IWorkbenchRegistryConstants.PL_COMMAND_IMAGES);
-		final IExtensionDelta[] imageDeltas = event.getExtensionDeltas(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
+		final IExtensionDelta[] imageDeltas = event.getExtensionDeltas(
+				PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 				IWorkbenchRegistryConstants.PL_COMMAND_IMAGES);
 		// RAPEND: [bm]
 		return (imageDeltas.length != 0);
@@ -185,8 +178,7 @@ public final class CommandImagePersistence extends RegistryPersistence {
 	/**
 	 * Reads all of the command images from the registry.
 	 */
-	@Override
-	protected void read() {
+	protected final void read() {
 		super.read();
 
 		// Create the extension registry mementos.
@@ -197,7 +189,8 @@ public final class CommandImagePersistence extends RegistryPersistence {
 		// Sort the commands extension point based on element name.
 		final IConfigurationElement[] commandImagesExtensionPoint = registry
 				.getConfigurationElementsFor(EXTENSION_COMMAND_IMAGES);
-		for (final IConfigurationElement configurationElement : commandImagesExtensionPoint) {
+		for (int i = 0; i < commandImagesExtensionPoint.length; i++) {
+			final IConfigurationElement configurationElement = commandImagesExtensionPoint[i];
 			final String name = configurationElement.getName();
 
 			// Check if it is a binding definition.
@@ -210,27 +203,5 @@ public final class CommandImagePersistence extends RegistryPersistence {
 
 		readImagesFromRegistry(indexedConfigurationElements[INDEX_IMAGES],
 				imageCount, commandImageManager, commandService);
-		// Associate product icon to About command
-		IProduct product = Platform.getProduct();
-		if (product != null) {
-			Bundle productBundle = product.getDefiningBundle();
-			if (productBundle != null) {
-				String imageList = product.getProperty("windowImages"); //$NON-NLS-1$
-				if (imageList != null) {
-					String iconPath = imageList.split(",")[0]; //$NON-NLS-1$
-					URL iconUrl = productBundle.getEntry(iconPath);
-					ImageDescriptor icon = ImageDescriptor.createFromURL(iconUrl);
-					if (icon != null) {
-						commandImageManager.bind(IWorkbenchCommandConstants.HELP_ABOUT,
-								CommandImageManager.TYPE_DEFAULT, null, icon);
-						commandImageManager.bind(IWorkbenchCommandConstants.HELP_ABOUT,
-								CommandImageManager.TYPE_DISABLED, null, icon);
-						commandImageManager.bind(IWorkbenchCommandConstants.HELP_ABOUT,
-								CommandImageManager.TYPE_HOVER, null, icon);
-					}
-
-				}
-			}
-		}
 	}
 }

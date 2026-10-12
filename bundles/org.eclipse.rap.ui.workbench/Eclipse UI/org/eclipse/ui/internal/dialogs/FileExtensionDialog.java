@@ -1,13 +1,10 @@
 // RAP [rh] File names and extensions don't make sense in RAP
 ///*******************************************************************************
-// * Copyright (c) 2000, 2015 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2000, 2009 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -21,6 +18,8 @@
 //import org.eclipse.jface.layout.GridLayoutFactory;
 //import org.eclipse.jface.layout.LayoutConstants;
 //import org.eclipse.swt.SWT;
+//import org.eclipse.swt.events.ModifyEvent;
+//import org.eclipse.swt.events.ModifyListener;
 //import org.eclipse.swt.graphics.Point;
 //import org.eclipse.swt.layout.GridData;
 //import org.eclipse.swt.widgets.Button;
@@ -94,7 +93,9 @@
 //		setShellStyle(getShellStyle() | SWT.SHEET);
 //    }
 //
-//    @Override
+//    /* (non-Javadoc)
+//     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+//     */
 //	protected void configureShell(Shell shell) {
 //        super.configureShell(shell);
 //        shell.setText(title);
@@ -102,7 +103,9 @@
 //    }
 //
 //
-//    @Override
+//    /* (non-Javadoc)
+//     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+//     */
 //	protected Control createDialogArea(Composite parent) {
 //		Composite parentComposite = (Composite) super.createDialogArea(parent);
 //
@@ -119,10 +122,12 @@
 //		if (initialValue != null) {
 //			filenameField.setText(initialValue);
 //		}
-//		filenameField.addModifyListener(event -> {
+//		filenameField.addModifyListener(new ModifyListener() {
+//			public void modifyText(ModifyEvent event) {
 //			if (event.widget == filenameField) {
 //				filename = filenameField.getText().trim();
 //				okButton.setEnabled(validateFileType());
+//			}
 //			}
 //		});
 //		filenameField.setFocus();
@@ -137,13 +142,15 @@
 //	}
 //
 //
-//    @Override
+//    /* (non-Javadoc)
+//     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+//     */
 //	protected void createButtonsForButtonBar(Composite parent) {
 //        okButton = createButton(parent, IDialogConstants.OK_ID,
-//                IDialogConstants.get().OK_LABEL, true);
+//                IDialogConstants.OK_LABEL, true);
 //        okButton.setEnabled(false);
 //        createButton(parent, IDialogConstants.CANCEL_ID,
-//                IDialogConstants.get().CANCEL_LABEL, false);
+//                IDialogConstants.CANCEL_LABEL, false);
 //    }
 //
 //    /**
@@ -238,7 +245,9 @@
 //    	this.initialValue = initialValue;
 //    }
 //
-//    @Override
+//    /* (non-Javadoc)
+//     * @see org.eclipse.jface.dialogs.Dialog#getDialogBoundsSettings()
+//     */
 //	protected IDialogSettings getDialogBoundsSettings() {
 //        IDialogSettings settings = WorkbenchPlugin.getDefault().getDialogSettings();
 //        IDialogSettings section = settings.getSection(DIALOG_SETTINGS_SECTION);
@@ -246,7 +255,10 @@
 //        return section;
 //    }
 //
-//    @Override
+//    /*
+//     * (non-Javadoc)
+//     * @see org.eclipse.jface.dialogs.Dialog#isResizable()
+//     */
 //	protected boolean isResizable() {
 //    	return true;
 //    }

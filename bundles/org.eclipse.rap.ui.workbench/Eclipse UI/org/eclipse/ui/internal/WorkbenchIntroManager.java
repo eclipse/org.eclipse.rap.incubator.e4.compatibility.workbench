@@ -180,9 +180,9 @@ public class WorkbenchIntroManager implements IIntroManager {
             WorkbenchPlugin
                     .log(
 							// RAP [dm]
-//                    		IntroMessages.Intro_could_not_create_part,
+//                    		IntroMessages.get().Intro_could_not_create_part,
 //							new Status(IStatus.ERROR, WorkbenchPlugin.PI_WORKBENCH, IStatus.ERROR,
-//									IntroMessages.Intro_could_not_create_part, e));
+//									IntroMessages.get().Intro_could_not_create_part, e));
 							IntroMessages.get().Intro_could_not_create_part,
 							new Status(IStatus.ERROR, WorkbenchPlugin.PI_WORKBENCH, IStatus.ERROR,
 									IntroMessages.get().Intro_could_not_create_part, e));
@@ -316,3 +316,4 @@ public class WorkbenchIntroManager implements IIntroManager {
 		return false;
 	}
 }
+

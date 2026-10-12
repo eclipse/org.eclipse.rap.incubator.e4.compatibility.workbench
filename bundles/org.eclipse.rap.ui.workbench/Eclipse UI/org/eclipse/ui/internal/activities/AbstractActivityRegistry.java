@@ -40,8 +40,7 @@ public abstract class AbstractActivityRegistry implements IActivityRegistry {
     }
 
     @Override
-	public void addActivityRegistryListener(
-            IActivityRegistryListener activityRegistryListener) {
+	public void addActivityRegistryListener(IActivityRegistryListener activityRegistryListener) {
         if (activityRegistryListener == null) {
 			throw new NullPointerException();
 		}
@@ -57,13 +56,12 @@ public abstract class AbstractActivityRegistry implements IActivityRegistry {
 
     protected void fireActivityRegistryChanged() {
         if (activityRegistryListeners != null) {
-            for (int i = 0; i < activityRegistryListeners.size(); i++) {
+			for (IActivityRegistryListener activityRegistryListener : activityRegistryListeners) {
                 if (activityRegistryEvent == null) {
 					activityRegistryEvent = new ActivityRegistryEvent(this);
 				}
 
-                activityRegistryListeners.get(i)
-                        .activityRegistryChanged(activityRegistryEvent);
+				activityRegistryListener.activityRegistryChanged(activityRegistryEvent);
             }
         }
     }
@@ -94,8 +92,7 @@ public abstract class AbstractActivityRegistry implements IActivityRegistry {
     }
 
     @Override
-	public void removeActivityRegistryListener(
-            IActivityRegistryListener activityRegistryListener) {
+	public void removeActivityRegistryListener(IActivityRegistryListener activityRegistryListener) {
         if (activityRegistryListener == null) {
 			throw new NullPointerException();
 		}

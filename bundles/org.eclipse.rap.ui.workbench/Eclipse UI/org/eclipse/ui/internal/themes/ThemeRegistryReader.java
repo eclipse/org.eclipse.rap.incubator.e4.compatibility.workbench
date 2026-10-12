@@ -38,20 +38,19 @@ public class ThemeRegistryReader extends RegistryReader {
     /**
      * The translation bundle in which to look up internationalized text.
      */
-    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle
-            .getBundle(ThemeRegistryReader.class.getName());
+	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(ThemeRegistryReader.class.getName());
 
-    private Collection categoryDefinitions = new HashSet();
+	private final Collection<ThemeElementCategory> categoryDefinitions = new HashSet<>();
 
-    private Collection colorDefinitions = new HashSet();
+	private final Collection<ColorDefinition> colorDefinitions = new HashSet<>();
 
-    private Collection fontDefinitions = new HashSet();
+	private final Collection<FontDefinition> fontDefinitions = new HashSet<>();
 
     private ThemeDescriptor themeDescriptor = null;
 
     private ThemeRegistry themeRegistry;
 
-    private Map dataMap = new HashMap();
+	private final Map<String, String> dataMap = new HashMap<>();
 
     /**
      * ThemeRegistryReader constructor comment.
@@ -65,7 +64,7 @@ public class ThemeRegistryReader extends RegistryReader {
      *
      * @return the category definitions
      */
-    public Collection getCategoryDefinitions() {
+	public Collection<ThemeElementCategory> getCategoryDefinitions() {
         return categoryDefinitions;
     }
 
@@ -74,7 +73,7 @@ public class ThemeRegistryReader extends RegistryReader {
      *
      * @return the color definitions
      */
-    public Collection getColorDefinitions() {
+	public Collection<ColorDefinition> getColorDefinitions() {
         return colorDefinitions;
     }
 
@@ -83,7 +82,7 @@ public class ThemeRegistryReader extends RegistryReader {
      *
      * @return the data map
      */
-    public Map getData() {
+	public Map<String, String> getData() {
         return dataMap;
     }
 
@@ -92,7 +91,7 @@ public class ThemeRegistryReader extends RegistryReader {
      *
      * @return the font definitions
      */
-    public Collection getFontDefinitions() {
+	public Collection<FontDefinition> getFontDefinitions() {
         return fontDefinitions;
     }
 
@@ -110,15 +109,13 @@ public class ThemeRegistryReader extends RegistryReader {
 
         String description = null;
 
-        IConfigurationElement[] descriptions = element
-                .getChildren(IWorkbenchRegistryConstants.TAG_DESCRIPTION);
+		IConfigurationElement[] descriptions = element.getChildren(IWorkbenchRegistryConstants.TAG_DESCRIPTION);
 
         if (descriptions.length > 0) {
 			description = descriptions[0].getValue();
 		}
 
-        return new ThemeElementCategory(name, id, parentId, description,
-				element.getContributor().getName(), element);
+		return new ThemeElementCategory(name, id, parentId, description, element.getContributor().getName(), element);
     }
 
     /**
@@ -134,15 +131,13 @@ public class ThemeRegistryReader extends RegistryReader {
 
         String defaultMapping = element.getAttribute(IWorkbenchRegistryConstants.ATT_DEFAULTS_TO);
 
-        String value = getPlatformSpecificColorValue(element
-                .getChildren(IWorkbenchRegistryConstants.TAG_COLORVALUE));
+		String value = getPlatformSpecificColorValue(element.getChildren(IWorkbenchRegistryConstants.TAG_COLORVALUE));
 
         if (value == null) {
             value = getColorValue(element);
         }
 
-        if ((value == null && defaultMapping == null)
-                || (value != null && defaultMapping != null)) {
+		if ((value == null && defaultMapping == null) || (value != null && defaultMapping != null)) {
             logError(element, RESOURCE_BUNDLE.getString("Colors.badDefault")); //$NON-NLS-1$
             return null;
         }
@@ -153,24 +148,21 @@ public class ThemeRegistryReader extends RegistryReader {
         boolean isEditable = true;
         String isEditableString = element.getAttribute(IWorkbenchRegistryConstants.ATT_IS_EDITABLE);
         if (isEditableString != null) {
-            isEditable = Boolean.valueOf(isEditableString).booleanValue();
+			isEditable = Boolean.parseBoolean(isEditableString);
         }
 
-        IConfigurationElement[] descriptions = element
-                .getChildren(IWorkbenchRegistryConstants.TAG_DESCRIPTION);
+		IConfigurationElement[] descriptions = element.getChildren(IWorkbenchRegistryConstants.TAG_DESCRIPTION);
 
         if (descriptions.length > 0) {
 			description = descriptions[0].getValue();
 		}
 
-        return new ColorDefinition(name, id, defaultMapping, value, categoryId,
-                isEditable, description, element.getDeclaringExtension()
-						.getContributor().getName());
+		return new ColorDefinition(name, id, defaultMapping, value, categoryId, isEditable, description,
+				element.getDeclaringExtension().getContributor().getName());
     }
 
     /**
-     * Gets the color value, either via the value attribute or from a color
-     * factory.
+	 * Gets the color value, either via the value attribute or from a color factory.
      *
      * @param element the element to check
      * @return the color string
@@ -188,14 +180,13 @@ public class ThemeRegistryReader extends RegistryReader {
     }
 
     /**
-     * Check for platform specific color values.  This will return the
-     * "best match" for the current platform.
+	 * Check for platform specific color values. This will return the "best match"
+	 * for the current platform.
      *
      * @param elements the elements to check
      * @return the platform specific color, if any
      */
-    private String getPlatformSpecificColorValue(
-            IConfigurationElement[] elements) {
+	private String getPlatformSpecificColorValue(IConfigurationElement[] elements) {
         return getColorValue(getBestPlatformMatch(elements));
     }
 
@@ -206,8 +197,7 @@ public class ThemeRegistryReader extends RegistryReader {
      * @param elements the elements to check
      * @return the best match, if any
      */
-    private IConfigurationElement getBestPlatformMatch(
-            IConfigurationElement[] elements) {
+	private IConfigurationElement getBestPlatformMatch(IConfigurationElement[] elements) {
         IConfigurationElement match = null;
 
         String osname = Platform.getOS();
@@ -243,15 +233,13 @@ public class ThemeRegistryReader extends RegistryReader {
                 }
             }
             return true;
-        } else if (themeDescriptor != null
-                && elementName.equals(IWorkbenchRegistryConstants.TAG_COLOROVERRIDE)) {
+		} else if (themeDescriptor != null && elementName.equals(IWorkbenchRegistryConstants.TAG_COLOROVERRIDE)) {
             ColorDefinition definition = readColor(element);
             if (definition != null) {
                 themeDescriptor.add(definition);
             }
             return true;
-        } else if (themeDescriptor == null
-                && elementName.equals(IWorkbenchRegistryConstants.TAG_FONTDEFINITION)) {
+		} else if (themeDescriptor == null && elementName.equals(IWorkbenchRegistryConstants.TAG_FONTDEFINITION)) {
             FontDefinition definition = readFont(element);
             if (definition != null) {
                 if (!fontDefinitions.contains(definition)) {
@@ -260,15 +248,13 @@ public class ThemeRegistryReader extends RegistryReader {
                 }
             }
             return true;
-        } else if (themeDescriptor != null
-                && elementName.equals(IWorkbenchRegistryConstants.TAG_FONTOVERRIDE)) {
+		} else if (themeDescriptor != null && elementName.equals(IWorkbenchRegistryConstants.TAG_FONTOVERRIDE)) {
             FontDefinition definition = readFont(element);
             if (definition != null) {
                 themeDescriptor.add(definition);
             }
             return true;
-        } else if (themeDescriptor == null
-                && elementName.equals(IWorkbenchRegistryConstants.TAG_CATEGORYDEFINITION)) {
+		} else if (themeDescriptor == null && elementName.equals(IWorkbenchRegistryConstants.TAG_CATEGORYDEFINITION)) {
             ThemeElementCategory definition = readCategory(element);
             if (definition != null) {
                 if (!categoryDefinitions.contains(definition)) {
@@ -279,8 +265,7 @@ public class ThemeRegistryReader extends RegistryReader {
             return true;
         } else if (element.getName().equals(IWorkbenchRegistryConstants.TAG_THEME)) {
             if (themeDescriptor != null) {
-				logError(element, RESOURCE_BUNDLE
-                        .getString("Themes.badNesting")); //$NON-NLS-1$
+				logError(element, RESOURCE_BUNDLE.getString("Themes.badNesting")); //$NON-NLS-1$
 			} else {
                 themeDescriptor = readTheme(element);
                 if (themeDescriptor != null) {
@@ -289,8 +274,7 @@ public class ThemeRegistryReader extends RegistryReader {
                 }
                 return true;
             }
-        } else if (themeDescriptor != null
-                && elementName.equals(IWorkbenchRegistryConstants.TAG_DESCRIPTION)) {
+		} else if (themeDescriptor != null && elementName.equals(IWorkbenchRegistryConstants.TAG_DESCRIPTION)) {
             themeDescriptor.setDescription(element.getValue());
             return true;
         } else if (elementName.equals(IWorkbenchRegistryConstants.TAG_DATA)) {
@@ -298,8 +282,7 @@ public class ThemeRegistryReader extends RegistryReader {
             String value = element.getAttribute(IWorkbenchRegistryConstants.ATT_VALUE);
             if (name == null || value == null) {
                 logError(element, RESOURCE_BUNDLE.getString("Data.badData")); //$NON-NLS-1$
-            } else {
-                if (themeDescriptor != null) {
+			} else if (themeDescriptor != null) {
                     themeDescriptor.setData(name, value);
                 } else {
                     themeRegistry.setData(name, value);
@@ -307,13 +290,6 @@ public class ThemeRegistryReader extends RegistryReader {
 						dataMap.put(name, value);
 					}
                 }
-            }
-            return true;
-        } else if (elementName.equals(IWorkbenchRegistryConstants.TAG_CATEGORYPRESENTATIONBINDING)) {
-            String categoryId = element.getAttribute(IWorkbenchRegistryConstants.ATT_CATEGORY_ID);
-            String presentationId = element.getAttribute(IWorkbenchRegistryConstants.ATT_PRESENTATIONID);
-            themeRegistry.addCategoryPresentationBinding(categoryId,
-                    presentationId);
             return true;
         }
 
@@ -333,8 +309,7 @@ public class ThemeRegistryReader extends RegistryReader {
 
         String defaultMapping = element.getAttribute(IWorkbenchRegistryConstants.ATT_DEFAULTS_TO);
 
-        String value = getPlatformSpecificFontValue(element
-                .getChildren(IWorkbenchRegistryConstants.TAG_FONTVALUE));
+		String value = getPlatformSpecificFontValue(element.getChildren(IWorkbenchRegistryConstants.TAG_FONTVALUE));
         if (value == null) {
             value = element.getAttribute(IWorkbenchRegistryConstants.ATT_VALUE);
         }
@@ -349,25 +324,23 @@ public class ThemeRegistryReader extends RegistryReader {
         boolean isEditable = true;
         String isEditableString = element.getAttribute(IWorkbenchRegistryConstants.ATT_IS_EDITABLE);
         if (isEditableString != null) {
-            isEditable = Boolean.valueOf(isEditableString).booleanValue();
+			isEditable = Boolean.parseBoolean(isEditableString);
         }
 
         String description = null;
 
-        IConfigurationElement[] descriptions = element
-                .getChildren(IWorkbenchRegistryConstants.TAG_DESCRIPTION);
+		IConfigurationElement[] descriptions = element.getChildren(IWorkbenchRegistryConstants.TAG_DESCRIPTION);
 
         if (descriptions.length > 0) {
 			description = descriptions[0].getValue();
 		}
 
-        return new FontDefinition(name, id, defaultMapping, value, categoryId,
-                isEditable, description);
+		return new FontDefinition(name, id, defaultMapping, value, categoryId, isEditable, description);
     }
 
     /**
-     * Check for platform specific font values.  This will return the
-     * "best match" for the current platform.
+	 * Check for platform specific font values. This will return the "best match"
+	 * for the current platform.
      *
      * @param elements the elements to check
      * @return the platform specific font, if any
@@ -405,8 +378,7 @@ public class ThemeRegistryReader extends RegistryReader {
                         .createExecutableExtension(IWorkbenchRegistryConstants.ATT_COLORFACTORY);
                 value = StringConverter.asString(factory.createColor());
             } catch (Exception e) {
-                WorkbenchPlugin.log(RESOURCE_BUNDLE
-                        .getString("Colors.badFactory"), //$NON-NLS-1$
+				WorkbenchPlugin.log(RESOURCE_BUNDLE.getString("Colors.badFactory"), //$NON-NLS-1$
                         WorkbenchPlugin.getStatus(e));
             }
         }
@@ -448,18 +420,10 @@ public class ThemeRegistryReader extends RegistryReader {
     public void readThemes(IExtensionRegistry in, ThemeRegistry out) {
         // this does not seem to really ever be throwing an the exception
         setRegistry(out);
-        // RAP [bm]: 
-//        readRegistry(in, PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_THEMES);
-//
-//        // support for old font definitions
-//        readRegistry(in, PlatformUI.PLUGIN_ID,
-//                IWorkbenchRegistryConstants.PL_FONT_DEFINITIONS);
-        readRegistry(in, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_THEMES);
+		readRegistry(in, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_THEMES);
 
         // support for old font definitions
-        readRegistry(in, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
-                IWorkbenchRegistryConstants.PL_FONT_DEFINITIONS);
-        // RAPEND: [bm]
+		readRegistry(in, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_FONT_DEFINITIONS);
     }
 
     /**

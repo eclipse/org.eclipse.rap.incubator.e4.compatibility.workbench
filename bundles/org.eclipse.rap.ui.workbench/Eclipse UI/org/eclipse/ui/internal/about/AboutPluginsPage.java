@@ -1,56 +1,45 @@
-// RAP [rh] AboutDialog left out for now
+// RAP [bm] AboutDialog left out for now
 ///*******************************************************************************
-// * Copyright (c) 2000, 2016 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2000, 2009 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *		IBM Corporation - initial API and implementation
 // *  	Sebastian Davids <sdavids@gmx.de> - Fix for bug 19346 - Dialog
 // * 		font should be activated and used by other components.
-// *      Robin Stocker <robin@nibor.org> - Add filter text field
-// *      Lars Vogel <Lars.Vogel@vogella.com> - Bug 472654
-// *      Simon Scholz <simon.scholz@vogella.com> - Bug 488704, 491316
 // *******************************************************************************/
 //package org.eclipse.ui.internal.about;
 //
 //import java.io.IOException;
 //import java.net.URL;
 //import java.util.ArrayList;
-//import java.util.Collection;
 //import java.util.HashMap;
 //import java.util.LinkedList;
 //import java.util.List;
 //import java.util.Map;
-//import java.util.function.Consumer;
-//
-//import org.eclipse.core.runtime.FileLocator;
 //import org.eclipse.core.runtime.IPath;
 //import org.eclipse.core.runtime.IProgressMonitor;
 //import org.eclipse.core.runtime.IStatus;
 //import org.eclipse.core.runtime.Path;
 //import org.eclipse.core.runtime.Platform;
 //import org.eclipse.core.runtime.Status;
-//import org.eclipse.core.runtime.SubMonitor;
 //import org.eclipse.core.runtime.jobs.Job;
 //import org.eclipse.jface.dialogs.IDialogConstants;
-//import org.eclipse.jface.layout.GridDataFactory;
 //import org.eclipse.jface.util.ConfigureColumns;
 //import org.eclipse.jface.viewers.ArrayContentProvider;
 //import org.eclipse.jface.viewers.IBaseLabelProvider;
+//import org.eclipse.jface.viewers.ISelectionChangedListener;
 //import org.eclipse.jface.viewers.IStructuredSelection;
 //import org.eclipse.jface.viewers.ITableLabelProvider;
 //import org.eclipse.jface.viewers.LabelProvider;
 //import org.eclipse.jface.viewers.LabelProviderChangedEvent;
+//import org.eclipse.jface.viewers.SelectionChangedEvent;
 //import org.eclipse.jface.viewers.TableViewer;
 //import org.eclipse.jface.viewers.Viewer;
 //import org.eclipse.jface.viewers.ViewerComparator;
-//import org.eclipse.jface.viewers.ViewerFilter;
 //import org.eclipse.osgi.util.NLS;
 //import org.eclipse.swt.SWT;
 //import org.eclipse.swt.custom.SashForm;
@@ -62,11 +51,9 @@
 //import org.eclipse.swt.widgets.Button;
 //import org.eclipse.swt.widgets.Composite;
 //import org.eclipse.swt.widgets.Control;
-//import org.eclipse.swt.widgets.Display;
 //import org.eclipse.swt.widgets.Label;
 //import org.eclipse.swt.widgets.Table;
 //import org.eclipse.swt.widgets.TableColumn;
-//import org.eclipse.swt.widgets.Text;
 //import org.eclipse.ui.PlatformUI;
 //import org.eclipse.ui.internal.IWorkbenchGraphicConstants;
 //import org.eclipse.ui.internal.IWorkbenchHelpContextIds;
@@ -74,7 +61,6 @@
 //import org.eclipse.ui.internal.WorkbenchMessages;
 //import org.eclipse.ui.internal.WorkbenchPlugin;
 //import org.eclipse.ui.internal.misc.StatusUtil;
-//import org.eclipse.ui.internal.misc.StringMatcher;
 //import org.eclipse.ui.internal.util.BundleUtility;
 //import org.eclipse.ui.progress.WorkbenchJob;
 //import org.eclipse.ui.statushandlers.StatusManager;
@@ -83,7 +69,7 @@
 ///**
 // * Displays information about the product plugins.
 // *
-// * PRIVATE this class is internal to the IDE
+// * PRIVATE this class is internal to the ide
 // */
 //public class AboutPluginsPage extends ProductInfoPage {
 //
@@ -93,12 +79,12 @@
 //		/**
 //		 * Queue containing bundle signing info to be resolved.
 //		 */
-//		private LinkedList<AboutBundleData> resolveQueue = new LinkedList<>();
+//		private LinkedList resolveQueue = new LinkedList();
 //
 //		/**
 //		 * Queue containing bundle data that's been resolve and needs updating.
 //		 */
-//		private List<AboutBundleData> updateQueue = new ArrayList<>();
+//		private List updateQueue = new ArrayList();
 //
 //		/*
 //		 * this job will attempt to discover the signing state of a given bundle
@@ -110,7 +96,6 @@
 //				setPriority(Job.SHORT);
 //			}
 //
-//			@Override
 //			protected IStatus run(IProgressMonitor monitor) {
 //				while (true) {
 //					// If the UI has not been created, nothing to do.
@@ -126,7 +111,7 @@
 //					synchronized (resolveQueue) {
 //						if (resolveQueue.isEmpty())
 //							return Status.OK_STATUS;
-//						data = resolveQueue.removeFirst();
+//						data = (AboutBundleData) resolveQueue.removeFirst();
 //					}
 //					try {
 //						// following is an expensive call
@@ -156,7 +141,13 @@
 //				setPriority(Job.DECORATE);
 //			}
 //
-//			@Override
+//			/*
+//			 * (non-Javadoc)
+//			 * 
+//			 * @see
+//			 * org.eclipse.ui.progress.UIJob#runInUIThread(org.eclipse.core.
+//			 * runtime.IProgressMonitor)
+//			 */
 //			public IStatus runInUIThread(IProgressMonitor monitor) {
 //				while (true) {
 //					Control page = getControl();
@@ -168,7 +159,7 @@
 //						if (updateQueue.isEmpty())
 //							return Status.OK_STATUS;
 //
-//						data = updateQueue
+//						data = (AboutBundleData[]) updateQueue
 //								.toArray(new AboutBundleData[updateQueue.size()]);
 //						updateQueue.clear();
 //
@@ -179,7 +170,13 @@
 //			}
 //		};
 //
-//		@Override
+//		/*
+//		 * (non-Javadoc)
+//		 * 
+//		 * @see
+//		 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java
+//		 * .lang.Object, int)
+//		 */
 //		public Image getColumnImage(Object element, int columnIndex) {
 //			if (columnIndex == 0) {
 //				if (element instanceof AboutBundleData) {
@@ -202,7 +199,13 @@
 //			return null;
 //		}
 //
-//		@Override
+//		/*
+//		 * (non-Javadoc)
+//		 * 
+//		 * @see
+//		 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.
+//		 * lang.Object, int)
+//		 */
 //		public String getColumnText(Object element, int columnIndex) {
 //			if (element instanceof AboutBundleData) {
 //				AboutBundleData data = (AboutBundleData) element;
@@ -229,9 +232,9 @@
 //	 */
 //	private static final int TABLE_HEIGHT = 200;
 //
-//	private static final int MORE_ID = IDialogConstants.CLIENT_ID + 1;
-//	private static final int SIGNING_ID = MORE_ID + 1;
-//	private static final int COLUMNS_ID = MORE_ID + 2;
+//	private final static int MORE_ID = IDialogConstants.CLIENT_ID + 1;
+//	private final static int SIGNING_ID = MORE_ID + 1;
+//	private final static int COLUMNS_ID = MORE_ID + 2;
 //
 //	private static final IPath baseNLPath = new Path("$nl$"); //$NON-NLS-1$
 //
@@ -258,6 +261,7 @@
 //
 //	};
 //	private Bundle[] bundles = WorkbenchPlugin.getDefault().getBundles();
+//	private AboutBundleData[] bundleInfos;
 //	private SashForm sashForm;
 //	private BundleSigningInfo signingArea;
 //
@@ -269,7 +273,6 @@
 //		this.helpContextId = id;
 //	}
 //
-//	@Override
 //	public void setMessage(String message) {
 //		this.message = message;
 //	}
@@ -279,7 +282,8 @@
 //	protected void handleSigningInfoPressed() {
 //		if (signingArea == null) {
 //			signingArea = new BundleSigningInfo();
-//			AboutBundleData bundleInfo = (AboutBundleData) vendorInfo.getStructuredSelection().getFirstElement();
+//			AboutBundleData bundleInfo = (AboutBundleData) ((IStructuredSelection) vendorInfo
+//					.getSelection()).getFirstElement();
 //			signingArea.setData(bundleInfo);
 //
 //			signingArea.createContents(sashForm);
@@ -298,7 +302,6 @@
 //		}
 //	}
 //
-//	@Override
 //	public void createPageButtons(Composite parent) {
 //
 //		moreInfo = createButton(parent, MORE_ID,
@@ -313,10 +316,21 @@
 //				WorkbenchMessages.get().AboutPluginsDialog_columns);
 //	}
 //
-//	@Override
 //	public void createControl(Composite parent) {
 //		initializeDialogUnits(parent);
 //
+//		// create a data object for each bundle, remove duplicates, and include
+//		// only resolved bundles (bug 65548)
+//		Map map = new HashMap();
+//		for (int i = 0; i < bundles.length; ++i) {
+//			AboutBundleData data = new AboutBundleData(bundles[i]);
+//			if (BundleUtility.isReady(data.getState())
+//					&& !map.containsKey(data.getVersionedId())) {
+//				map.put(data.getVersionedId(), data);
+//			}
+//		}
+//		bundleInfos = (AboutBundleData[]) map.values().toArray(
+//				new AboutBundleData[0]);
 //		WorkbenchPlugin.class.getSigners();
 //
 //		sashForm = new SashForm(parent, SWT.HORIZONTAL | SWT.SMOOTH);
@@ -341,26 +355,6 @@
 //		setControl(outer);
 //	}
 //
-//	private void calculateAboutBundleData(Consumer<Collection<AboutBundleData>> aboutBundleDataConsumer,
-//			Display display) {
-//		Job loadBundleDataJob = Job.create(WorkbenchMessages.get().AboutPluginsPage_Load_Bundle_Data, monitor -> {
-//			// create a data object for each bundle, remove duplicates, and
-//			// include only resolved bundles (bug 65548)
-//			SubMonitor subMonitor = SubMonitor.convert(monitor, bundles.length + 1);
-//			Map<String, AboutBundleData> map = new HashMap<>();
-//			for (Bundle bundle : bundles) {
-//				subMonitor.split(1);
-//				AboutBundleData data = new AboutBundleData(bundle);
-//				if (BundleUtility.isReady(data.getState()) && !map.containsKey(data.getVersionedId())) {
-//					map.put(data.getVersionedId(), data);
-//				}
-//			}
-//			subMonitor.split(1);
-//			display.asyncExec(() -> aboutBundleDataConsumer.accept(map.values()));
-//		});
-//		loadBundleDataJob.schedule();
-//	}
-//
 //	/**
 //	 * Create the table part of the dialog.
 //	 *
@@ -368,18 +362,18 @@
 //	 *            the parent composite to contain the dialog area
 //	 */
 //	protected void createTable(Composite parent) {
-//		final Text filterText = new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
-//		filterText.setLayoutData(GridDataFactory.fillDefaults().create());
-//		filterText.setMessage(WorkbenchMessages.get().AboutPluginsDialog_filterTextMessage);
-//		filterText.setFocus();
-//
 //		vendorInfo = new TableViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL
 //				| SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
 //		vendorInfo.setUseHashlookup(true);
 //		vendorInfo.getTable().setHeaderVisible(true);
 //		vendorInfo.getTable().setLinesVisible(true);
 //		vendorInfo.getTable().setFont(parent.getFont());
-//		vendorInfo.addSelectionChangedListener(event -> checkEnablement());
+//		vendorInfo.addSelectionChangedListener(new ISelectionChangedListener() {
+//
+//			public void selectionChanged(SelectionChangedEvent event) {
+//				checkEnablement();
+//			}
+//		});
 //
 //		final TableComparator comparator = new TableComparator();
 //		vendorInfo.setComparator(comparator);
@@ -401,7 +395,6 @@
 //			column.setText(columnTitles[i]);
 //			final int columnIndex = i;
 //			column.addSelectionListener(new SelectionAdapter() {
-//                @Override
 //                public void widgetSelected(SelectionEvent e) {
 //                    updateTableSorting(columnIndex);
 //                }
@@ -411,23 +404,12 @@
 //		vendorInfo.setContentProvider(new ArrayContentProvider());
 //		vendorInfo.setLabelProvider(new BundleTableLabelProvider());
 //
-//		final BundlePatternFilter searchFilter = new BundlePatternFilter();
-//		filterText.addModifyListener(e -> {
-//			searchFilter.setPattern(filterText.getText());
-//			vendorInfo.refresh();
-//		});
-//		vendorInfo.addFilter(searchFilter);
-//
 //		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
 //				true);
 //		gridData.heightHint = convertVerticalDLUsToPixels(TABLE_HEIGHT);
 //		vendorInfo.getTable().setLayoutData(gridData);
 //
-//		calculateAboutBundleData(bundleData -> {
-//			if (!vendorInfo.getTable().isDisposed()) {
-//				vendorInfo.setInput(bundleData);
-//			}
-//		}, parent.getDisplay());
+//		vendorInfo.setInput(bundleInfos);
 //	}
 //
 //	/**
@@ -453,7 +435,7 @@
 //	}
 //
 //	/**
-//	 * Return an URL to the plugin's about.html file (what is shown when
+//	 * Return an url to the plugin's about.html file (what is shown when
 //	 * "More info" is pressed) or null if no such file exists. The method does
 //	 * nl lookup to allow for i18n.
 //	 *
@@ -461,7 +443,7 @@
 //	 *            the bundle info
 //	 * @param makeLocal
 //	 *            whether to make the about content local
-//	 * @return the URL or <code>null</code>
+//	 * @return the url or <code>null</code>
 //	 */
 //	private URL getMoreInfoURL(AboutBundleData bundleInfo, boolean makeLocal) {
 //		Bundle bundle = Platform.getBundle(bundleInfo.getId());
@@ -469,13 +451,14 @@
 //			return null;
 //		}
 //
-//		URL aboutUrl = FileLocator.find(bundle, baseNLPath.append(PLUGININFO), null);
+//		URL aboutUrl = Platform.find(bundle, baseNLPath.append(PLUGININFO),
+//				null);
 //		if (!makeLocal) {
 //			return aboutUrl;
 //		}
 //		if (aboutUrl != null) {
 //			try {
-//				URL result = FileLocator.toFileURL(aboutUrl);
+//				URL result = Platform.asLocalURL(aboutUrl);
 //				try {
 //					// Make local all content in the "about" directory.
 //					// This is needed to handle jar'ed plug-ins.
@@ -483,7 +466,7 @@
 //					// subdirs.
 //					URL about = new URL(aboutUrl, "about_files"); //$NON-NLS-1$
 //					if (about != null) {
-//						FileLocator.toFileURL(about);
+//						Platform.asLocalURL(about);
 //					}
 //				} catch (IOException e) {
 //					// skip the about dir if its not found or there are other
@@ -497,7 +480,11 @@
 //		return null;
 //	}
 //
-//	@Override
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see org.eclipse.ui.internal.about.ProductInfoPage#getId()
+//	 */
 //	String getId() {
 //		return ID;
 //	}
@@ -505,7 +492,8 @@
 //	private void checkEnablement() {
 //		// enable if there is an item selected and that
 //		// item has additional info
-//		IStructuredSelection selection = vendorInfo.getStructuredSelection();
+//		IStructuredSelection selection = (IStructuredSelection) vendorInfo
+//				.getSelection();
 //		if (selection.getFirstElement() instanceof AboutBundleData) {
 //			AboutBundleData selected = (AboutBundleData) selection
 //					.getFirstElement();
@@ -520,7 +508,6 @@
 //		}
 //	}
 //
-//	@Override
 //	protected void buttonPressed(int buttonId) {
 //		switch (buttonId) {
 //		case MORE_ID:
@@ -573,7 +560,8 @@
 //		if (vendorInfo.getSelection().isEmpty())
 //			return;
 //
-//		AboutBundleData bundleInfo = (AboutBundleData) vendorInfo.getStructuredSelection().getFirstElement();
+//		AboutBundleData bundleInfo = (AboutBundleData) ((IStructuredSelection) vendorInfo
+//				.getSelection()).getFirstElement();
 //
 //		if (!AboutUtils.openBrowser(getShell(),
 //				getMoreInfoURL(bundleInfo, true))) {
@@ -601,7 +589,13 @@
 //	private boolean ascending = true;
 //	private boolean lastAscending = true;
 //
-//	@Override
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see
+//	 * org.eclipse.jface.viewers.ViewerComparator#compare(org.eclipse.jface.
+//	 * viewers.Viewer, java.lang.Object, java.lang.Object)
+//	 */
 //	public int compare(Viewer viewer, Object e1, Object e2) {
 //		if (sortColumn == 0 && e1 instanceof AboutBundleData
 //				&& e2 instanceof AboutBundleData) {
@@ -708,33 +702,5 @@
 //	 */
 //	public void setAscending(boolean ascending) {
 //		this.ascending = ascending;
-//	}
-//}
-//
-//class BundlePatternFilter extends ViewerFilter {
-//
-//	private StringMatcher matcher;
-//
-//	public void setPattern(String searchPattern) {
-//		if (searchPattern == null || searchPattern.length() == 0) {
-//			this.matcher = null;
-//		} else {
-//			String pattern = "*" + searchPattern + "*"; //$NON-NLS-1$//$NON-NLS-2$
-//			this.matcher = new StringMatcher(pattern, true, false);
-//		}
-//	}
-//
-//	@Override
-//	public boolean select(Viewer viewer, Object parentElement, Object element) {
-//		if (matcher == null) {
-//			return true;
-//		}
-//
-//		if (element instanceof AboutBundleData) {
-//			AboutBundleData data = (AboutBundleData) element;
-//			return matcher.match(data.getName()) || matcher.match(data.getProviderName())
-//					|| matcher.match(data.getId());
-//		}
-//		return true;
 //	}
 //}

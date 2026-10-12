@@ -23,32 +23,22 @@ import org.eclipse.ui.themes.IThemePreview;
 /**
  * @since 3.0
  */
-public class ThemeElementCategory implements IPluginContribution,
-        IThemeElementDefinition {
+public class ThemeElementCategory implements IPluginContribution, IThemeElementDefinition {
 
-    private String description;
+	private final String description;
 
-    private IConfigurationElement element;
+	private final IConfigurationElement element;
 
-    private String id;
+	private final String id;
 
-    private String parentId;
+	private final String parentId;
 
-    private String label;
+	private final String label;
 
-    private String pluginId;
+	private final String pluginId;
 
-    /**
-     *
-     * @param label
-     * @param id
-     * @param parentId
-     * @param description
-     * @param pluginId
-     * @param element
-     */
-    public ThemeElementCategory(String label, String id, String parentId,
-            String description, String pluginId, IConfigurationElement element) {
+	public ThemeElementCategory(String label, String id, String parentId, String description, String pluginId,
+			IConfigurationElement element) {
 
         this.label = label;
         this.id = id;
@@ -59,8 +49,8 @@ public class ThemeElementCategory implements IPluginContribution,
     }
 
     /**
-     * @return Returns the <code>IColorExample</code> for this category.  If one
-     * is not available, <code>null</code> is returned.
+	 * @return Returns the <code>IColorExample</code> for this category. If one is
+	 *         not available, <code>null</code> is returned.
      * @throws CoreException thrown if there is a problem instantiating the preview
      */
     public IThemePreview createPreview() throws CoreException {
@@ -68,8 +58,7 @@ public class ThemeElementCategory implements IPluginContribution,
         if (classString == null || "".equals(classString)) { //$NON-NLS-1$
 			return null;
 		}
-        return (IThemePreview) WorkbenchPlugin.createExtension(element,
-                IWorkbenchRegistryConstants.ATT_CLASS);
+		return (IThemePreview) WorkbenchPlugin.createExtension(element, IWorkbenchRegistryConstants.ATT_CLASS);
     }
 
     /**
@@ -116,8 +105,8 @@ public class ThemeElementCategory implements IPluginContribution,
 
     @Override
 	public boolean equals(Object obj) {
-        if (obj instanceof ThemeElementCategory) {
-            return getId().equals(((ThemeElementCategory)obj).getId());
+		if (obj instanceof ThemeElementCategory category) {
+			return getId().equals(category.getId());
         }
         return false;
     }

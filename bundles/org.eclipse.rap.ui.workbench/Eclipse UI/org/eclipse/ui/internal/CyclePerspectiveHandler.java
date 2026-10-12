@@ -1,26 +1,21 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2007, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
- *     Patrik Suzzi <psuzzi@gmail.com> - Bug 504090
  ******************************************************************************/
 
 package org.eclipse.ui.internal;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ParameterizedCommand;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
@@ -33,41 +28,60 @@ import org.eclipse.ui.model.PerspectiveLabelProvider;
  * Replacement for CyclePerspectiveAction
  * </p>
  *
- * @since 3.3
  */
-public class CyclePerspectiveHandler extends FilteredTableBaseHandler {
+public class CyclePerspectiveHandler extends CycleBaseHandler {
 	private PerspectiveLabelProvider labelProvider = new PerspectiveLabelProvider(
             false);
 
-	@Override
-	protected Object getInput(WorkbenchPage page) {
-		List<IPerspectiveDescriptor> refs = Arrays.asList(page.getSortedPerspectives());
-		Collections.reverse(refs);
-		return refs;
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.CycleBaseHandler#addItems(org.eclipse.swt.widgets.Table, org.eclipse.ui.internal.WorkbenchPage)
+	 */
+	protected void addItems(Table table, WorkbenchPage page) {
+		IPerspectiveDescriptor perspectives[] = page.getSortedPerspectives();
+        for (int i = perspectives.length - 1; i >= 0; i--) {
+            TableItem item = new TableItem(table, SWT.NONE);
+            IPerspectiveDescriptor desc = perspectives[i];
+            String text = labelProvider.getText(desc);
+            if(text == null) {
+				text = "";//$NON-NLS-1$
+			}
+            item.setText(text);
+            item.setImage(labelProvider.getImage(desc));
+            item.setData(desc);
+        }
+
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.CycleBaseHandler#getBackwardCommand()
+	 */
 	protected ParameterizedCommand getBackwardCommand() {
-		final ICommandService commandService = window.getWorkbench().getService(ICommandService.class);
+		final ICommandService commandService = (ICommandService) window.getWorkbench().getService(ICommandService.class);
 		final Command command = commandService.getCommand(IWorkbenchCommandConstants.WINDOW_PREVIOUS_PERSPECTIVE);
 		ParameterizedCommand commandBack = new ParameterizedCommand(command, null);
 		return commandBack;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.CycleBaseHandler#getForwardCommand()
+	 */
 	protected ParameterizedCommand getForwardCommand() {
-		final ICommandService commandService = window.getWorkbench().getService(ICommandService.class);
+		final ICommandService commandService = (ICommandService) window.getWorkbench().getService(ICommandService.class);
 		final Command command = commandService.getCommand(IWorkbenchCommandConstants.WINDOW_NEXT_PERSPECTIVE);
 		ParameterizedCommand commandF = new ParameterizedCommand(command, null);
 		return commandF;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.CycleBaseHandler#getTableHeader()
+	 */
 	protected String getTableHeader(IWorkbenchPart activePart) {
 		return WorkbenchMessages.get().CyclePerspectiveAction_header;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.AbstractHandler#dispose()
+	 */
 	public void dispose() {
 		if (labelProvider!=null) {
 			labelProvider.dispose();

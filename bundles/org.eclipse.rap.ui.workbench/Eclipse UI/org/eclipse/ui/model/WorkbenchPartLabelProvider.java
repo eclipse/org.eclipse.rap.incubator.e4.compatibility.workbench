@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -35,7 +32,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
  * Clients may instantiate this class. It is not intended to be subclassed.
  * </p>
  *
- * @since 3.0
+ * @since 1.0
  */
 public final class WorkbenchPartLabelProvider extends LabelProvider implements
         ITableLabelProvider {
@@ -50,8 +47,10 @@ public final class WorkbenchPartLabelProvider extends LabelProvider implements
         super();
     }
 
-    @Override
-	public Image getImage(Object element) {
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ILabelProvider
+     */
+    public final Image getImage(Object element) {
         if (element instanceof IWorkbenchPart) {
             return ((IWorkbenchPart) element).getTitleImage();
         }
@@ -77,8 +76,10 @@ public final class WorkbenchPartLabelProvider extends LabelProvider implements
         return null;
     }
 
-    @Override
-	public String getText(Object element) {
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ILabelProvider
+     */
+    public final String getText(Object element) {
         if (element instanceof IWorkbenchPart) {
             IWorkbenchPart part = (IWorkbenchPart) element;
             String path = part.getTitleToolTip();
@@ -102,20 +103,22 @@ public final class WorkbenchPartLabelProvider extends LabelProvider implements
     /**
      * @see ITableLabelProvider#getColumnImage
      */
-    @Override
-	public Image getColumnImage(Object element, int columnIndex) {
+    public final Image getColumnImage(Object element, int columnIndex) {
         return getImage(element);
     }
 
     /**
      * @see ITableLabelProvider#getColumnText
      */
-    @Override
-	public String getColumnText(Object element, int columnIndex) {
+    public final String getColumnText(Object element, int columnIndex) {
         return getText(element);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.LabelProvider#dispose()
+     * 
+     * @since 3.2
+     */
 	public void dispose() {
     	resourceManager.dispose();
     	super.dispose();

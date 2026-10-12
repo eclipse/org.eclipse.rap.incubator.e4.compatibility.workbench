@@ -19,17 +19,14 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.internal.misc.StatusUtil;
 
 /**
- * 
+ * @since 3.3
  */
 public final class StartupThreading {
 
-	// RAP [bm]: 
-//	static Workbench workbench;
-	// RAPEND: [bm] 
-
-	public static abstract class StartupRunnable implements Runnable {
+	public abstract static class StartupRunnable implements Runnable {
 		private Throwable throwable;
 
+		@Override
 		public final void run() {
 			try {
 				runWithException();
@@ -45,19 +42,8 @@ public final class StartupThreading {
 		}
 	}
 
-	// RAP [bm]: 
-//	static void setWorkbench(Workbench wb) {
-//		workbench = wb;
-//	}
-	// RAPEND: [bm] 
-
-	public static void runWithWorkbenchExceptions(StartupRunnable r)
-			throws WorkbenchException {
-		// RAP [bm]: 
-//		workbench.getDisplay().syncExec(r);
+	public static void runWithWorkbenchExceptions(StartupRunnable r) throws WorkbenchException {
 		Workbench.getInstance().getDisplay().syncExec(r);
-		// RAPEND: [bm] 
-
 		Throwable throwable = r.getThrowable();
 		if (throwable != null) {
 			if (throwable instanceof Error) {
@@ -67,18 +53,13 @@ public final class StartupThreading {
 			} else if (throwable instanceof WorkbenchException) {
 				throw (WorkbenchException) throwable;
 			} else {
-				throw new WorkbenchException(StatusUtil.newStatus(
-						WorkbenchPlugin.PI_WORKBENCH, throwable));
+				throw new WorkbenchException(StatusUtil.newStatus(WorkbenchPlugin.PI_WORKBENCH, throwable));
 			}
 		}
 	}
 
-	public static void runWithPartInitExceptions(StartupRunnable r)
-			throws PartInitException {
-		// RAP [bm]: 
-//		workbench.getDisplay().syncExec(r);
+	public static void runWithPartInitExceptions(StartupRunnable r) throws PartInitException {
 		Workbench.getInstance().getDisplay().syncExec(r);
-		// RAPEND: [bm] 
 		Throwable throwable = r.getThrowable();
 		if (throwable != null) {
 			if (throwable instanceof Error) {
@@ -88,31 +69,21 @@ public final class StartupThreading {
 			} else if (throwable instanceof WorkbenchException) {
 				throw (PartInitException) throwable;
 			} else {
-				throw new PartInitException(StatusUtil.newStatus(
-						WorkbenchPlugin.PI_WORKBENCH, throwable));
+				throw new PartInitException(StatusUtil.newStatus(WorkbenchPlugin.PI_WORKBENCH, throwable));
 			}
 		}
 	}
 
 	public static void runWithThrowable(StartupRunnable r) throws Throwable {
-		// RAP [bm]: 
-//		workbench.getDisplay().syncExec(r);
 		Workbench.getInstance().getDisplay().syncExec(r);
-		// RAPEND: [bm] 
-
 		Throwable throwable = r.getThrowable();
 		if (throwable != null) {
 			throw throwable;
 		}
 	}
 
-	public static void runWithoutExceptions(StartupRunnable r)
-			throws RuntimeException {
-		// RAP [bm]: 
-//		workbench.getDisplay().syncExec(r);
+	public static void runWithoutExceptions(StartupRunnable r) throws RuntimeException {
 		Workbench.getInstance().getDisplay().syncExec(r);
-		// RAPEND: [bm] 
-
 		Throwable throwable = r.getThrowable();
 		if (throwable != null) {
 			if (throwable instanceof Error) {

@@ -16,7 +16,6 @@
 package org.eclipse.ui.internal.menus;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.core.expressions.Expression;
@@ -34,12 +33,11 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.services.ServiceLocator;
 import org.eclipse.ui.menus.AbstractContributionFactory;
-import org.eclipse.ui.menus.IMenuService;
 
 public class ContributionFactoryGenerator extends ContextFunction {
 	private AbstractContributionFactory factoryImpl;
 	private IConfigurationElement configElement;
-	private int type;
+	private final int type;
 
 	public ContributionFactoryGenerator(AbstractContributionFactory factory, int type) {
 		this.factoryImpl = factory;
@@ -54,8 +52,7 @@ public class ContributionFactoryGenerator extends ContextFunction {
 	private AbstractContributionFactory getFactory() {
 		if (factoryImpl == null && configElement != null) {
 			try {
-				factoryImpl = (AbstractContributionFactory) configElement
-						.createExecutableExtension("class"); //$NON-NLS-1$
+				factoryImpl = (AbstractContributionFactory) configElement.createExecutableExtension("class"); //$NON-NLS-1$
 			} catch (CoreException e) {
 				WorkbenchPlugin.log(e);
 				return null;
@@ -67,18 +64,19 @@ public class ContributionFactoryGenerator extends ContextFunction {
 	@Override
 	public Object compute(IEclipseContext context, String contextKey) {
 		AbstractContributionFactory factory = getFactory();
-		final IMenuService menuService = context.get(IMenuService.class);
-		final ContributionRoot root = new ContributionRoot(menuService, new HashSet<>(),
-				null, factory);
+		final ContributionRoot root = new ContributionRoot(factory);
 		ServiceLocator sl = new ServiceLocator();
 		sl.setContext(context);
+		try {
 		factory.createContributionItems(sl, root);
+		} catch (Throwable ex) {
+			WorkbenchPlugin.log(ex);
+		}
 		final List contributionItems = root.getItems();
 		final Map<IContributionItem, Expression> itemsToExpression = root.getVisibleWhen();
 		List<MUIElement> menuElements = new ArrayList<>();
 		for (Object obj : contributionItems) {
-			if (obj instanceof IContributionItem) {
-				IContributionItem ici = (IContributionItem) obj;
+			if (obj instanceof IContributionItem ici) {
 				MUIElement opaqueItem = createUIElement(ici);
 				if (opaqueItem != null) {
 					if (itemsToExpression.containsKey(ici)) {
@@ -95,7 +93,7 @@ public class ContributionFactoryGenerator extends ContextFunction {
 		context.set(List.class, menuElements);
 
 		// return something disposable
-		return (Runnable) () -> root.release();
+		return (Runnable) root::release;
 	}
 
 	private MUIElement createUIElement(IContributionItem ici) {

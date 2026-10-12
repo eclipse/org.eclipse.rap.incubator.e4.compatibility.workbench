@@ -19,18 +19,19 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.StringTokenizer;
-
 import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 
 /**
  * <p>
- * A generic implementation of <code>IParameterValues</code> that takes advantage
- * of the <code>IExecutableExtension</code> mechanism.  The parameter values and names can be
- * specified purely in XML.  This can be done as follows:
+ * A generic implementation of <code>IParameterValues</code> that takes
+ * advantage of the <code>IExecutableExtension</code> mechanism. The parameter
+ * values and names can be specified purely in XML. This can be done as follows:
  * </p>
- * <p><pre><code>
+ *
+ * <pre>
+ * <code>
  *     &lt;command
  *    		name="%name"
  *     		description="%description"
@@ -46,12 +47,12 @@ import org.eclipse.core.runtime.IExecutableExtension;
  *     				&lt;/values&gt;
  *          &lt;/parameter&gt;
  *     &lt;/command&gt;
- * </code></pre></p>
+ * </code>
+ * </pre>
  *
  * @since 3.1
  */
-public final class ExtensionParameterValues implements IParameterValues,
-		IExecutableExtension {
+public final class ExtensionParameterValues implements IParameterValues, IExecutableExtension {
 
 	/**
 	 * The delimiter between elements if the name-value pairs are specified in a
@@ -71,15 +72,14 @@ public final class ExtensionParameterValues implements IParameterValues,
 	}
 
 	@Override
-	public void setInitializationData(final IConfigurationElement config,
-			final String propertyName, final Object data) {
+	public void setInitializationData(final IConfigurationElement config, final String propertyName,
+			final Object data) {
 		if (data == null) {
 			parameterValues = Collections.EMPTY_MAP;
 
 		} else if (data instanceof String) {
 			parameterValues = new HashMap();
-			final StringTokenizer tokenizer = new StringTokenizer(
-					(String) data, DELIMITER);
+			final StringTokenizer tokenizer = new StringTokenizer((String) data, DELIMITER);
 			while (tokenizer.hasMoreTokens()) {
 				final String name = tokenizer.nextToken();
 				if (tokenizer.hasMoreTokens()) {

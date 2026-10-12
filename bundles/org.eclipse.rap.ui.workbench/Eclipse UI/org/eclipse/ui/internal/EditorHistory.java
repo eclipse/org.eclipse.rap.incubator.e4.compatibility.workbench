@@ -23,20 +23,20 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IMemento;
 
 /**
- * This class is used to record "open editor" actions as they
- * happen.  The input and type of each editor are recorded so that
- * the user can reopen an item from the recently used files list.
+ * This class is used to record "open editor" actions as they happen. The input
+ * and type of each editor are recorded so that the user can reopen an item from
+ * the recently used files list.
  */
 public class EditorHistory {
     /**
      * The maximum of entries in the history.
      */
-	public static final int MAX_SIZE = 20;
+	public static final int MAX_SIZE = 100;
 
     /**
      * The list of editor entries, in FIFO order.
      */
-    private ArrayList fifoList = new ArrayList(MAX_SIZE);
+	private final ArrayList<EditorHistoryItem> fifoList = new ArrayList<>(MAX_SIZE);
 
     /**
      * Constructs a new history.
@@ -74,8 +74,8 @@ public class EditorHistory {
     }
 
     /**
-     * Returns an array of editor history items.  The items are returned in order
-     * of most recent first.
+	 * Returns an array of editor history items. The items are returned in order of
+	 * most recent first.
      */
     public EditorHistoryItem[] getItems() {
         refresh();
@@ -85,13 +85,13 @@ public class EditorHistory {
     }
 
     /**
-     * Refresh the editor list.  Any stale items are removed.
-     * Only restored items are considered.
+	 * Refresh the editor list. Any stale items are removed. Only restored items are
+	 * considered.
      */
     public void refresh() {
-        Iterator iter = fifoList.iterator();
+		Iterator<EditorHistoryItem> iter = fifoList.iterator();
         while (iter.hasNext()) {
-            EditorHistoryItem item = (EditorHistoryItem) iter.next();
+			EditorHistoryItem item = iter.next();
             if (item.isRestored()) {
                 IEditorInput input = item.getInput();
                 if (input != null && !input.exists()) {
@@ -115,9 +115,9 @@ public class EditorHistory {
         if (input == null) {
             return;
         }
-        Iterator iter = fifoList.iterator();
+		Iterator<EditorHistoryItem> iter = fifoList.iterator();
         while (iter.hasNext()) {
-            EditorHistoryItem item = (EditorHistoryItem) iter.next();
+			EditorHistoryItem item = iter.next();
             if (item.matches(input)) {
                 iter.remove();
             }
@@ -145,12 +145,9 @@ public class EditorHistory {
      * @param memento the memento to save the mru history in
      */
     public IStatus saveState(IMemento memento) {
-        Iterator iterator = fifoList.iterator();
-        while (iterator.hasNext()) {
-            EditorHistoryItem item = (EditorHistoryItem) iterator.next();
+		for (EditorHistoryItem item : fifoList) {
             if (item.canSave()) {
-                IMemento itemMemento = memento
-                        .createChild(IWorkbenchConstants.TAG_FILE);
+				IMemento itemMemento = memento.createChild(IWorkbenchConstants.TAG_FILE);
                 item.saveState(itemMemento);
             }
         }

@@ -1,16 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Patrik Suzzi <psuzzi@gmail.com> - Bug 490700
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
@@ -83,7 +79,9 @@ public class SavePerspectiveDialog extends org.eclipse.jface.dialogs.Dialog
 		setShellStyle(getShellStyle() | SWT.SHEET);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared in Window.
+     */
 	protected void configureShell(Shell shell) {
         super.configureShell(shell);
         shell
@@ -97,11 +95,11 @@ public class SavePerspectiveDialog extends org.eclipse.jface.dialogs.Dialog
      *
      * @param parent the button bar composite
      */
-    @Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		okButton = createButton(parent, IDialogConstants.OK_ID, WorkbenchMessages.get().SavePerspective_saveButtonLabel,
-				true);
-		createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.get().CANCEL_LABEL, false);
+        okButton = createButton(parent, IDialogConstants.OK_ID,
+                IDialogConstants.get().OK_LABEL, true);
+        createButton(parent, IDialogConstants.CANCEL_ID,
+                IDialogConstants.get().CANCEL_LABEL, false);
 		updateButtons();
 		text.setFocus();
     }
@@ -113,7 +111,6 @@ public class SavePerspectiveDialog extends org.eclipse.jface.dialogs.Dialog
      * @param parent the parent composite to contain the dialog area
      * @return the dialog area control
      */
-    @Override
 	protected Control createDialogArea(Composite parent) {
         Font font = parent.getFont();
         // Run super.
@@ -213,7 +210,6 @@ public class SavePerspectiveDialog extends org.eclipse.jface.dialogs.Dialog
     /**
      * The user has typed some text.
      */
-    @Override
 	public void modifyText(org.eclipse.swt.events.ModifyEvent e) {
         // Get text.
         perspName = text.getText();
@@ -241,7 +237,6 @@ public class SavePerspectiveDialog extends org.eclipse.jface.dialogs.Dialog
      * and closes the dialog. Subclasses may override.
      * </p>
      */
-    @Override
 	protected void okPressed() {
         perspName = text.getText();
         persp = perspReg.findPerspectiveWithLabel(perspName);
@@ -251,9 +246,8 @@ public class SavePerspectiveDialog extends org.eclipse.jface.dialogs.Dialog
             String[] buttons = new String[] { IDialogConstants.get().YES_LABEL,
                     IDialogConstants.get().NO_LABEL, IDialogConstants.get().CANCEL_LABEL };
 			MessageDialog d = new MessageDialog(this.getShell(),
-					WorkbenchMessages.get().SavePerspective_overwriteTitle, null,
-					message, MessageDialog.QUESTION, buttons, 0) {
-				@Override
+                    WorkbenchMessages.get().SavePerspective_overwriteTitle, 
+                    null, message, MessageDialog.QUESTION, buttons, 0) {
 				protected int getShellStyle() {
 					return super.getShellStyle() | SWT.SHEET;
 				}
@@ -280,7 +274,6 @@ public class SavePerspectiveDialog extends org.eclipse.jface.dialogs.Dialog
      *
      * @param event event object describing the change
      */
-    @Override
 	public void selectionChanged(SelectionChangedEvent event) {
         // If a selection is caused by modifyText ignore it.
         if (ignoreSelection) {
@@ -288,7 +281,7 @@ public class SavePerspectiveDialog extends org.eclipse.jface.dialogs.Dialog
 		}
 
         // Get selection.
-		IStructuredSelection sel = list.getStructuredSelection();
+        IStructuredSelection sel = (IStructuredSelection) list.getSelection();
         persp = null;
         if (!sel.isEmpty()) {
 			persp = (IPerspectiveDescriptor) sel.getFirstElement();

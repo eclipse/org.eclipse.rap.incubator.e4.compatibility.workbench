@@ -26,7 +26,7 @@ import org.eclipse.ui.IPageLayout;
 
 public class ModeledPageLayoutUtils {
 
-	private EModelService modelService;
+	private final EModelService modelService;
 
 	public ModeledPageLayoutUtils(EModelService modelService) {
 		this.modelService = modelService;
@@ -53,8 +53,9 @@ public class ModeledPageLayoutUtils {
 	}
 
 	public void insert(MUIElement toInsert, MUIElement relTo, int swtSide, int ratio) {
-		if (toInsert == null || relTo == null)
+		if (toInsert == null || relTo == null) {
 			return;
+		}
 
 		MElementContainer<MUIElement> relParent = relTo.getParent();
 		if (relParent != null) {
@@ -68,29 +69,29 @@ public class ModeledPageLayoutUtils {
 			case SWT.LEFT:
 				psc.getChildren().add((MPartSashContainerElement) toInsert);
 				psc.getChildren().add((MPartSashContainerElement) relTo);
-				toInsert.setContainerData("" + ratio); //$NON-NLS-1$
-				relTo.setContainerData("" + (10000 - ratio)); //$NON-NLS-1$
+				toInsert.setContainerData(Integer.toString(ratio));
+				relTo.setContainerData(Integer.toString((10000 - ratio)));
 				psc.setHorizontal(true);
 				break;
 			case SWT.RIGHT:
 				psc.getChildren().add((MPartSashContainerElement) relTo);
 				psc.getChildren().add((MPartSashContainerElement) toInsert);
-				relTo.setContainerData("" + ratio); //$NON-NLS-1$
-				toInsert.setContainerData("" + (10000 - ratio)); //$NON-NLS-1$
+				relTo.setContainerData(Integer.toString(ratio));
+				toInsert.setContainerData(Integer.toString((10000 - ratio)));
 				psc.setHorizontal(true);
 				break;
 			case SWT.TOP:
 				psc.getChildren().add((MPartSashContainerElement) toInsert);
 				psc.getChildren().add((MPartSashContainerElement) relTo);
-				toInsert.setContainerData("" + ratio); //$NON-NLS-1$
-				relTo.setContainerData("" + (10000 - ratio)); //$NON-NLS-1$
+				toInsert.setContainerData(Integer.toString(ratio));
+				relTo.setContainerData(Integer.toString((10000 - ratio)));
 				psc.setHorizontal(false);
 				break;
 			case SWT.BOTTOM:
 				psc.getChildren().add((MPartSashContainerElement) relTo);
 				psc.getChildren().add((MPartSashContainerElement) toInsert);
-				relTo.setContainerData("" + ratio); //$NON-NLS-1$
-				toInsert.setContainerData("" + (10000 - ratio)); //$NON-NLS-1$
+				relTo.setContainerData(Integer.toString(ratio));
+				toInsert.setContainerData(Integer.toString((10000 - ratio)));
 				psc.setHorizontal(false);
 				break;
 			}

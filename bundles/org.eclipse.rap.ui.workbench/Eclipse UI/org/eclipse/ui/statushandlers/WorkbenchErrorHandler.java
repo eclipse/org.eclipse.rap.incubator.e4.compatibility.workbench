@@ -14,6 +14,8 @@
 
 package org.eclipse.ui.statushandlers;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -48,54 +50,68 @@ public class WorkbenchErrorHandler extends AbstractStatusHandler {
 
 			final boolean block = ((style & StatusManager.BLOCK) == StatusManager.BLOCK);
 
-			if (Display.getCurrent() != null) {
+			Runnable uiRunnable = () -> {
+				if (!PlatformUI.isWorkbenchRunning()) {
+					// we are shutting down, so just log (if logging is not already requested)
+					if ((style & StatusManager.LOG) == 0) {
+						log(statusAdapter);
+					}
+					return;
+				}
 				showStatusAdapter(statusAdapter, block);
+			};
+
+			if (Display.getCurrent() != null) {
+				uiRunnable.run();
 			} else {
-				Display.getDefault().asyncExec(() -> showStatusAdapter(statusAdapter, block));
+				try {
+					// Checking isDisposed() here isn't enough due to race conditions
+					// since we are in a worker thread.
+					PlatformUI.getWorkbench().getDisplay().asyncExec(uiRunnable);
+				} catch (SWTException e) {
+					if (e.code == SWT.ERROR_DEVICE_DISPOSED) {
+						// platform is being shut down, just log
+						log(statusAdapter);
+						return;
+					}
+					throw e;
+				}
 			}
 		}
 
 		if ((style & StatusManager.LOG) == StatusManager.LOG) {
-			StatusManager.getManager().addLoggedStatus(
-					statusAdapter.getStatus());
-			WorkbenchPlugin.getDefault().getLog()
-					.log(statusAdapter.getStatus());
+			StatusManager.getManager().addLoggedStatus(statusAdapter.getStatus());
+			log(statusAdapter);
 		}
 	}
 
 	/**
 	 * Requests the status dialog manager to show the status adapter.
 	 *
-	 * @param statusAdapter
-	 *            the status adapter to show
-	 * @param block
-	 *            <code>true</code> to request a modal dialog and suspend the
-	 *            calling thread till the dialog is closed, <code>false</code>
-	 *            otherwise.
+	 * @param statusAdapter the status adapter to show
+	 * @param block         <code>true</code> to request a modal dialog and suspend
+	 *                      the calling thread till the dialog is closed,
+	 *                      <code>false</code> otherwise.
 	 */
 	private void showStatusAdapter(StatusAdapter statusAdapter, boolean block) {
-		if (!PlatformUI.isWorkbenchRunning()) {
-			// we are shutting down, so just log
-			WorkbenchPlugin.log(statusAdapter.getStatus());
-			return;
-		}
-
 		getStatusDialogManager().addStatusAdapter(statusAdapter, block);
 
 		if (block) {
 			Shell shell;
-			while ((shell = getStatusDialogShell()) != null
-					&& !shell.isDisposed()) {
+			while ((shell = getStatusDialogShell()) != null && !shell.isDisposed()) {
 				if (!shell.getDisplay().readAndDispatch()) {
-					Display.getDefault().sleep();
+					shell.getDisplay().sleep();
+				}
 				}
 			}
 		}
+
+	private static void log(StatusAdapter statusAdapter) {
+		WorkbenchPlugin.log(statusAdapter.getStatus());
 	}
 
 	private Shell getStatusDialogShell() {
-		return (Shell) getStatusDialogManager().getProperty(
-				IStatusDialogConstants.SHELL);
+		return (Shell) getStatusDialogManager().getProperty(IStatusDialogConstants.SHELL);
 	}
 
 	/**
@@ -103,21 +119,13 @@ public class WorkbenchErrorHandler extends AbstractStatusHandler {
 	 *
 	 * @return current {@link WorkbenchStatusDialogManager}
 	 */
-	private WorkbenchStatusDialogManager getStatusDialogManager() {
-		if (statusDialogManager == null) {
-			synchronized (this) {
+	private synchronized WorkbenchStatusDialogManager getStatusDialogManager() {
 				if (statusDialogManager == null) {
 					statusDialogManager = new WorkbenchStatusDialogManager(null);
-					statusDialogManager.setProperty(
-							IStatusDialogConstants.SHOW_SUPPORT, Boolean.TRUE);
-					statusDialogManager.setProperty(
-							IStatusDialogConstants.HANDLE_OK_STATUSES,
-							Boolean.TRUE);
-					statusDialogManager.setProperty(
-							IStatusDialogConstants.ERRORLOG_LINK, Boolean.TRUE);
+			statusDialogManager.setProperty(IStatusDialogConstants.SHOW_SUPPORT, Boolean.TRUE);
+			statusDialogManager.setProperty(IStatusDialogConstants.HANDLE_OK_STATUSES, Boolean.TRUE);
+			statusDialogManager.setProperty(IStatusDialogConstants.ERRORLOG_LINK, Boolean.TRUE);
 					configureStatusDialog(statusDialogManager);
-				}
-			}
 		}
 		return statusDialogManager;
 	}
@@ -133,12 +141,10 @@ public class WorkbenchErrorHandler extends AbstractStatusHandler {
 	 * </ul>
 	 * Default configuration does nothing.
 	 *
-	 * @param statusDialog
-	 *            a status dialog to be configured.
+	 * @param statusDialog a status dialog to be configured.
 	 * @since 3.4
 	 */
-	protected void configureStatusDialog(
-			final WorkbenchStatusDialogManager statusDialog) {
+	protected void configureStatusDialog(final WorkbenchStatusDialogManager statusDialog) {
 		// default configuration does nothing
 	}
 }

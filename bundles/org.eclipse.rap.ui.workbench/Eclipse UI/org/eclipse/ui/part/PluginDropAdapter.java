@@ -92,7 +92,7 @@ public class PluginDropAdapter extends ViewerDropAdapter {
 
         IExtensionRegistry registry = Platform.getExtensionRegistry();
         String adapterName = data.getExtensionId();
-        IExtensionPoint xpt = registry.getExtensionPoint(PlatformUI.PLUGIN_ID,
+        IExtensionPoint xpt = registry.getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
                 IWorkbenchRegistryConstants.PL_DROP_ACTIONS);
         IExtension[] extensions = xpt.getExtensions();
         for (IExtension extension : extensions) {

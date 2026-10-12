@@ -22,20 +22,18 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.internal.menus.InternalControlContribution;
 
 /**
- * Abstract base class from which all controls contributions to
- * the workbench through the 'org.eclipse.ui.menus' extension
- * point must derive.
+ * Abstract base class from which all controls contributions to the workbench
+ * through the 'org.eclipse.ui.menus' extension point must derive.
  * <p>
- * The extends the {@link ControlContribution} by adding accessor
- * methods that provide extra state information about the placement
- * of the control:
- * <ul>
- * <li>getWorkbenchWindow() - indicates which workbench window this control
- * is being hosted by</li>
- * <li>getCurSide() - indicates which side of the workbench window the
- * control is being displayed on</li>
- * </ul>
+ * The extends the {@link ControlContribution} by adding accessor methods that
+ * provide extra state information about the placement of the control:
  * </p>
+ * <ul>
+ * <li>getWorkbenchWindow() - indicates which workbench window this control is
+ * being hosted by</li>
+ * <li>getCurSide() - indicates which side of the workbench window the control
+ * is being displayed on</li>
+ * </ul>
  *
  * @since 3.3
  *
@@ -44,19 +42,18 @@ import org.eclipse.ui.internal.menus.InternalControlContribution;
 public abstract class WorkbenchWindowControlContribution extends InternalControlContribution {
 
 	/**
-	 * Default contstructor that allows the use of this class as
-	 * the basis for XML contributions and will be used by the
-	 * workbench implementation. This is public only by necessity
-	 * and should not be used outside of the workbench implemenation
-	 * code.
+	 * Default contstructor that allows the use of this class as the basis for XML
+	 * contributions and will be used by the workbench implementation. This is
+	 * public only by necessity and should not be used outside of the workbench
+	 * implemenation code.
 	 */
 	public WorkbenchWindowControlContribution() {
 		this("unknown ID"); //$NON-NLS-1$
 	}
 
 	/**
-	 * Constructor for use by clients programmatically creating
-	 * control contributions in the workbench.
+	 * Constructor for use by clients programmatically creating control
+	 * contributions in the workbench.
 	 *
 	 * @param id The id of this contribution
 	 */
@@ -65,8 +62,7 @@ public abstract class WorkbenchWindowControlContribution extends InternalControl
 	}
 
 	/**
-	 * @return Returns the workbench window currently hosting
-	 * the control.
+	 * @return Returns the workbench window currently hosting the control.
 	 */
 	@Override
 	public final IWorkbenchWindow getWorkbenchWindow() {
@@ -74,9 +70,9 @@ public abstract class WorkbenchWindowControlContribution extends InternalControl
 	}
 
 	/**
-	 * @return Returns the side of the workbench window that the
-	 * control is currently being display on. This allows derivatives
-	 * to tailor their created control based on the orientation...
+	 * @return Returns the side of the workbench window that the control is
+	 *         currently being display on. This allows derivatives to tailor their
+	 *         created control based on the orientation...
 	 */
 	@Override
 	public final int getCurSide() {
@@ -85,24 +81,24 @@ public abstract class WorkbenchWindowControlContribution extends InternalControl
 
 	@Override
 	public final int getOrientation() {
-		if (getCurSide() == SWT.LEFT || getCurSide() == SWT.RIGHT)
+		if (getCurSide() == SWT.LEFT || getCurSide() == SWT.RIGHT) {
 			return SWT.VERTICAL;
+		}
 
 		return SWT.HORIZONTAL;
 	}
 
 	/**
-	 * Important: This method is *NOT* to be used/extended by clients. This is
-	 * for the internal use inside Workbench
+	 * Important: This method is *NOT* to be used/extended by clients. This is for
+	 * the internal use inside Workbench
 	 *
-	 * @param parent
-	 *            the parent composite
+	 * @param parent the parent composite
 	 * @return newly created Control
 	 * @since 3.6
 	 *
 	 * @noreference This method is not intended to be referenced by clients.
-	 * @nooverride This method is not intended to be re-implemented or extended
-	 *             by clients.
+	 * @nooverride This method is not intended to be re-implemented or extended by
+	 *             clients.
 	 */
 	public Control delegateCreateControl(Composite parent) {
 		return createControl(parent);

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -27,7 +24,6 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
- * @since 3.1
  */
 public class ImageBindingRegistry implements IExtensionChangeHandler {
 	private String tag;
@@ -41,15 +37,18 @@ public class ImageBindingRegistry implements IExtensionChangeHandler {
 		super();
 		this.tag = tag;
 		IExtension [] extensions = getExtensionPointFilter().getExtensions();
-		for (IExtension extension : extensions) {
-			addExtension(PlatformUI.getWorkbench().getExtensionTracker(), extension);
+		for (int i = 0; i < extensions.length; i++) {
+			addExtension(PlatformUI.getWorkbench().getExtensionTracker(), extensions[i]);
 		}
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.dynamicHelpers.IExtensionChangeHandler#addExtension(org.eclipse.core.runtime.dynamicHelpers.IExtensionTracker, org.eclipse.core.runtime.IExtension)
+	 */
 	public void addExtension(IExtensionTracker tracker, IExtension extension) {
 		IConfigurationElement [] elements = extension.getConfigurationElements();
-		for (IConfigurationElement element : elements) {
+		for (int i = 0; i < elements.length; i++) {
+			IConfigurationElement element = elements[i];
 			if (element.getName().equals(tag)) {
 				String id = element.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
 				String file = element.getAttribute(IWorkbenchRegistryConstants.ATT_ICON);
@@ -58,8 +57,7 @@ public class ImageBindingRegistry implements IExtensionChangeHandler {
 					continue; //ignore - malformed
 				}
 				if (registry.getDescriptor(id) == null) { // first come, first serve
-					ImageDescriptor descriptor = AbstractUIPlugin
-							.imageDescriptorFromPlugin(element.getContributor().getName(), file);
+					ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getNamespace(), file);
 					if (descriptor != null) {
 						registry.put(id, descriptor);
 						tracker.registerObject(extension, id, IExtensionTracker.REF_WEAK);
@@ -83,11 +81,13 @@ public class ImageBindingRegistry implements IExtensionChangeHandler {
                 PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_ACTIVITYSUPPORT);
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.dynamicHelpers.IExtensionChangeHandler#removeExtension(org.eclipse.core.runtime.IExtension, java.lang.Object[])
+	 */
 	public void removeExtension(IExtension extension, Object[] objects) {
-		for (Object object : objects) {
-			if (object instanceof String) {
-				registry.remove((String) object);
+		for (int i = 0; i < objects.length; i++) {
+			if (objects[i] instanceof String) {
+				registry.remove((String) objects[i]);
 			}
 		}
 	}

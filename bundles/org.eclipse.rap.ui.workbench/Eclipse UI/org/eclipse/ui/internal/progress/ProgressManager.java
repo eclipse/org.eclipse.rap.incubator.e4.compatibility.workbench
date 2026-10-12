@@ -1,21 +1,19 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2003, 2020 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
+ *     EclipseSource - ongoing development
  *     Teddy Walker <teddy.walker@googlemail.com>
  *     		- Fix for Bug 151204 [Progress] Blocked status of jobs are not applied/reported
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 422040
- *     Terry Parker - Bug 454633, Report the cumulative error status of job groups in the ProgressManager
  *******************************************************************************/
 package org.eclipse.ui.internal.progress;
+
+import static org.eclipse.jface.resource.ImageDescriptor.createFromURL;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,11 +29,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IProgressMonitorWithBlocking;
 import org.eclipse.core.runtime.IStatus;
@@ -59,6 +54,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.rap.rwt.RWT;
 import org.eclipse.rap.rwt.SingletonUtil;
+import org.eclipse.rap.rwt.internal.lifecycle.LifeCycleUtil;
 import org.eclipse.rap.ui.internal.progress.ProgressUtil;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.graphics.Image;
@@ -94,7 +90,6 @@ public class ProgressManager extends ProgressProvider implements
 	 * @deprecated
 	 * @see IProgressConstants#PROPERTY_IN_DIALOG
 	 */
-	@Deprecated
 	public static final QualifiedName PROPERTY_IN_DIALOG = IProgressConstants.PROPERTY_IN_DIALOG;
 
 	private static final String ERROR_JOB = "errorstate.gif"; //$NON-NLS-1$
@@ -109,21 +104,22 @@ public class ProgressManager extends ProgressProvider implements
     	ProgressManager instance = SingletonUtil.getSessionInstance( ProgressManager.class );
     	if( instance.display == null ) {
     	  Dialog.setBlockedHandler(new WorkbenchDialogBlockedHandler());
-    	  instance.display = Display.getCurrent();
+        instance.display = LifeCycleUtil.getSessionDisplay();
     	  // TODO [fappel]: find a better place for initialization...
+        instance.display.syncExec( new Runnable() {
+          @Override
+          public void run() {
     	  ProgressInfoItem.init();
-
+          }
+        } );
     	  URL iconsRoot = ProgressManagerUtil.getIconsRoot();
     	  try {
     	    instance.setUpImage(iconsRoot, SLEEPING_JOB, SLEEPING_JOB_KEY);
     	    instance.setUpImage(iconsRoot, WAITING_JOB, WAITING_JOB_KEY);
     	    instance.setUpImage(iconsRoot, BLOCKED_JOB, BLOCKED_JOB_KEY);
     	    // Let the error manager set up its own icons
-			ImageDescriptor errorImage = ImageDescriptor
-							.createFromURL(new URL(iconsRoot, ERROR_JOB));
-			JFaceResources.getImageRegistry().put(ERROR_JOB_KEY,
-							errorImage);
-
+          ImageDescriptor errorImage = createFromURL( new URL( iconsRoot, ERROR_JOB ) );
+          JFaceResources.getImageRegistry().put( ERROR_JOB_KEY, errorImage );
     	  } catch (MalformedURLException e) {
     	    ProgressManagerUtil.logException(e);
     	  }
@@ -134,7 +130,7 @@ public class ProgressManager extends ProgressProvider implements
 
 	final private Map jobs = Collections.synchronizedMap(new HashMap());
 
-	final private Map<Object, Collection<IJobBusyListener>> familyListeners = Collections
+	final private Map familyListeners = Collections
 			.synchronizedMap(new HashMap());
 
 	//	list of IJobProgressManagerListener
@@ -174,48 +170,16 @@ public class ProgressManager extends ProgressProvider implements
 	// table
 	private Hashtable imageKeyTable = new Hashtable();
 
-	/**
-	 * Lock object for synchronizing updates of {@code pendingJobUpdates},
-	 * {@code pendingGroupUpdates}, {@code pendingJobRemoval},
-	 * {@code pendingGroupRemoval} and {@code pendingJobAddition}.
-	 */
-	private final Object pendingUpdatesMutex = new Object();
-
-	/**
-	 * Modification guarded by {@link #pendingUpdatesMutex}.
-	 */
-	private Map<JobInfo, Set<IJobProgressManagerListener>> pendingJobUpdates = new LinkedHashMap<>();
-
-	/**
-	 * Modification guarded by {@link #pendingUpdatesMutex}.
-	 */
-	private Set<GroupInfo> pendingGroupUpdates = new LinkedHashSet<>();
-
-	/**
-	 * Modification guarded by {@link #pendingUpdatesMutex}.
-	 */
-	private Map<JobInfo, Set<IJobProgressManagerListener>> pendingJobRemoval = new LinkedHashMap<>();
-
-	/**
-	 * Modification guarded by {@link #pendingUpdatesMutex}.
-	 */
-	private Set<GroupInfo> pendingGroupRemoval = new LinkedHashSet<>();
-
-	/**
-	 * Modification guarded by {@link #pendingUpdatesMutex}.
-	 */
-	private Map<JobInfo, Set<IJobProgressManagerListener>> pendingJobAddition = new LinkedHashMap<>();
-
 	/*
-	 * A listener that allows for removing error jobs & indicators when errors are
-	 * handled.
+	 * A listener that allows for removing error jobs & indicators when errors
+	 * are handled.
 	 */
 	private final INotificationListener notificationListener;
 
 	private static final String IMAGE_KEY = "org.eclipse.ui.progress.images"; //$NON-NLS-1$
 
 	/**
-	 * Returns the progress manager currently in use.
+	 * Get the progress manager currently in use.
 	 *
 	 * @return JobProgressManager
 	 */
@@ -229,7 +193,7 @@ public class ProgressManager extends ProgressProvider implements
 	}
 
 	/**
-	 * Shuts down the singleton if there is one.
+	 * Shutdown the singleton if there is one.
 	 */
 	public static void shutdownProgressManager() {
 		// RAP [fappel]: ProgressManager needs to be session aware
@@ -241,20 +205,22 @@ public class ProgressManager extends ProgressProvider implements
 			return;
 		}
 		getInstance().shutdown();
+
 	}
 
 	/**
 	 * The JobMonitor is the inner class that handles the IProgressMonitor
 	 * integration with the ProgressMonitor.
 	 */
-	public class JobMonitor implements IProgressMonitorWithBlocking {
+	class JobMonitor implements IProgressMonitorWithBlocking {
 		Job job;
+
 		String currentTaskName;
 
 		IProgressMonitorWithBlocking listener;
 
 		/**
-		 * Creates a monitor on the supplied job.
+		 * Create a monitor on the supplied job.
 		 *
 		 * @param newJob
 		 */
@@ -263,11 +229,11 @@ public class ProgressManager extends ProgressProvider implements
 		}
 
 		/**
-		 * Adds monitor as another monitor that
+		 * Add monitor as another monitor that
 		 *
 		 * @param monitor
 		 */
-		public void addProgressListener(IProgressMonitorWithBlocking monitor) {
+		void addProgressListener(IProgressMonitorWithBlocking monitor) {
 			listener = monitor;
 			JobInfo info = getJobInfo(job);
 			TaskInfo currentTask = info.getTaskInfo();
@@ -277,7 +243,12 @@ public class ProgressManager extends ProgressProvider implements
 			}
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitor#beginTask(java.lang.String,
+		 *      int)
+		 */
 		public void beginTask(String taskName, int totalWork) {
 			JobInfo info = getJobInfo(job);
 			info.beginTask(taskName, totalWork);
@@ -288,16 +259,21 @@ public class ProgressManager extends ProgressProvider implements
 			}
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitor#done()
+		 */
 		public void done() {
 			final JobInfo info = getJobInfo(job);
 			// RAP [if]: ensure mapping to context
+			if (!display.isDisposed()) {
 			RWT.getUISession(display).exec(new Runnable() {
-				@Override
 				public void run() {
 					info.clearTaskInfo();
 				}
 			});
+			}
 			info.clearChildren();
 			runnableMonitors.remove(job);
 			if (listener != null) {
@@ -305,7 +281,11 @@ public class ProgressManager extends ProgressProvider implements
 			}
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitor#internalWorked(double)
+		 */
 		public void internalWorked(double work) {
 			JobInfo info = getJobInfo(job);
 			if (info.hasTaskInfo()) {
@@ -317,7 +297,11 @@ public class ProgressManager extends ProgressProvider implements
 			}
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitor#isCanceled()
+		 */
 		public boolean isCanceled() {
 			// Use the internal get so we don't create a Job Info for
 			// a job that is not running (see bug 149857)
@@ -327,10 +311,14 @@ public class ProgressManager extends ProgressProvider implements
 			return info.isCanceled();
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitor#setCanceled(boolean)
+		 */
 		public void setCanceled(boolean value) {
 			JobInfo info = getJobInfo(job);
-			// Don't bother canceling twice.
+			// Don't bother cancelling twice
 			if (value && !info.isCanceled()) {
 				info.cancel();
 				// Only inform the first time
@@ -340,7 +328,11 @@ public class ProgressManager extends ProgressProvider implements
 			}
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitor#setTaskName(java.lang.String)
+		 */
 		public void setTaskName(String taskName) {
 			JobInfo info = getJobInfo(job);
 			if (info.hasTaskInfo()) {
@@ -357,7 +349,11 @@ public class ProgressManager extends ProgressProvider implements
 			}
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitor#subTask(java.lang.String)
+		 */
 		public void subTask(String name) {
 			if (name == null) {
 				return;
@@ -367,27 +363,38 @@ public class ProgressManager extends ProgressProvider implements
 			info.addSubTask(name);
 			refreshJobInfo(info);
 			if (listener != null) {
-				listener.setTaskName(name);
+				listener.subTask(name);
 			}
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitor#worked(int)
+		 */
 		public void worked(int work) {
 			internalWorked(work);
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitorWithBlocking#clearBlocked()
+		 */
 		public void clearBlocked() {
 			JobInfo info = getJobInfo(job);
 			info.setBlockedStatus(null);
 			refreshJobInfo(info);
 			if (listener != null) {
 				listener.clearBlocked();
-				;
 			}
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.core.runtime.IProgressMonitorWithBlocking#setBlocked(org.eclipse.core.runtime.IStatus)
+		 */
 		public void setBlocked(IStatus reason) {
 			JobInfo info = getJobInfo(job);
 			info.setBlockedStatus(reason);
@@ -398,6 +405,9 @@ public class ProgressManager extends ProgressProvider implements
 		}
 	}
 
+	/**
+	 * Create a new instance of the receiver.
+	 */
 	// RAP [bm]: made public to access in org.eclipse.rap.ui.*
 	public ProgressManager() {
 // RAP [fappel]:
@@ -405,7 +415,6 @@ public class ProgressManager extends ProgressProvider implements
 //		Dialog.setBlockedHandler(new WorkbenchDialogBlockedHandler());
 		createChangeListener();
 		notificationListener = createNotificationListener();
-
 // RAP [fappel]:
 //		Job.getJobManager().addJobChangeListener(this.changeListener);
 //		URL iconsRoot = ProgressManagerUtil.getIconsRoot();
@@ -419,19 +428,19 @@ public class ProgressManager extends ProgressProvider implements
 //		} catch (MalformedURLException e) {
 //			ProgressManagerUtil.logException(e);
 //		}
-
 	}
 
 	private INotificationListener createNotificationListener() {
 
 		return new StatusManager.INotificationListener() {
-			@Override
+
 			public void statusManagerNotified(int type, StatusAdapter[] adapters) {
 				if (type == INotificationTypes.HANDLED) {
 					FinishedJobs.getInstance().removeErrorJobs();
 					StatusAdapterHelper.getInstance().clear();
 				}
 			}
+			
 		};
 	}
 
@@ -446,17 +455,16 @@ public class ProgressManager extends ProgressProvider implements
 			/*
 			 * (non-Javadoc)
 			 * 
-			 * @see
-			 * org.eclipse.core.runtime.jobs.JobChangeAdapter#aboutToRun(org.eclipse.core.
-			 * runtime.jobs.IJobChangeEvent)
+			 * @see org.eclipse.core.runtime.jobs.JobChangeAdapter#aboutToRun(org.eclipse.core.runtime.jobs.IJobChangeEvent)
 			 */
-			@Override
 			public void aboutToRun(IJobChangeEvent event) {
 				JobInfo info = getJobInfo(event.getJob());
 				refreshJobInfo(info);
-				Iterator startListeners = busyListenersForJob(event.getJob()).iterator();
+				Iterator startListeners = busyListenersForJob(event.getJob())
+						.iterator();
 				while (startListeners.hasNext()) {
-					IJobBusyListener next = (IJobBusyListener) startListeners.next();
+					IJobBusyListener next = (IJobBusyListener) startListeners
+							.next();
 					next.incrementBusy(event.getJob());
 				}
 			}
@@ -464,33 +472,40 @@ public class ProgressManager extends ProgressProvider implements
 			/*
 			 * (non-Javadoc)
 			 * 
-			 * @see
-			 * org.eclipse.core.runtime.jobs.JobChangeAdapter#done(org.eclipse.core.runtime.
-			 * jobs.IJobChangeEvent)
+			 * @see org.eclipse.core.runtime.jobs.JobChangeAdapter#done(org.eclipse.core.runtime.jobs.IJobChangeEvent)
 			 */
-			@Override
 			public void done(IJobChangeEvent event) {
 // RAP [rh] run regardless of a running workbench (see bug 283595)
 //				if (!PlatformUI.isWorkbenchRunning()) {
 //					return;
 //				}
-				Iterator startListeners = busyListenersForJob(event.getJob()).iterator();
+				Iterator startListeners = busyListenersForJob(event.getJob())
+						.iterator();
 				while (startListeners.hasNext()) {
-					IJobBusyListener next = (IJobBusyListener) startListeners.next();
+					IJobBusyListener next = (IJobBusyListener) startListeners
+							.next();
 					next.decrementBusy(event.getJob());
 				}
 
 				final JobInfo info = getJobInfo(event.getJob());
 				removeJobInfo(info);
 
-				if (event.getResult() != null && event.getResult().getSeverity() == IStatus.ERROR) {
-					StatusAdapter statusAdapter = new StatusAdapter(event.getResult());
+				if (event.getResult() != null
+						&& event.getResult().getSeverity() == IStatus.ERROR) {
+					StatusAdapter statusAdapter = new StatusAdapter(event
+							.getResult());
 					statusAdapter.addAdapter(Job.class, event.getJob());
 
-					if (event.getJob()
-							.getProperty(IProgressConstants.NO_IMMEDIATE_ERROR_PROMPT_PROPERTY) == Boolean.TRUE) {
-						statusAdapter.setProperty(IProgressConstants.NO_IMMEDIATE_ERROR_PROMPT_PROPERTY, Boolean.TRUE);
-						StatusAdapterHelper.getInstance().putStatusAdapter(info, statusAdapter);
+					if (event
+							.getJob()
+							.getProperty(
+									IProgressConstants.NO_IMMEDIATE_ERROR_PROMPT_PROPERTY) == Boolean.TRUE) {
+						statusAdapter
+								.setProperty(
+										IProgressConstants.NO_IMMEDIATE_ERROR_PROMPT_PROPERTY,
+										Boolean.TRUE);
+						StatusAdapterHelper.getInstance().putStatusAdapter(
+								info, statusAdapter);
 				}
 
 					StatusManager.getManager().handle(statusAdapter, StatusManager.SHOW);
@@ -500,11 +515,8 @@ public class ProgressManager extends ProgressProvider implements
 			/*
 			 * (non-Javadoc)
 			 * 
-			 * @see
-			 * org.eclipse.core.runtime.jobs.JobChangeAdapter#scheduled(org.eclipse.core.
-			 * runtime.jobs.IJobChangeEvent)
+			 * @see org.eclipse.core.runtime.jobs.JobChangeAdapter#scheduled(org.eclipse.core.runtime.jobs.IJobChangeEvent)
 			 */
-			@Override
 			public void scheduled(IJobChangeEvent event) {
 				updateFor(event);
 				if (event.getJob().isUser()) {
@@ -516,11 +528,10 @@ public class ProgressManager extends ProgressProvider implements
 							/*
 							 * (non-Javadoc)
 							 * 
-							 * @see org.eclipse.ui.progress.UIJob#runInUIThread(org.eclipse.core.runtime.
-							 * IProgressMonitor)
+							 * @see org.eclipse.ui.progress.UIJob#runInUIThread(org.eclipse.core.runtime.IProgressMonitor)
 							 */
-							@Override
-							public IStatus runInUIThread(IProgressMonitor monitor) {
+							public IStatus runInUIThread(
+									IProgressMonitor monitor) {
 								showInDialog(null, finalEvent.getJob());
 								return Status.OK_STATUS;
 							}
@@ -551,11 +562,8 @@ public class ProgressManager extends ProgressProvider implements
 			/*
 			 * (non-Javadoc)
 			 * 
-			 * @see
-			 * org.eclipse.core.runtime.jobs.JobChangeAdapter#awake(org.eclipse.core.runtime
-			 * .jobs.IJobChangeEvent)
+			 * @see org.eclipse.core.runtime.jobs.JobChangeAdapter#awake(org.eclipse.core.runtime.jobs.IJobChangeEvent)
 			 */
-			@Override
 			public void awake(IJobChangeEvent event) {
 				updateFor(event);
 			}
@@ -563,11 +571,8 @@ public class ProgressManager extends ProgressProvider implements
 			/*
 			 * (non-Javadoc)
 			 * 
-			 * @see
-			 * org.eclipse.core.runtime.jobs.JobChangeAdapter#sleeping(org.eclipse.core.
-			 * runtime.jobs.IJobChangeEvent)
+			 * @see org.eclipse.core.runtime.jobs.JobChangeAdapter#sleeping(org.eclipse.core.runtime.jobs.IJobChangeEvent)
 			 */
-			@Override
 			public void sleeping(IJobChangeEvent event) {
 
 				if (jobs.containsKey(event.getJob()))// Are we showing this?
@@ -643,7 +648,6 @@ public class ProgressManager extends ProgressProvider implements
 	 *
 	 * @see org.eclipse.core.runtime.jobs.ProgressProvider#createMonitor(org.eclipse.core.runtime.jobs.Job)
 	 */
-	@Override
 	public IProgressMonitor createMonitor(Job job) {
 		return progressFor(job);
 	}
@@ -653,7 +657,6 @@ public class ProgressManager extends ProgressProvider implements
 	 *
 	 * @see org.eclipse.core.runtime.jobs.ProgressProvider#getDefaultMonitor()
 	 */
-	@Override
 	public IProgressMonitor getDefaultMonitor() {
 		// only need a default monitor for operations the UI thread
 		// and only if there is a display
@@ -672,13 +675,14 @@ public class ProgressManager extends ProgressProvider implements
 	}
 
 	/**
-	 * Returns a monitor for the job. Checks if we cached a monitor for this job
+	 * Return a monitor for the job. Check if we cached a monitor for this job
 	 * previously for a long operation timeout check.
 	 *
 	 * @param job
 	 * @return IProgressMonitor
 	 */
 	public JobMonitor progressFor(Job job) {
+
 		synchronized (runnableMonitors) {
 			JobMonitor monitor = (JobMonitor) runnableMonitors.get(job);
 			if (monitor == null) {
@@ -688,10 +692,11 @@ public class ProgressManager extends ProgressProvider implements
 
 			return monitor;
 		}
+
 	}
 
 	/**
-	 * Adds an IJobProgressManagerListener to listen to the changes.
+	 * Add an IJobProgressManagerListener to listen to the changes.
 	 *
 	 * @param listener
 	 */
@@ -839,19 +844,19 @@ public class ProgressManager extends ProgressProvider implements
 	}
 
 	/**
-	 * Returns whether or not this job is currently displayable.
+	 * Return whether or not this job is currently displayable.
 	 *
 	 * @param job
 	 * @param debug
-	 *            if the listener is in debug mode
-	 * @return boolean <code>true</code> if the job is not displayed
+	 *            If the listener is in debug mode.
+	 * @return boolean <code>true</code> if the job is not displayed.
 	 */
 	boolean isCurrentDisplaying(Job job, boolean debug) {
 		return isNeverDisplaying(job, debug) || job.getState() == Job.SLEEPING;
 	}
 
 	/**
-	 * Returns whether or not we even display this job with debug mode set to
+	 * Return whether or not we even display this job with debug mode set to
 	 * debug.
 	 *
 	 * @param job
@@ -859,6 +864,9 @@ public class ProgressManager extends ProgressProvider implements
 	 * @return boolean
 	 */
 	boolean isNeverDisplaying(Job job, boolean debug) {
+		if (isInfrastructureJob(job)) {
+			return true;
+		}
 		if (debug)
 			return false;
 
@@ -984,7 +992,6 @@ public class ProgressManager extends ProgressProvider implements
 	 *
 	 * @see org.eclipse.ui.progress.IProgressService#busyCursorWhile(org.eclipse.jface.operation.IRunnableWithProgress)
 	 */
-	@Override
 	public void busyCursorWhile(final IRunnableWithProgress runnable)
 			throws InvocationTargetException, InterruptedException {
 		final ProgressMonitorJobsDialog dialog = new ProgressMonitorJobsDialog(
@@ -994,7 +1001,6 @@ public class ProgressManager extends ProgressProvider implements
 		final InterruptedException[] interrupt = new InterruptedException[1];
 		// show a busy cursor until the dialog opens
 		Runnable dialogWaitRunnable = new Runnable() {
-			@Override
 			public void run() {
 				try {
 					dialog.setOpenOnRun(false);
@@ -1053,7 +1059,6 @@ public class ProgressManager extends ProgressProvider implements
 			 *
 			 * @see org.eclipse.ui.progress.UIJob#runInUIThread(org.eclipse.core.runtime.IProgressMonitor)
 			 */
-			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
 				setUserInterfaceActive(true);
 				if (ProgressManagerUtil.safeToOpen(dialog, null)) {
@@ -1085,7 +1090,6 @@ public class ProgressManager extends ProgressProvider implements
 	 *
 	 * @see org.eclipse.core.runtime.jobs.ProgressProvider#createProgressGroup()
 	 */
-	@Override
 	public IProgressMonitor createProgressGroup() {
 		return new GroupInfo();
 	}
@@ -1096,7 +1100,6 @@ public class ProgressManager extends ProgressProvider implements
 	 * @see org.eclipse.core.runtime.jobs.ProgressProvider#createMonitor(org.eclipse.core.runtime.jobs.Job,
 	 *      org.eclipse.core.runtime.IProgressMonitor, int)
 	 */
-	@Override
 	public IProgressMonitor createMonitor(Job job, IProgressMonitor group,
 			int ticks) {
 		JobMonitor monitor = progressFor(job);
@@ -1118,7 +1121,7 @@ public class ProgressManager extends ProgressProvider implements
 	 */
 	void addListenerToFamily(Object family, IJobBusyListener listener) {
 		synchronized (familyListeners) {
-			Collection currentListeners = familyListeners.get(family);
+			Collection currentListeners = (Collection) familyListeners.get(family);
 			if (currentListeners == null) {
 				currentListeners = new HashSet();
 				familyListeners.put(family, currentListeners);
@@ -1128,44 +1131,50 @@ public class ProgressManager extends ProgressProvider implements
 	}
 
 	/**
-	 * Removes the listener from all families.
+	 * Remove the listener from all families.
 	 *
 	 * @param listener
 	 */
 	void removeListener(IJobBusyListener listener) {
 		synchronized (familyListeners) {
-			Iterator<Collection<IJobBusyListener>> familyListeners = this.familyListeners.values().iterator();
-			while (familyListeners.hasNext()) {
-				Collection<IJobBusyListener> currentListeners = familyListeners.next();
+			Iterator families = familyListeners.keySet().iterator();
+			while (families.hasNext()) {
+				Object next = families.next();
+				Collection currentListeners = (Collection) familyListeners
+						.get(next);
 				currentListeners.remove(listener);
 
-				// Remove any empty listeners.
+				// Remove any empty listeners
 				if (currentListeners.isEmpty()) {
-					familyListeners.remove();
+					families.remove();
 				}
 			}
 		}
 	}
 
 	/**
-	 * Returns the listeners for the job.
+	 * Return the listeners for the job.
 	 *
 	 * @param job
 	 * @return Collection of IJobBusyListener
 	 */
-	private Collection<IJobBusyListener> busyListenersForJob(Job job) {
+	private Collection busyListenersForJob(Job job) {
 		if (job.isSystem()) {
 			return Collections.EMPTY_LIST;
 		}
 		synchronized (familyListeners) {
+
 			if (familyListeners.isEmpty()) {
 				return Collections.EMPTY_LIST;
 			}
 
-			Collection<IJobBusyListener> returnValue = new LinkedHashSet<>();
-			for (Entry<Object, Collection<IJobBusyListener>> entry : familyListeners.entrySet()) {
-				if (job.belongsTo(entry.getKey())) {
-					Collection<IJobBusyListener> currentListeners = entry.getValue();
+			Iterator families = familyListeners.keySet().iterator();
+			Collection returnValue = new HashSet();
+			while (families.hasNext()) {
+				Object next = families.next();
+				if (job.belongsTo(next)) {
+					Collection currentListeners = (Collection) familyListeners
+							.get(next);
 					returnValue.addAll(currentListeners);
 				}
 			}
@@ -1179,7 +1188,6 @@ public class ProgressManager extends ProgressProvider implements
 	 * @see org.eclipse.ui.progress.IProgressService#showInDialog(org.eclipse.swt.widgets.Shell,
 	 *      org.eclipse.core.runtime.jobs.Job)
 	 */
-	@Override
 	public void showInDialog(Shell shell, Job job) {
 		if (shouldRunInBackground()) {
 			return;
@@ -1196,7 +1204,6 @@ public class ProgressManager extends ProgressProvider implements
 	 * @see org.eclipse.jface.operation.IRunnableContext#run(boolean, boolean,
 	 *      org.eclipse.jface.operation.IRunnableWithProgress)
 	 */
-	@Override
 	public void run(boolean fork, boolean cancelable,
 			IRunnableWithProgress runnable) throws InvocationTargetException,
 			InterruptedException {
@@ -1217,7 +1224,6 @@ public class ProgressManager extends ProgressProvider implements
 	 * @see org.eclipse.ui.progress.IProgressService#runInUI(org.eclipse.jface.operation.IRunnableWithProgress,
 	 *      org.eclipse.core.runtime.jobs.ISchedulingRule)
 	 */
-	@Override
 	public void runInUI(final IRunnableContext context,
 			final IRunnableWithProgress runnable, final ISchedulingRule rule)
 			throws InvocationTargetException, InterruptedException {
@@ -1226,7 +1232,6 @@ public class ProgressManager extends ProgressProvider implements
 				runnable, rule);
 		final Display display = Display.getDefault();
 		display.syncExec(new Runnable() {
-			@Override
 			public void run() {
 				BusyIndicator.showWhile(display, runnableWithStatus);
 			}
@@ -1250,7 +1255,6 @@ public class ProgressManager extends ProgressProvider implements
 	 *
 	 * @see org.eclipse.ui.progress.IProgressService#getLongOperationTime()
 	 */
-	@Override
 	public int getLongOperationTime() {
 		return 800;
 	}
@@ -1261,7 +1265,6 @@ public class ProgressManager extends ProgressProvider implements
 	 * @see org.eclipse.ui.progress.IProgressService#registerIconForFamily(org.eclipse.jface.resource.ImageDescriptor,
 	 *      java.lang.Object)
 	 */
-	@Override
 	public void registerIconForFamily(ImageDescriptor icon, Object family) {
 		String key = IMAGE_KEY + String.valueOf(imageKeyTable.size());
 		imageKeyTable.put(family, key);
@@ -1279,7 +1282,6 @@ public class ProgressManager extends ProgressProvider implements
 	 *
 	 * @see org.eclipse.ui.progress.IProgressService#getIconFor(org.eclipse.core.runtime.jobs.Job)
 	 */
-	@Override
 	public Image getIconFor(Job job) {
 		Enumeration families = imageKeyTable.keys();
 		while (families.hasMoreElements()) {
@@ -1364,7 +1366,7 @@ public class ProgressManager extends ProgressProvider implements
 	}
 
 	/**
-	 * Sets whether or not the ProgressViewUpdater should show system jobs.
+	 * Set whether or not the ProgressViewUpdater should show system jobs.
 	 *
 	 * @param showSystem
 	 */
@@ -1372,60 +1374,69 @@ public class ProgressManager extends ProgressProvider implements
 		ProgressViewUpdater updater = ProgressViewUpdater.getSingleton();
 		updater.debug = showSystem;
 		updater.refreshAll();
+
 	}
 
-	private static class RunnableWithStatus implements Runnable {
+	private class RunnableWithStatus implements Runnable {
+
 		IStatus status = Status.OK_STATUS;
 		private final IRunnableContext context;
 		private final IRunnableWithProgress runnable;
 		private final ISchedulingRule rule;
 
-		public RunnableWithStatus(IRunnableContext context, IRunnableWithProgress runnable, ISchedulingRule rule) {
+		public RunnableWithStatus(IRunnableContext context,
+				IRunnableWithProgress runnable, ISchedulingRule rule) {
 			this.context = context;
 			this.runnable = runnable;
 			this.rule = rule;
 		}
 
-		@Override
 		public void run() {
 			IJobManager manager = Job.getJobManager();
 			try {
 				manager.beginRule(rule, getEventLoopMonitor());
 				context.run(false, false, runnable);
 			} catch (InvocationTargetException e) {
-				status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, e.getMessage(), e);
+				status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, e
+						.getMessage(), e);
 			} catch (InterruptedException e) {
-				status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, e.getMessage(), e);
+				status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, e
+						.getMessage(), e);
 			} catch (OperationCanceledException e) {
-				status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, e.getMessage(), e);
+				status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, e
+						.getMessage(), e);
 			} finally {
 				manager.endRule(rule);
 			}
 		}
 
 		/**
-		 * Returns a progress monitor that forwards to an event loop monitor.
-		 * Overrides #setBlocked() so that we always open the blocked dialog.
+		 * Get a progress monitor that forwards to an event loop monitor.
+		 * Override #setBlocked() so that we always open the blocked dialog.
 		 *
 		 * @return the monitor on the event loop
 		 */
 		private IProgressMonitor getEventLoopMonitor() {
+
 			if (PlatformUI.getWorkbench().isStarting())
 				return new NullProgressMonitor();
 
 			return new EventLoopProgressMonitor(new NullProgressMonitor()) {
-				@Override
+
 				public void setBlocked(IStatus reason) {
-					// Set a shell to open with as we want to create this even
-					// if there is a modal shell.
+
+					// Set a shell to open with as we want to create
+					// this
+					// even if there is a modal shell.
 					Dialog.getBlockedHandler().showBlocked(
-							ProgressManagerUtil.getDefaultParent(), this, reason, getTaskName());
+							ProgressManagerUtil.getDefaultParent(), this,
+							reason, getTaskName());
 				}
 			};
 		}
-
 		public IStatus getStatus() {
 			return status;
 		}
+
 	}
 }

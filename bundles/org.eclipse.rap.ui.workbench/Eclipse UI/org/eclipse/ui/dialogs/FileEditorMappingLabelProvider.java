@@ -22,12 +22,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IFileEditorMapping;
 
 /**
- * A label provider for displaying of <code>IFileEditorMapping</code>
- * objects in viewers.
+ * A label provider for displaying of <code>IFileEditorMapping</code> objects in
+ * viewers.
  * <p>
  * This class has a singleton instance,
- * <code>FileEditorMappingLabelProvider.INSTANCE</code>,
- * which can be used any place this kind of label provider is needed.
+ * <code>FileEditorMappingLabelProvider.INSTANCE</code>, which can be used any
+ * place this kind of label provider is needed.
  * </p>
  * <p>
  * The singleton instance hangs on to images, which get freed up when
@@ -36,8 +36,7 @@ import org.eclipse.ui.IFileEditorMapping;
  *
  * @see org.eclipse.jface.viewers.ILabelProvider
  */
-public class FileEditorMappingLabelProvider extends LabelProvider implements
-        ITableLabelProvider {
+public class FileEditorMappingLabelProvider extends LabelProvider implements ITableLabelProvider {
 
     /**
      * Singleton instance accessor.
@@ -47,11 +46,11 @@ public class FileEditorMappingLabelProvider extends LabelProvider implements
     /**
      * Images that will require disposal.
      */
-    private List imagesToDispose = new ArrayList();
+	private final List<Image> imagesToDispose = new ArrayList<>();
 
     /**
-     * Creates an instance of this class.  The private visibility of this
-     * constructor ensures that this class is only usable as a singleton.
+	 * Creates an instance of this class. The private visibility of this constructor
+	 * ensures that this class is only usable as a singleton.
      */
     private FileEditorMappingLabelProvider() {
         super();
@@ -60,17 +59,16 @@ public class FileEditorMappingLabelProvider extends LabelProvider implements
     @Override
 	public void dispose() {
         super.dispose();
-// RAP [rh] Image#dispose() not implemented
-//        for (Iterator e = imagesToDispose.iterator(); e.hasNext();) {
-//            ((Image) e.next()).dispose();
-//        }
+		for (Image e : imagesToDispose) {
+			e.dispose();
+		}
         imagesToDispose.clear();
     }
 
     /**
-     * The <code>ResourceTypeEditorMappingLabelProvider</code> implementation of this
-     * <code>ITableLabelProvider</code> method creates and returns an new image. The
-     * image is remembered internally and will be deallocated by
+	 * The <code>ResourceTypeEditorMappingLabelProvider</code> implementation of
+	 * this <code>ITableLabelProvider</code> method creates and returns an new
+	 * image. The image is remembered internally and will be deallocated by
      * <code>dispose</code>.
      */
     @Override
@@ -84,15 +82,15 @@ public class FileEditorMappingLabelProvider extends LabelProvider implements
     }
 
     /**
-     * The <code>ResourceTypeEditorMappingLabelProvider</code> implementation of this
-     * <code>ILabelProvider</code> method creates and returns an new image. The image
-     * is remembered internally and will be deallocated by <code>dispose</code>.
+	 * The <code>ResourceTypeEditorMappingLabelProvider</code> implementation of
+	 * this <code>ILabelProvider</code> method creates and returns an new image. The
+	 * image is remembered internally and will be deallocated by
+	 * <code>dispose</code>.
      */
     @Override
 	public Image getImage(Object element) {
         if (element instanceof IFileEditorMapping) {
-            Image image = ((IFileEditorMapping) element).getImageDescriptor()
-                    .createImage();
+			Image image = ((IFileEditorMapping) element).getImageDescriptor().createImage();
             imagesToDispose.add(image);
             return image;
         }
@@ -102,8 +100,7 @@ public class FileEditorMappingLabelProvider extends LabelProvider implements
     @Override
 	public String getText(Object element) {
         if (element instanceof IFileEditorMapping) {
-			return TextProcessor.process(((IFileEditorMapping) element)
-					.getLabel(), "*."); //$NON-NLS-1$
+			return TextProcessor.process(((IFileEditorMapping) element).getLabel(), "*."); //$NON-NLS-1$
 		}
 
 		return null;

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -25,7 +22,6 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * The import/export wizard allows users to choose whether to
  * show the import wizard or the export wizard.
  *
- * @since 3.2
  *
  */
 public class ImportExportWizard extends Wizard {
@@ -59,7 +55,6 @@ public class ImportExportWizard extends Wizard {
      * Subclasses must implement this <code>IWizard</code> method
      * to perform any special finish processing for their wizard.
      */
-    @Override
 	public boolean performFinish() {
     	importExportPage.saveWidgetValues();
         return true;
@@ -68,7 +63,6 @@ public class ImportExportWizard extends Wizard {
     /**
      * Creates the wizard's pages lazily.
      */
-    @Override
 	public void addPages() {
     	if (page.equals(IMPORT)) {
 			importExportPage = new ImportPage(this.workbench, this.selection);

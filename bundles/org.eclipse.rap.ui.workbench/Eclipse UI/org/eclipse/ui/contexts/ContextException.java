@@ -34,28 +34,26 @@ public abstract class ContextException extends Exception {
 	 */
 	private static final long serialVersionUID= -5143404124388080211L;
 
-
 	private Throwable cause;
 
     /**
      * Creates a new instance of this class with the specified detail message.
      *
-     * @param message
-     *            the detail message.
+	 * @param message the detail message.
      */
+	@Deprecated
     public ContextException(String message) {
         super(message);
     }
 
     /**
-     * Creates a new instance of this class with the specified detail message
-     * and cause.
+	 * Creates a new instance of this class with the specified detail message and
+	 * cause.
      *
-     * @param message
-     *            the detail message.
-     * @param cause
-     *            the cause.
+	 * @param message the detail message.
+	 * @param cause   the cause.
      */
+	@Deprecated
     public ContextException(String message, Throwable cause) {
         super(message);
         // don't pass the cause to super, to allow compilation against JCL Foundation
@@ -63,12 +61,13 @@ public abstract class ContextException extends Exception {
     }
 
     /**
-     * Returns the cause of this throwable or <code>null</code> if the
-     * cause is nonexistent or unknown.
+	 * Returns the cause of this throwable or <code>null</code> if the cause is
+	 * nonexistent or unknown.
      *
      * @return the cause or <code>null</code>
      * @since 3.1
      */
+	@Deprecated
     @Override
 	public Throwable getCause() {
         return cause;

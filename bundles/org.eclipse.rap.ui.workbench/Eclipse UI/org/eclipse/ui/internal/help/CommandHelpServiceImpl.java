@@ -14,9 +14,9 @@
  ******************************************************************************/
 package org.eclipse.ui.internal.help;
 
+import jakarta.inject.Inject;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.inject.Inject;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.internal.commands.util.Util;
@@ -41,7 +41,7 @@ public class CommandHelpServiceImpl implements ICommandHelpService {
 	@Optional
 	private Logger logger;
 
-	private Map<IHandler, String> helpContextIdsByHandler = new WeakHashMap<>();
+	private final Map<IHandler, String> helpContextIdsByHandler = new WeakHashMap<>();
 
 	@Override
 	public String getHelpContextId(String commandId, IEclipseContext context) {

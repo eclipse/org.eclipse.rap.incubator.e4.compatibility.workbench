@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -45,7 +42,6 @@ import org.eclipse.ui.internal.services.ExpressionAuthority;
  * manager if changes occur.
  * </p>
  *
- * @since 3.1
  */
 public final class ContextAuthority extends ExpressionAuthority {
 
@@ -152,7 +148,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 * @param activation
 	 *            The activation; must not be <code>null</code>.
 	 */
-	void activateContext(final IContextActivation activation) {
+	final void activateContext(final IContextActivation activation) {
 		// First we update the contextActivationsByContextId map.
 		final String contextId = activation.getContextId();
 		final Object value = contextActivationsByContextId.get(contextId);
@@ -204,7 +200,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 *            The previously active shell; may be <code>null</code> or
 	 *            disposed.
 	 */
-	private void checkWindowType(final Shell newShell,
+	private final void checkWindowType(final Shell newShell,
 			final Shell oldShell) {
 		/*
 		 * If the previous active shell was recognized as a dialog by default,
@@ -261,7 +257,11 @@ public final class ContextAuthority extends ExpressionAuthority {
 				 */
 				newShell.addDisposeListener(new DisposeListener() {
 
-					@Override
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see org.eclipse.swt.events.DisposeListener#widgetDisposed(org.eclipse.swt.events.DisposeEvent)
+					 */
 					public void widgetDisposed(DisposeEvent e) {
 						registeredWindows.remove(null);
 						if (!newShell.isDisposed()) {
@@ -303,7 +303,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 * @return <code>true</code> if there is at least one active context;
 	 *         <code>false</code> otherwise.
 	 */
-	private boolean containsActive(final Collection activations) {
+	private final boolean containsActive(final Collection activations) {
 		final Iterator activationItr = activations.iterator();
 		while (activationItr.hasNext()) {
 			final IContextActivation activation = (IContextActivation) activationItr
@@ -323,7 +323,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 * @param activation
 	 *            The activation; must not be <code>null</code>.
 	 */
-	void deactivateContext(final IContextActivation activation) {
+	final void deactivateContext(final IContextActivation activation) {
 		// First we update the handlerActivationsByCommandId map.
 		final String contextId = activation.getContextId();
 		final Object value = contextActivationsByContextId.get(contextId);
@@ -374,7 +374,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 *
 	 * @return The currently active shell; may be <code>null</code>.
 	 */
-	Shell getActiveShell() {
+	final Shell getActiveShell() {
 		return (Shell) getVariable(ISources.ACTIVE_SHELL_NAME);
 	}
 
@@ -389,7 +389,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 *         <code>IWorkbenchContextSupport.TYPE_DIALOG</code>, or
 	 *         <code>IWorkbenchContextSupport.TYPE_NONE</code>.
 	 */
-	public int getShellType(final Shell shell) {
+	public final int getShellType(final Shell shell) {
 		// If the shell is null, then return none.
 		if (shell == null) {
 			return IContextService.TYPE_NONE;
@@ -472,7 +472,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 *         (i.e., the registration has changed); <code>false</code>
 	 *         otherwise.
 	 */
-	public boolean registerShell(final Shell shell, final int type) {
+	public final boolean registerShell(final Shell shell, final int type) {
 		// We do not allow null shell registration. It is reserved.
 		if (shell == null) {
 			throw new NullPointerException("The shell was null"); //$NON-NLS-1$
@@ -480,7 +480,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 
 		// Debugging output
 		if (DEBUG) {
-			final StringBuilder buffer = new StringBuilder("register shell '"); //$NON-NLS-1$
+			final StringBuffer buffer = new StringBuffer("register shell '"); //$NON-NLS-1$
 			buffer.append(shell);
 			buffer.append("' as "); //$NON-NLS-1$
 			switch (type) {
@@ -562,7 +562,11 @@ public final class ContextAuthority extends ExpressionAuthority {
 		 */
 		final DisposeListener shellDisposeListener = new DisposeListener() {
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.swt.events.DisposeListener#widgetDisposed(org.eclipse.swt.events.DisposeEvent)
+			 */
 			public void widgetDisposed(DisposeEvent e) {
 				registeredWindows.remove(shell);
 				if (!shell.isDisposed()) {
@@ -598,8 +602,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 * @param sourcePriority
 	 *            A bit mask of all the source priorities that have changed.
 	 */
-	@Override
-	protected void sourceChanged(final int sourcePriority) {
+	protected final void sourceChanged(final int sourcePriority) {
 		// If tracing, then track how long it takes to process the activations.
 		long startTime = 0L;
 		if (DEBUG_PERFORMANCE) {
@@ -699,7 +702,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 * @return <code>true</code> if the shell had been registered;
 	 *         <code>false</code> otherwise.
 	 */
-	public boolean unregisterShell(final Shell shell) {
+	public final boolean unregisterShell(final Shell shell) {
 		// Don't allow this method to play with the special null slot.
 		if (shell == null) {
 			return false;
@@ -746,7 +749,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 *            Whether the context should be active; <code>false</code>
 	 *            otherwise.
 	 */
-	private void updateContext(final String contextId,
+	private final void updateContext(final String contextId,
 			final boolean active) {
 		if (active) {
 			contextManager.addActiveContext(contextId);
@@ -769,8 +772,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 *            The new value of the variable. If this value is
 	 *            <code>null</code>, then the variable is removed.
 	 */
-	@Override
-	protected void updateEvaluationContext(final String name,
+	protected final void updateEvaluationContext(final String name,
 			final Object value) {
 		/*
 		 * Bug 84056. If we update the active workbench window, then we risk
@@ -804,7 +806,7 @@ public final class ContextAuthority extends ExpressionAuthority {
 	 * DO NOT CALL THIS METHOD.
 	 * </p>
 	 */
-	void updateShellKludge() {
+	final void updateShellKludge() {
 		updateCurrentState();
 		sourceChanged(ISources.ACTIVE_SHELL);
 	}

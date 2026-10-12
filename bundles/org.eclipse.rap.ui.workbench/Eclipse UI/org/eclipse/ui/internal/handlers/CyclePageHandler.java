@@ -1,40 +1,39 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2007, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
- *     Patrik Suzzi <psuzzi@gmail.com> - Bug 504091
  ******************************************************************************/
 
 package org.eclipse.ui.internal.handlers;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.eclipse.core.commands.Command;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.ParameterizedCommand;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
-import org.eclipse.jface.util.Geometry;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
+
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.ParameterizedCommand;
+
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.util.Geometry;
+
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.internal.FilteredTableBaseHandler;
+import org.eclipse.ui.internal.CycleBaseHandler;
 import org.eclipse.ui.internal.PartSite;
 import org.eclipse.ui.internal.WorkbenchPage;
 import org.eclipse.ui.part.PageSwitcher;
@@ -46,15 +45,9 @@ import org.eclipse.ui.part.WorkbenchPart;
  * {@link PageSwitcher} object, {@link CyclePageHandler} will handle the cycling
  * of pages.
  *
- * @since 3.4
- *
  */
-public class CyclePageHandler extends FilteredTableBaseHandler {
+public class CyclePageHandler extends CycleBaseHandler {
 
-	/**
-	 *
-	 */
-	private static final String K_PAGE = "page"; //$NON-NLS-1$
 	/**
 	 * The character limit before text is truncated.
 	 */
@@ -66,55 +59,50 @@ public class CyclePageHandler extends FilteredTableBaseHandler {
 		this.pageSwitcher = pageSwitcher;
 	}
 
-	@Override
-	protected Object getInput(WorkbenchPage page) {
-		List<FilteredTableItem> rows = new ArrayList<>();
-
-		for(int i=0; i<pageSwitcher.getPages().length; i++){
-			Object viewPage = pageSwitcher.getPages()[i];
-			FilteredTableItem item = new FilteredTableItem();
-			ImageDescriptor imageDescriptor = pageSwitcher.getImageDescriptor(viewPage);
+	protected void addItems(Table table, WorkbenchPage page) {
+		Object[] pages = pageSwitcher.getPages();
+		for (int i = 0; i < pages.length; i++) {
+			TableItem item = null;
+			item = new TableItem(table, SWT.NONE);
+			ImageDescriptor imageDescriptor = pageSwitcher
+					.getImageDescriptor(pages[i]);
 			if (imageDescriptor != null) {
 				if (lrm == null) {
-					lrm = new LocalResourceManager(JFaceResources.getResources());
+					lrm = new LocalResourceManager(JFaceResources
+							.getResources());
 				}
 				item.setImage(lrm.createImage(imageDescriptor));
 			}
-			item.putData(K_PAGE, viewPage);
-			String name = pageSwitcher.getName(viewPage);
+			item.setData(pages[i]);
+			String name = pageSwitcher.getName(pages[i]);
 			if (name.length() > TEXT_LIMIT) {
 				name = name.substring(0, TEXT_LIMIT) + "..."; //$NON-NLS-1$
 			}
 			item.setText(name);
-			rows.add(item);
 		}
-		return rows;
 	}
 
-	@Override
 	protected int getCurrentItemIndex() {
 		return pageSwitcher.getCurrentPageIndex();
 	}
 
-	@Override
 	protected ParameterizedCommand getBackwardCommand() {
-		final ICommandService commandService = window
+		final ICommandService commandService = (ICommandService) window
 				.getWorkbench().getService(ICommandService.class);
-		final Command command = commandService.getCommand(IWorkbenchCommandConstants.NAVIGATE_PREVIOUS_PAGE);
+		final Command command = commandService
+.getCommand(IWorkbenchCommandConstants.NAVIGATE_PREVIOUS_PAGE);
 		ParameterizedCommand commandF = new ParameterizedCommand(command, null);
 		return commandF;
 	}
 
-	@Override
 	protected ParameterizedCommand getForwardCommand() {
-		final ICommandService commandService = window
+		final ICommandService commandService = (ICommandService) window
 				.getWorkbench().getService(ICommandService.class);
 		final Command command= commandService.getCommand(IWorkbenchCommandConstants.NAVIGATE_NEXT_PAGE);
 		ParameterizedCommand commandF = new ParameterizedCommand(command, null);
 		return commandF;
 	}
 
-	@Override
 	protected String getTableHeader(IWorkbenchPart activePart) {
 		if (activePart instanceof WorkbenchPart) {
 			return ((WorkbenchPart) activePart).getPartName();
@@ -123,7 +111,6 @@ public class CyclePageHandler extends FilteredTableBaseHandler {
 		return activePart.getTitle();
 	}
 
-	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		if (event.getCommand().getId().equals(IWorkbenchCommandConstants.NAVIGATE_NEXT_PAGE)) {
 			gotoDirection = true;
@@ -138,7 +125,6 @@ public class CyclePageHandler extends FilteredTableBaseHandler {
 		return null;
 	}
 
-	@Override
 	protected void setDialogLocation(final Shell dialog,
 			IWorkbenchPart activePart) {
 		if (dialog == null)
@@ -151,7 +137,7 @@ public class CyclePageHandler extends FilteredTableBaseHandler {
 		if (activePart != null) {
 			WorkbenchPart wbPart = (WorkbenchPart) activePart;
 			PartSite site = (PartSite) wbPart.getSite();
-			Control paneCtrl = (Control) site.getModel().getWidget();
+			Control paneCtrl = site.getPane().getControl();
 
 			// Get the center of the view pane's control
 			Rectangle viewBounds = paneCtrl.getBounds();
@@ -169,18 +155,16 @@ public class CyclePageHandler extends FilteredTableBaseHandler {
 		dialog.setLocation(dlgAnchor);
 	}
 
-	@Override
 	public void dispose() {
 		super.dispose();
 		this.pageSwitcher = null;
 	}
 
-	@Override
 	protected void activate(IWorkbenchPage page, Object selectedItem) {
 		if (selectedItem == null) {
 			return;
 		}
-		// activate the selected page
-		pageSwitcher.activatePage(((FilteredTableItem) selectedItem).getData(K_PAGE));
+
+		pageSwitcher.activatePage(selectedItem);
 	}
 }

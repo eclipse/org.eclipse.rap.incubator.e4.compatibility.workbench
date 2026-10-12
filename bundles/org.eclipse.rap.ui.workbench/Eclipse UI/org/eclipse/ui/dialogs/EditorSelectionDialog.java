@@ -1,36 +1,29 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Benjamin Muskalla -Bug 29633
- *     Helena Halperin - Bug 298747
- *     Andrey Loskutov <loskutov@gmx.de> - Bug 378485, 460555, 463262
- *     Lars Vogel <Lars.Vogel@vogella.com> - Bug 472654
- *     Patrik Suzzi <psuzzi@gmail.com> - Bug 486859
+ *     Benjamin Muskalla -	Bug 29633 [EditorMgmt] "Open" menu should
+ *     						have Open With-->Other
+ *     Helena Halperin - Bug 298747 [EditorMgmt] Bidi Incorrect file type direction in mirrored "Editor Selection" dialog
  *******************************************************************************/
 package org.eclipse.ui.dialogs;
 
 import java.util.ArrayList;
-import java.util.List;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.resource.ResourceManager;
-import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.util.Util;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.osgi.util.NLS;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.osgi.util.TextProcessor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -44,9 +37,9 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IEditorDescriptor;
-import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.IWorkbenchHelpContextIds;
 import org.eclipse.ui.internal.WorkbenchMessages;
@@ -59,84 +52,27 @@ import org.eclipse.ui.internal.registry.EditorRegistry;
  * This class is used to allow the user to select a dialog from the set of
  * internal and external editors.
  *
- * @since 3.3
- * @noextend This class is not intended to be subclassed by clients.
+ * @since 1.1
+ *
  */
 
-public class EditorSelectionDialog extends Dialog {
-
-	private static class TreeArrayContentProvider implements ITreeContentProvider {
-
-		private static final Object[] EMPTY = new Object[0];
-
-		@Override
-		public void dispose() {
-			//
-		}
-
-		@Override
-		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-			//
-		}
-
-		@Override
-		public Object[] getElements(Object inputElement) {
-			if (inputElement == null || !inputElement.getClass().isArray()) {
-				return EMPTY;
-			}
-			// see bug 9262 why we can't return the same array
-			Object[] orig = (Object[]) inputElement;
-			Object[] arr = new Object[orig.length];
-			System.arraycopy(orig, 0, arr, 0, arr.length);
-			return arr;
-		}
-
-		@Override
-		public Object[] getChildren(Object parentElement) {
-			return EMPTY;
-		}
-
-		@Override
-		public Object getParent(Object element) {
-			return null;
-		}
-
-		@Override
-		public boolean hasChildren(Object element) {
-			return false;
-		}
-
-	}
-
-	private IEditorDescriptor selectedEditor;
-
-	private IEditorDescriptor hiddenSelectedEditor;
+public final class EditorSelectionDialog extends Dialog {
+	private EditorDescriptor selectedEditor;
 
 // RAP [rh] external editors not supported: therefore externalButton,
 //  internalButton and browseExternalEditorsButton are unnecessary
 //	private Button externalButton;
 
-	private FilteredTree editorTable;
+	private Table editorTable;
 
 //	private Button browseExternalEditorsButton;
-//
+
 //	private Button internalButton;
 
 	private Button okButton;
 
-	// RAP [rh] unused code due to changes becauase of external editors not
-	// supported
-//	/**
-//	 * For internal use only.
-//	 *
-//	 * @noreference This field is not intended to be referenced by clients.
-//	 * @since 3.7
-//	 */
-//	protected static final String STORE_ID_INTERNAL_EXTERNAL = "EditorSelectionDialog.STORE_ID_INTERNAL_EXTERNAL";//$NON-NLS-1$
-
-	private static final String STORE_ID_DESCR = "EditorSelectionDialog.STORE_ID_DESCR";//$NON-NLS-1$
-
-	private static final String STORE_ID_FILE_EXTENSION = "EditorSelectionDialog.STORE_ID_FILE_EXTENSION";//$NON-NLS-1$
+//RAP [rh] unused code due to changes becauase of external editors not supported
+//	private static final String STORE_ID_INTERNAL_EXTERNAL = "EditorSelectionDialog.STORE_ID_INTERNAL_EXTERNAL";//$NON-NLS-1$
 
 	private String message = WorkbenchMessages.get().EditorSelection_chooseAnEditor;
 
@@ -152,13 +88,7 @@ public class EditorSelectionDialog extends Dialog {
 
 	private ResourceManager resourceManager;
 
-	private TreeViewer editorTableViewer;
-
-	private String fileName;
-
-	private Button rememberTypeButton;
-
-	private Button rememberEditorButton;
+	private TableViewer editorTableViewer;
 
 // RAP [rh] external editors not supported
 //	private static final String[] Executable_Filters;
@@ -166,10 +96,8 @@ public class EditorSelectionDialog extends Dialog {
 	private static final int TABLE_WIDTH = 200;
 //RAP [rh] external editors not supported
 //	static {
-//		if (Util.isWindows()) {
+//		if (SWT.getPlatform().equals("win32")) {//$NON-NLS-1$
 //			Executable_Filters = new String[] { "*.exe", "*.bat", "*.*" };//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-//		} else if (Util.isMac()) {
-//			Executable_Filters = new String[] { "*.app", "*" }; //$NON-NLS-1$ //$NON-NLS-2$
 //		} else {
 //			Executable_Filters = new String[] { "*" }; //$NON-NLS-1$
 //		}
@@ -190,7 +118,6 @@ public class EditorSelectionDialog extends Dialog {
 	/**
 	 * This method is called if a button has been pressed.
 	 */
-	@Override
 	protected void buttonPressed(int buttonId) {
 		if (buttonId == IDialogConstants.OK_ID) {
 			saveWidgetValues();
@@ -201,7 +128,6 @@ public class EditorSelectionDialog extends Dialog {
 	/**
 	 * Close the window.
 	 */
-	@Override
 	public boolean close() {
 		boolean result = super.close();
 		resourceManager.dispose();
@@ -209,7 +135,9 @@ public class EditorSelectionDialog extends Dialog {
 		return result;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc) Method declared in Window.
+	 */
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
 		shell.setText(WorkbenchMessages.get().EditorSelection_title);
@@ -227,7 +155,6 @@ public class EditorSelectionDialog extends Dialog {
 	 *            the parent composite to contain the dialog area
 	 * @return the dialog area control
 	 */
-	@Override
 	protected Control createDialogArea(Composite parent) {
 		Font font = parent.getFont();
 		// create main group
@@ -235,42 +162,31 @@ public class EditorSelectionDialog extends Dialog {
 		((GridLayout) contents.getLayout()).numColumns = 2;
 
 		// begin the layout
-		Label textLabel = new Label(contents, SWT.WRAP);
-
+		Label textLabel = new Label(contents, SWT.NONE);
 		textLabel.setText(message);
 		GridData data = new GridData();
 		data.horizontalSpan = 2;
-		data.horizontalAlignment = SWT.FILL;
-		data.widthHint = TABLE_WIDTH;
 		textLabel.setLayoutData(data);
 		textLabel.setFont(font);
 
 // RAP [rh] external editors not supported
-//		Composite group = new Composite(contents, SWT.SHADOW_NONE);
-//		data = new GridData();
-//		data.grabExcessHorizontalSpace = true;
-//		data.horizontalAlignment = SWT.FILL;
-//		data.horizontalSpan = 2;
-//		group.setLayout(new RowLayout(SWT.HORIZONTAL));
-//		group.setLayoutData(data);
-//
-//		internalButton = new Button(group, SWT.RADIO | SWT.LEFT);
+//		internalButton = new Button(contents, SWT.RADIO | SWT.LEFT);
 //		internalButton.setText(WorkbenchMessages.get().EditorSelection_internal);
 //		internalButton.addListener(SWT.Selection, listener);
+//		data = new GridData();
+//		data.horizontalSpan = 1;
+//		internalButton.setLayoutData(data);
 //		internalButton.setFont(font);
 //
-//		externalButton = new Button(group, SWT.RADIO | SWT.LEFT);
+//		externalButton = new Button(contents, SWT.RADIO | SWT.LEFT);
 //		externalButton.setText(WorkbenchMessages.get().EditorSelection_external);
 //		externalButton.addListener(SWT.Selection, listener);
+//		data = new GridData();
+//		data.horizontalSpan = 1;
+//		externalButton.setLayoutData(data);
 //		externalButton.setFont(font);
 
-		editorTable = new FilteredTree(contents, SWT.SINGLE | SWT.BORDER, new PatternFilter(), true);
-		editorTableViewer = editorTable.getViewer();
-		Tree tree = editorTableViewer.getTree();
-		tree.addListener(SWT.Selection, listener);
-		tree.addListener(SWT.DefaultSelection, listener);
-		// RAP [rh] DblClickListener doesn't work reliable
-		tree.addListener(SWT.MouseDoubleClick, listener);
+		editorTable = new Table(contents, SWT.SINGLE | SWT.BORDER);
 		data = new GridData();
 		data.widthHint = convertHorizontalDLUsToPixels(TABLE_WIDTH);
 		data.horizontalAlignment = GridData.FILL;
@@ -280,21 +196,28 @@ public class EditorSelectionDialog extends Dialog {
 		data.horizontalSpan = 2;
 		editorTable.setLayoutData(data);
 		editorTable.setFont(font);
-		data.heightHint = tree.getItemHeight() * 12;
-		editorTableViewer.setContentProvider(new TreeArrayContentProvider());
+		data.heightHint = editorTable.getItemHeight() * 12;
+		editorTableViewer = new TableViewer(editorTable);
+		editorTableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		editorTableViewer.setLabelProvider(new LabelProvider() {
-			@Override
 			public String getText(Object element) {
 				IEditorDescriptor d = (IEditorDescriptor) element;
 				return TextProcessor.process(d.getLabel(), "."); //$NON-NLS-1$
 			}
 
-			@Override
 			public Image getImage(Object element) {
 				IEditorDescriptor d = (IEditorDescriptor) element;
 				return (Image) resourceManager.get(d.getImageDescriptor());
 			}
 		});
+		editorTable.addListener(SWT.Selection, listener);
+		editorTable.addListener(SWT.DefaultSelection, listener);
+		// RAP [rh] DblClickListener doesn't work reliable
+//		editorTable.addListener(SWT.MouseDoubleClick, listener);
+		editorTable.addListener(SWT.Selection, listener);
+		editorTable.addListener(SWT.DefaultSelection, listener);
+		editorTable.addListener(SWT.MouseDoubleClick, listener);
+
 // RAP [rh] external editors not supported
 //		browseExternalEditorsButton = new Button(contents, SWT.PUSH);
 //		browseExternalEditorsButton
@@ -304,112 +227,31 @@ public class EditorSelectionDialog extends Dialog {
 //		int widthHint = convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
 //		data.widthHint = Math.max(widthHint, browseExternalEditorsButton
 //				.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
-//		data.horizontalSpan = 2;
 //		browseExternalEditorsButton.setLayoutData(data);
 //		browseExternalEditorsButton.setFont(font);
 
-		if (fileName != null) {
-
-			rememberEditorButton = new Button(contents, SWT.CHECK | SWT.LEFT);
-			rememberEditorButton.setText(NLS.bind(WorkbenchMessages.get().EditorSelection_rememberEditor, fileName));
-			rememberEditorButton.addListener(SWT.Selection, listener);
-			data = new GridData();
-			data.horizontalSpan = 2;
-			rememberEditorButton.setLayoutData(data);
-			rememberEditorButton.setFont(font);
-
-			String fileType = getFileType();
-			if (!fileType.isEmpty()) {
-				rememberTypeButton = new Button(contents, SWT.CHECK | SWT.LEFT);
-				rememberTypeButton.setText(NLS.bind(WorkbenchMessages.get().EditorSelection_rememberType, fileType));
-				rememberTypeButton.addListener(SWT.Selection, listener);
-				data = new GridData();
-				data.horizontalSpan = 2;
-				rememberTypeButton.setLayoutData(data);
-				rememberTypeButton.setFont(font);
-			}
-		}
-
-		initializeSuggestion();
 		restoreWidgetValues(); // Place buttons to the appropriate state
 
-		// Run async to restore selection on *visible* dialog - otherwise three won't scroll
-		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
-			if (editorTable.isDisposed()) {
-				return;
-			}
 			fillEditorTable();
-			updateEnableState();
-		});
-	    return contents;
-	}
 
-	private String getFileType() {
-		if (fileName == null) {
-			return ""; //$NON-NLS-1$
-		}
-		int lastDot = fileName.lastIndexOf('.');
-		if (lastDot == -1 || lastDot >= fileName.length() - 1) {
-			return ""; //$NON-NLS-1$
-		}
-		return fileName.substring(lastDot + 1, fileName.length());
+			updateEnableState();
+
+		return contents;
 	}
 
 	protected void fillEditorTable() {
 		// RAP [bm] no external editors
-//		IEditorDescriptor newSelection = selectedEditor;
-//
-//		boolean showInternal = internalButton.getSelection();
-//		Object[] input = (Object[]) editorTableViewer.getInput();
-//		if (input != null) {
-//			// we are switching between external/internal editors
-//			boolean isShowingInternal = Arrays.equals(input, getInternalEditors());
-//			if (showInternal != isShowingInternal) {
-//				newSelection = hiddenSelectedEditor;
-//				if (!editorTableViewer.getSelection().isEmpty()) {
-//					hiddenSelectedEditor = (EditorDescriptor) editorTableViewer.getStructuredSelection()
-//							.getFirstElement();
-//				}
-//			}
-//		}
-
+//		if (internalButton.getSelection()) {
         editorTableViewer.setInput(getInternalEditors());
-
-//		if (fileName != null && newSelection == null) {
-//			if (!showInternal) {
-//				newSelection = findBestExternalEditor();
 //			} else {
-//				newSelection = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(fileName);
-//			}
+//			editorTableViewer.setInput(getExternalEditors());
 //		}
-//		if (newSelection != null) {
-//			editorTableViewer.setSelection(new StructuredSelection(newSelection), true);
-//		}
-//
-//		if (editorTableViewer.getSelection().isEmpty()) {
-//			// set focus to first element, but don't select it:
-//			Tree tree = editorTableViewer.getTree();
-//			if (tree.getItemCount() > 0) {
-//				tree.showItem(tree.getItem(0));
-//			}
-//		}
-//		editorTable.setFocus();
-	}
-
-	private static String getFileExtension(String fileName) {
-		if (fileName == null) {
-			return null;
-		}
-		int index = fileName.lastIndexOf('.');
-		if (index != -1) {
-			return fileName.substring(index);
-		}
-		return fileName;
 	}
 
 	/**
 	 * Return the dialog store to cache values into
 	 */
+
 	protected IDialogSettings getDialogSettings() {
 		IDialogSettings workbenchSettings = WorkbenchPlugin.getDefault()
 				.getDialogSettings();
@@ -427,31 +269,28 @@ public class EditorSelectionDialog extends Dialog {
 //   */
 //	protected IEditorDescriptor[] getExternalEditors() {
 //		if (externalEditors == null) {
-//			IProgressService ps = PlatformUI.getWorkbench().getService(IProgressService.class);
-//			// Since this can take a while, show the busy cursor.
-//			IRunnableWithProgress runnable = monitor -> {
+//			// Since this can take a while, show the busy
+//			// cursor. If the dialog is not yet visible,
+//			// then use the parent shell.
+//			Control shell = getShell();
+//			if (!shell.isVisible()) {
+//				Control topShell = shell.getParent();
+//				if (topShell != null) {
+//					shell = topShell;
+//				}
+//			}
+//			//Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+//	        Cursor busy = Graphics.getCursor( SWT.CURSOR_WAIT );
+//			shell.setCursor(busy);
 //				// Get the external editors available
-//				EditorRegistry reg = (EditorRegistry) WorkbenchPlugin.getDefault().getEditorRegistry();
+//			EditorRegistry reg = (EditorRegistry) WorkbenchPlugin.getDefault()
+//					.getEditorRegistry();
 //				externalEditors = reg.getSortedEditorsFromOS();
 //				externalEditors = filterEditors(externalEditors);
-//			};
-//			try {
-//				// See bug 47556 - Program.getPrograms() requires a Display.getCurrent() != null
-//				ps.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), runnable, null);
-//			} catch (InvocationTargetException e) {
-//				Throwable cause = e.getCause();
-//				IStatus status;
-//				if (cause instanceof CoreException) {
-//					status = ((CoreException) cause).getStatus();
-//				} else {
-//					status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID,
-//							"Error while retrieving native editors", cause); //$NON-NLS-1$
-//				}
-//				StatusManager.getManager().handle(status);
-//			} catch (InterruptedException e) {
-//				// Canceled by the user
-//			}
-//
+//			externalEditorImages = getImages(externalEditors);
+//			// Clean up
+//			shell.setCursor(null);
+//			//busy.dispose();
 //		}
 //		return externalEditors;
 //	}
@@ -473,20 +312,21 @@ public class EditorSelectionDialog extends Dialog {
 			return editors;
 		}
 
-		List<IEditorDescriptor> filteredList = new ArrayList<>();
-		for (IEditorDescriptor editor : editors) {
+		ArrayList filteredList = new ArrayList();
+		for (int i = 0; i < editors.length; i++) {
 			boolean add = true;
-			for (IEditorDescriptor element : editorsToFilter) {
-				if (editor.getId().equals(element.getId())) {
+			for (int j = 0; j < editorsToFilter.length; j++) {
+				if (editors[i].getId().equals(editorsToFilter[j].getId())) {
 					add = false;
 				}
 			}
 			if (add) {
-				filteredList.add(editor);
+				filteredList.add(editors[i]);
 			}
 		}
 
-		return filteredList.toArray(new IEditorDescriptor[filteredList.size()]);
+		return (IEditorDescriptor[]) filteredList
+				.toArray(new IEditorDescriptor[filteredList.size()]);
 	}
 
 	/**
@@ -519,6 +359,19 @@ public class EditorSelectionDialog extends Dialog {
 //		String result = dialog.open();
 //		if (result != null) {
 //			EditorDescriptor editor = EditorDescriptor.createForProgram(result);
+//			// pretend we had obtained it from the list of os registered editors
+//			TableItem ti = new TableItem(editorTable, SWT.NULL);
+//			ti.setData(editor);
+//			ti.setText(editor.getLabel());
+//			Image image = editor.getImageDescriptor().createImage();
+//			ti.setImage(image);
+//
+//			// need to pass an array to setSelection -- 1FSKYVO: SWT:ALL -
+//			// inconsistent setSelection api on Table
+//			editorTable.setSelection(new TableItem[] { ti });
+//			editorTable.showSelection();
+//			editorTable.setFocus();
+//			selectedEditor = editor;
 //
 //			/*
 //			 * add to our collection of cached external editors in case the user
@@ -529,10 +382,12 @@ public class EditorSelectionDialog extends Dialog {
 //					externalEditors.length);
 //			newEditors[newEditors.length - 1] = editor;
 //			externalEditors = newEditors;
-//			editorTableViewer.setInput(externalEditors);
-//			editorTableViewer.setSelection(new StructuredSelection(editor), true);
-//			editorTable.setFocus();
-//			selectedEditor = editor;
+//
+//			Image[] newImages = new Image[externalEditorImages.length + 1];
+//			System.arraycopy(externalEditorImages, 0, newImages, 0,
+//					externalEditorImages.length);
+//			newImages[newImages.length - 1] = image;
+//			externalEditorImages = newImages;
 //		}
 //	}
 
@@ -543,67 +398,16 @@ public class EditorSelectionDialog extends Dialog {
 		buttonPressed(IDialogConstants.OK_ID);
 	}
 
-	private void initializeSuggestion() {
-		if (fileName == null) {
-			return;
-		}
-		IEditorRegistry editorRegistry = PlatformUI.getWorkbench().getEditorRegistry();
-		IEditorDescriptor suggestion = editorRegistry.getDefaultEditor(fileName);
-//		if (suggestion != null && suggestion.isInternal()) {
-			selectedEditor = suggestion;
-//		} else {
-//			selectedEditor = findBestExternalEditor();
-//		}
-//		boolean enableInternalList = selectedEditor == null || selectedEditor.isInternal();
-//		internalButton.setSelection(enableInternalList);
-//		externalButton.setSelection(!enableInternalList);
-	}
-
-//	private IEditorDescriptor findBestExternalEditor() {
-//		if (fileName == null) {
-//			return null;
-//		}
-//		String extension = getFileExtension(fileName);
-//		Program program = Program.findProgram(extension);
-//		if (program != null) {
-//			for (IEditorDescriptor descriptor : getExternalEditors()) {
-//				if (descriptor instanceof EditorDescriptor
-//						&& program.equals(((EditorDescriptor) descriptor).getProgram())) {
-//					return descriptor;
-//				}
-//			}
-//		}
-//		return null;
-//	}
-
 	/**
 	 * Use the dialog store to restore widget values to the values that they
-	 * held last time this wizard was used to completion, if the previous file
-	 * has same extension.
+	 * held last time this wizard was used to completion
 	 */
 	protected void restoreWidgetValues() {
 // RAP [rh] external editors not supported
 //		IDialogSettings settings = getDialogSettings();
-//		if (fileName == null || selectedEditor == null
-//				|| getFileExtension(fileName).equals(settings.get(STORE_ID_FILE_EXTENSION))) {
 //			boolean wasExternal = settings.getBoolean(STORE_ID_INTERNAL_EXTERNAL);
 //			internalButton.setSelection(!wasExternal);
 //			externalButton.setSelection(wasExternal);
-//			String id = settings.get(STORE_ID_DESCR);
-//			if (id != null) {
-//				IEditorDescriptor[] editors;
-//				if (wasExternal) {
-//					editors = getExternalEditors();
-//				} else {
-//					editors = getInternalEditors();
-//				}
-//				for (IEditorDescriptor desc : editors) {
-//					if (id.equals(desc.getId())) {
-//						selectedEditor = desc;
-//					}
-//				}
-//			}
-//		}
 	}
 
 	/**
@@ -614,71 +418,9 @@ public class EditorSelectionDialog extends Dialog {
 // RAP [rh] external editors not supported
 //		IDialogSettings settings = getDialogSettings();
 //		// record whether use was viewing internal or external editors
-//		settings.put(STORE_ID_FILE_EXTENSION, getFileExtension(fileName));
-//		settings.put(STORE_ID_INTERNAL_EXTERNAL, !internalButton.getSelection());
-//		settings.put(STORE_ID_DESCR, selectedEditor.getId());
-//		String editorId = selectedEditor.getId();
-//		settings.put(STORE_ID_DESCR, editorId);
-//		boolean associateEditor = false;
-//		EditorRegistry reg = (EditorRegistry) WorkbenchPlugin.getDefault().getEditorRegistry();
-//		// remember editor for specific file
-//		if (rememberEditorButton != null && rememberEditorButton.getSelection()) {
-//			updateFileMappings(reg, true);
-//			reg.setDefaultEditor(fileName, selectedEditor);
-//			associateEditor = true;
-//		}
-//		// remember editor for given extension type
-//		if (rememberTypeButton != null && rememberTypeButton.getSelection()) {
-//			updateFileMappings(reg, false);
-//			reg.setDefaultEditor("*." + getFileType(), selectedEditor); //$NON-NLS-1$
-//			associateEditor = true;
-//		}
-//		if (associateEditor) {
-//			// bug 468906: always re-set editor mappings: this is needed to
-//			// rebuild internal editors map after setting the default editor
-//			List<IFileEditorMapping> newMappings = new ArrayList<>();
-//			newMappings.addAll(Arrays.asList(reg.getFileEditorMappings()));
-//			reg.setFileEditorMappings(newMappings.toArray(new FileEditorMapping[newMappings.size()]));
-//			reg.saveAssociations();
-//		}
+//		settings
+//				.put(STORE_ID_INTERNAL_EXTERNAL, !internalButton.getSelection());
 	}
-
-//	/**
-//	 * Make sure EditorRegistry has editor mapping for the file name/type
-//	 */
-//	private void updateFileMappings(EditorRegistry reg, boolean useFileName) {
-//		IFileEditorMapping[] mappings = reg.getFileEditorMappings();
-//		boolean hasMapping = false;
-//		String fileType = getFileType();
-//		for (IFileEditorMapping mapping : mappings) {
-//			if (useFileName) {
-//				if (fileName.equals(mapping.getLabel())) {
-//					hasMapping = true;
-//					break;
-//				}
-//			} else {
-//				if (fileType.equals(mapping.getExtension())) {
-//					hasMapping = true;
-//					break;
-//				}
-//
-//			}
-//		}
-//		if (hasMapping) {
-//			return;
-//		}
-//		FileEditorMapping mapping;
-//		if (useFileName) {
-//			mapping = new FileEditorMapping(fileName, null);
-//		} else {
-//			mapping = new FileEditorMapping(null, fileType);
-//		}
-//		List<IFileEditorMapping> newMappings = new ArrayList<>();
-//		newMappings.addAll(Arrays.asList(mappings));
-//		newMappings.add(mapping);
-//		FileEditorMapping[] array = newMappings.toArray(new FileEditorMapping[newMappings.size()]);
-//		reg.setFileEditorMappings(array);
-//	}
 
 	/**
 	 * Set the message displayed by this message dialog
@@ -688,18 +430,6 @@ public class EditorSelectionDialog extends Dialog {
 	 */
 	public void setMessage(String aMessage) {
 		message = aMessage;
-	}
-
-	/**
-	 * Set the file name which can be used to store the selected editor
-	 * preference
-	 *
-	 * @param fileName
-	 *            the file name
-	 * @since 3.107
-	 */
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
 	}
 
 	/**
@@ -722,7 +452,6 @@ public class EditorSelectionDialog extends Dialog {
 		updateOkButton();
 	}
 
-	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
 		okButton = createButton(parent, IDialogConstants.OK_ID,
 				IDialogConstants.get().OK_LABEL, true);
@@ -742,7 +471,7 @@ public class EditorSelectionDialog extends Dialog {
 			return;
 		}
 		// If there is no selection, do not enable OK button
-		if (editorTableViewer.getSelection().isEmpty()) {
+		if (editorTable.getSelectionCount() == 0) {
 			okButton.setEnabled(false);
 			return;
 		}
@@ -752,7 +481,11 @@ public class EditorSelectionDialog extends Dialog {
 
 	private class DialogListener implements Listener {
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 *
+		 * @see org.eclipse.swt.widgets.Listener#handleEvent(org.eclipse.swt.widgets.Event)
+		 */
 		public void handleEvent(Event event) {
             // RAP [rh] Mouse events don't work reliably with Table
 //          if (event.type == SWT.MouseDoubleClick) {
@@ -764,22 +497,13 @@ public class EditorSelectionDialog extends Dialog {
 //              fillEditorTable();
 //          } else if (event.widget == browseExternalEditorsButton) {
 //              promptForExternalEditor();
-/*          } else */ if (event.widget == editorTableViewer.getTree()) {
-				if (!editorTableViewer.getSelection().isEmpty()) {
-					selectedEditor = (EditorDescriptor) editorTableViewer.getStructuredSelection().getFirstElement();
+/*			} else */ if (event.widget == editorTable) {
+				if (editorTable.getSelectionIndex() != -1) {
+					selectedEditor = (EditorDescriptor) editorTable
+							.getSelection()[0].getData();
 				} else {
 					selectedEditor = null;
 					okButton.setEnabled(false);
-				}
-			}
-			// 486859 both checked: checking one box unchecks the other
-			if (rememberEditorButton != null && rememberTypeButton != null && rememberEditorButton.getSelection()
-					&& rememberTypeButton.getSelection()) {
-				if (event.widget == rememberEditorButton) {
-					rememberTypeButton.setSelection(false);
-				}
-				if (event.widget == rememberTypeButton) {
-					rememberEditorButton.setSelection(false);
 				}
 			}
 			updateEnableState();
@@ -787,7 +511,10 @@ public class EditorSelectionDialog extends Dialog {
 
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.Dialog#isResizable()
+	 * @since 1.4
+	 */
 	protected boolean isResizable() {
 		return true;
 	}

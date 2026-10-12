@@ -1,21 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2005 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Tristan Hume - <trishume@gmail.com> -
- *     		Fix for Bug 2369 [Workbench] Would like to be able to save workspace without exiting
- *     		Implemented workbench auto-save to correctly restore state in case of crash.
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
-
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -68,9 +61,11 @@ public class WorkbenchPreferencePage extends PreferencePage implements
     // RAP [bm]: 
 //  private Button showHeapStatusButton;
 
-	protected static int MAX_SAVE_INTERVAL = 9999;
-
-    @Override
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.eclipse.jface.preference.PreferencePage
+     */
 	protected Control createContents(Composite parent) {
 
         // @issue if the product subclasses this page, then it should provide
@@ -114,6 +109,7 @@ public class WorkbenchPreferencePage extends PreferencePage implements
                 .getPreferenceStore().getBoolean(
                         IPreferenceConstants.RUN_IN_BACKGROUND));
     }
+    
     // RAP [bm]: 
 //    /**
 //     * Create the widget for the heap status preference.
@@ -171,7 +167,6 @@ public class WorkbenchPreferencePage extends PreferencePage implements
         doubleClickButton = createRadioButton(buttonComposite, label);
         doubleClickButton.addSelectionListener(new SelectionAdapter() {
 
-            @Override
             public void widgetSelected(SelectionEvent e) {
                 selectClickMode(singleClickButton.getSelection());
             }
@@ -182,9 +177,7 @@ public class WorkbenchPreferencePage extends PreferencePage implements
         singleClickButton = createRadioButton(buttonComposite, label);
         singleClickButton.addSelectionListener(new SelectionAdapter() {
 
-            @Override
             public void widgetSelected(SelectionEvent e) {
-                
                 selectClickMode(singleClickButton.getSelection());
             }
         });
@@ -197,9 +190,7 @@ public class WorkbenchPreferencePage extends PreferencePage implements
         selectOnHoverButton.setSelection(selectOnHover);
         selectOnHoverButton.addSelectionListener(new SelectionAdapter() {
 
-            @Override
             public void widgetSelected(SelectionEvent e) {
-                
                 selectOnHover = selectOnHoverButton.getSelection();
             }
         });
@@ -214,7 +205,6 @@ public class WorkbenchPreferencePage extends PreferencePage implements
         openAfterDelayButton.setSelection(openAfterDelay);
         openAfterDelayButton.addSelectionListener(new SelectionAdapter() {
 
-            @Override
             public void widgetSelected(SelectionEvent e) {
                 openAfterDelay = openAfterDelayButton.getSelection();
             }
@@ -293,6 +283,7 @@ public class WorkbenchPreferencePage extends PreferencePage implements
     protected static void createSpace(Composite parent) {
         Label vfiller = new Label(parent, SWT.LEFT);
         GridData gridData = new GridData();
+        gridData = new GridData();
         gridData.horizontalAlignment = GridData.BEGINNING;
         gridData.grabExcessHorizontalSpace = false;
         gridData.verticalAlignment = GridData.CENTER;
@@ -305,7 +296,6 @@ public class WorkbenchPreferencePage extends PreferencePage implements
      *
      * @return the preference store for this plugin
      */
-    @Override
 	protected IPreferenceStore doGetPreferenceStore() {
         return WorkbenchPlugin.getDefault().getPreferenceStore();
     }
@@ -313,7 +303,6 @@ public class WorkbenchPreferencePage extends PreferencePage implements
     /**
      * @see IWorkbenchPreferencePage
      */
-    @Override
 	public void init(IWorkbench aWorkbench) {
         IPreferenceStore store = getPreferenceStore();
         openOnSingleClick = store
@@ -326,7 +315,6 @@ public class WorkbenchPreferencePage extends PreferencePage implements
     /**
      * The default button has been pressed.
      */
-    @Override
 	protected void performDefaults() {
         IPreferenceStore store = getPreferenceStore();
         stickyCycleButton.setSelection(store
@@ -357,7 +345,6 @@ public class WorkbenchPreferencePage extends PreferencePage implements
     /**
      * The user has pressed Ok. Store/apply this page's values appropriately.
      */
-    @Override
 	public boolean performOk() {
         IPreferenceStore store = getPreferenceStore();
 
@@ -371,7 +358,6 @@ public class WorkbenchPreferencePage extends PreferencePage implements
         store.setValue(IPreferenceConstants.RUN_IN_BACKGROUND,
                 showUserDialogButton.getSelection());
         // RAP [bm]: 
-//		store.setValue(IPreferenceConstants.WORKBENCH_SAVE_INTERVAL, saveInterval.getIntValue());
 //        PrefUtil.getAPIPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, showHeapStatusButton.getSelection());
 //        updateHeapStatus(showHeapStatusButton.getSelection());
 
@@ -398,7 +384,8 @@ public class WorkbenchPreferencePage extends PreferencePage implements
     // RAP [bm]: disabled heap status
 //	private void updateHeapStatus(boolean selection) {
 //		IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
-//		for (IWorkbenchWindow window : windows) {
+//		for (int i = 0; i < windows.length; i++) {
+//			IWorkbenchWindow window = windows[i];
 //			if(window instanceof WorkbenchWindow){
 //				((WorkbenchWindow) window).showHeapStatus(selection);
 //			}

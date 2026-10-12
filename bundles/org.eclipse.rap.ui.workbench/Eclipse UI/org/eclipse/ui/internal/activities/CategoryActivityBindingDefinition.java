@@ -19,13 +19,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import org.eclipse.ui.internal.util.Util;
 
 public final class CategoryActivityBindingDefinition {
     private static final int HASH_FACTOR = 89;
 
-    private static final int HASH_INITIAL = CategoryActivityBindingDefinition.class
-            .getName().hashCode();
+	private static final int HASH_INITIAL = CategoryActivityBindingDefinition.class.getName().hashCode();
 
 	static Map<String, Collection<CategoryActivityBindingDefinition>> categoryActivityBindingDefinitionsByCategoryId(
 			Collection<CategoryActivityBindingDefinition> categoryActivityBindingDefinitions) {
@@ -38,38 +38,34 @@ public final class CategoryActivityBindingDefinition {
 
         while (iterator.hasNext()) {
 			CategoryActivityBindingDefinition categoryActivityBindingDefinition = iterator.next();
-            String categoryId = categoryActivityBindingDefinition
-                    .getCategoryId();
+			String categoryId = categoryActivityBindingDefinition.getCategoryId();
 
             if (categoryId != null) {
-				Collection<CategoryActivityBindingDefinition> categoryActivityBindingDefinitions2 = map
-                        .get(categoryId);
+				Collection<CategoryActivityBindingDefinition> categoryActivityBindingDefinitions2 = map.get(categoryId);
 
                 if (categoryActivityBindingDefinitions2 == null) {
 					categoryActivityBindingDefinitions2 = new HashSet<>();
                     map.put(categoryId, categoryActivityBindingDefinitions2);
                 }
 
-                categoryActivityBindingDefinitions2
-                        .add(categoryActivityBindingDefinition);
+				categoryActivityBindingDefinitions2.add(categoryActivityBindingDefinition);
             }
         }
 
         return map;
     }
 
-    private String activityId;
+	private final String activityId;
 
-    private String categoryId;
+	private final String categoryId;
 
     private transient int hashCode = HASH_INITIAL;
 
-    private String sourceId;
+	private final String sourceId;
 
     private transient String string;
 
-    public CategoryActivityBindingDefinition(String activityId,
-            String categoryId, String sourceId) {
+	public CategoryActivityBindingDefinition(String activityId, String categoryId, String sourceId) {
         this.activityId = activityId;
         this.categoryId = categoryId;
         this.sourceId = sourceId;
@@ -92,20 +88,13 @@ public final class CategoryActivityBindingDefinition {
 
     @Override
 	public boolean equals(Object object) {
-        if (!(object instanceof CategoryActivityBindingDefinition)) {
+		if (!(object instanceof final CategoryActivityBindingDefinition castedObject)) {
 			return false;
 		}
 
-        final CategoryActivityBindingDefinition castedObject = (CategoryActivityBindingDefinition) object;
-        if (!Util.equals(activityId, castedObject.activityId)) {
-            return false;
-        }
-
-        if (!Util.equals(categoryId, castedObject.categoryId)) {
-            return false;
-        }
-
-        return Util.equals(sourceId, castedObject.sourceId);
+		return Objects.equals(activityId, castedObject.activityId)
+				&& Objects.equals(categoryId, castedObject.categoryId)
+				&& Objects.equals(sourceId, castedObject.sourceId);
     }
 
     public String getActivityId() {
@@ -123,9 +112,9 @@ public final class CategoryActivityBindingDefinition {
     @Override
 	public int hashCode() {
         if (hashCode == HASH_INITIAL) {
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(activityId);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(categoryId);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(sourceId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(activityId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(categoryId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(sourceId);
             if (hashCode == HASH_INITIAL) {
 				hashCode++;
 			}

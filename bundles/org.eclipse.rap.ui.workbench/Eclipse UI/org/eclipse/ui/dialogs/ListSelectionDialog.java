@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -61,6 +58,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * </pre>
  * </p>
  * @noextend This class is not intended to be subclassed by clients.
+ * @since 1.0
  */
 public class ListSelectionDialog extends SelectionDialog {
     // the root element to populate the viewer with
@@ -75,9 +73,9 @@ public class ListSelectionDialog extends SelectionDialog {
     CheckboxTableViewer listViewer;
 
     // sizing constants
-    private static final int SIZING_SELECTION_WIDGET_HEIGHT = 250;
+    private final static int SIZING_SELECTION_WIDGET_HEIGHT = 250;
 
-    private static final int SIZING_SELECTION_WIDGET_WIDTH = 300;
+    private final static int SIZING_SELECTION_WIDGET_WIDTH = 300;
 
     /**
      * Creates a list selection dialog.
@@ -120,12 +118,8 @@ public class ListSelectionDialog extends SelectionDialog {
         Button selectButton = createButton(buttonComposite,
                 IDialogConstants.SELECT_ALL_ID, SELECT_ALL_TITLE, false);
 
-        SelectionListener listener = new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        SelectionListener listener = new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
                 listViewer.setAllChecked(true);
             }
         };
@@ -134,12 +128,8 @@ public class ListSelectionDialog extends SelectionDialog {
         Button deselectButton = createButton(buttonComposite,
                 IDialogConstants.DESELECT_ALL_ID, DESELECT_ALL_TITLE, false);
 
-        listener = new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        listener = new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
                 listViewer.setAllChecked(false);
             }
         };
@@ -158,14 +148,19 @@ public class ListSelectionDialog extends SelectionDialog {
 		}
     }
 
-    @Override
+    /*
+     *  (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+     */
 	protected void configureShell(Shell shell) {
         super.configureShell(shell);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(shell,
 				IWorkbenchHelpContextIds.LIST_SELECTION_DIALOG);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on Dialog.
+     */
 	protected Control createDialogArea(Composite parent) {
         // page group
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -218,7 +213,6 @@ public class ListSelectionDialog extends SelectionDialog {
      * <code>Dialog</code> method builds a list of the selected elements for later
      * retrieval by the client and closes this dialog.
      */
-    @Override
 	protected void okPressed() {
 
         // Get the input children.
@@ -227,7 +221,8 @@ public class ListSelectionDialog extends SelectionDialog {
         // Build a list of selected children.
         if (children != null) {
             ArrayList list = new ArrayList();
-            for (Object element : children) {
+            for (int i = 0; i < children.length; ++i) {
+                Object element = children[i];
                 if (listViewer.getChecked(element)) {
 					list.add(element);
 				}

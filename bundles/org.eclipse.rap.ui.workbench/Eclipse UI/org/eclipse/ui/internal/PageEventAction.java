@@ -23,17 +23,18 @@ import org.eclipse.ui.actions.PartEventAction;
 /**
  * The abstract superclass for actions that listen to page activation and
  * open/close events. This implementation tracks the active page (see
- * <code>getActivePage</code>) and provides a convenient place to monitor
- * page lifecycle events that could affect the availability of the action.
+ * <code>getActivePage</code>) and provides a convenient place to monitor page
+ * lifecycle events that could affect the availability of the action.
  * <p>
  * Subclasses must implement the following <code>IAction</code> method:
+ * </p>
  * <ul>
  *   <li><code>run</code> - to do the action's work</li>
  * </ul>
- * </p>
  * <p>
  * Subclasses may extend any of the <code>IPartListener</code> methods if the
  * action availablity needs to be recalculated:
+ * </p>
  * <ul>
  *   <li><code>partActivated</code></li>
  *   <li><code>partDeactivated</code></li>
@@ -41,29 +42,27 @@ import org.eclipse.ui.actions.PartEventAction;
  *   <li><code>partClosed</code></li>
  *   <li><code>partBroughtToTop</code></li>
  * </ul>
- * </p>
  * <p>
  * Subclasses may extend any of the <code>IPageListener</code> methods if the
- * action availablity needs to be recalculated:
+ * action availability needs to be recalculated:
+ * </p>
  * <ul>
  *   <li><code>pageActivated</code></li>
  *   <li><code>pageClosed</code></li>
  *   <li><code>pageOpened</code></li>
  * </ul>
- * </p>
  * <p>
  * This method implements the <code>IPartListener</code> and
  * <code>IPageListener</code>interfaces, and automatically registers listeners
- * so that it can keep its enablement state up to date. Ordinarily, the
- * window's references to these listeners will be dropped automatically when
- * the window closes. However, if the client needs to get rid of an action
- * while the window is still open, the client must call
- * {@link IWorkbenchAction#dispose dispose} to give the action an
- * opportunity to deregister its listeners and to perform any other cleanup.
+ * so that it can keep its enablement state up to date. Ordinarily, the window's
+ * references to these listeners will be dropped automatically when the window
+ * closes. However, if the client needs to get rid of an action while the window
+ * is still open, the client must call {@link IWorkbenchAction#dispose dispose}
+ * to give the action an opportunity to deregister its listeners and to perform
+ * any other cleanup.
  * </p>
  */
-public abstract class PageEventAction extends PartEventAction implements
-        IPageListener, ActionFactory.IWorkbenchAction {
+public abstract class PageEventAction extends PartEventAction implements IPageListener, ActionFactory.IWorkbenchAction {
     /**
      * The active page, or <code>null</code> if none.
      */
@@ -75,14 +74,12 @@ public abstract class PageEventAction extends PartEventAction implements
     private IWorkbenchWindow workbenchWindow;
 
     /**
-     * Creates a new action with the given text. Register this
-     * action with the workbench window for page lifecycle
-     * events.
+	 * Creates a new action with the given text. Register this action with the
+	 * workbench window for page lifecycle events.
      *
-     * @param text the string used as the text for the action,
-     *   or <code>null</code> if there is no text
-     * @param window the workbench window this action is
-     *   registered with
+	 * @param text   the string used as the text for the action, or
+	 *               <code>null</code> if there is no text
+	 * @param window the workbench window this action is registered with
      */
     protected PageEventAction(String text, IWorkbenchWindow window) {
         super(text);
@@ -98,8 +95,8 @@ public abstract class PageEventAction extends PartEventAction implements
     /**
      * Returns the currently active page in the workbench window.
      *
-     * @return currently active page in the workbench window,
-     * or <code>null</code> in none
+	 * @return currently active page in the workbench window, or <code>null</code>
+	 *         in none
      */
     public final IWorkbenchPage getActivePage() {
         return activePage;
@@ -141,8 +138,8 @@ public abstract class PageEventAction extends PartEventAction implements
 
     /**
      * The <code>PageEventAction</code> implementation of this
-     * <code>IPageListener</code> method does nothing. Subclasses should extend
-     * this method if action availability has to be recalculated.
+	 * <code>IPageListener</code> method does nothing. Subclasses should extend this
+	 * method if action availability has to be recalculated.
      */
     @Override
 	public void pageOpened(IWorkbenchPage page) {
@@ -151,10 +148,9 @@ public abstract class PageEventAction extends PartEventAction implements
 
     /**
      * The <code>PageEventAction</code> implementation of this
-     * <code>ActionFactory.IWorkbenchAction</code> method
-     * deregisters the part and page listener adding by the constructor.
-     * Subclasses should extend this method to do additional
-     * cleanup.
+	 * <code>ActionFactory.IWorkbenchAction</code> method deregisters the part and
+	 * page listener adding by the constructor. Subclasses should extend this method
+	 * to do additional cleanup.
      *
      * @since 3.0
      */

@@ -34,8 +34,7 @@ import org.eclipse.ui.internal.util.Util;
 public final class ContextManagerEvent {
 
     /**
-     * The context manager which has changed. This value is never
-     * <code>null</code>.
+	 * The context manager which has changed. This value is never <code>null</code>.
      */
     private final IContextManager contextManager;
 
@@ -50,46 +49,50 @@ public final class ContextManagerEvent {
     private final boolean enabledContextIdsChanged;
 
     /**
-     * The set of context identifiers (strings) that were defined before the
-     * change occurred. If the defined contexts did not changed, then this value
-     * is <code>null</code>.
+	 * The set of context identifiers (strings) that were defined before the change
+	 * occurred. If the defined contexts did not changed, then this value is
+	 * <code>null</code>.
      */
     private final Set previouslyDefinedContextIds;
 
     /**
-     * The set of context identifiers (strings) that were enabled before the
-     * change occurred. If the enabled contexts did not changed, then this value
-     * is <code>null</code>.
+	 * The set of context identifiers (strings) that were enabled before the change
+	 * occurred. If the enabled contexts did not changed, then this value is
+	 * <code>null</code>.
      */
     private final Set previouslyEnabledContextIds;
 
     /**
      * Creates a new instance of this class.
      *
-     * @param contextManager
-     *            the instance of the interface that changed.
-     * @param definedContextIdsChanged
-     *            true, iff the definedContextIds property changed.
-     * @param enabledContextIdsChanged
-     *            true, iff the enabledContextIds property changed.
-     * @param previouslyDefinedContextIds
-     *            the set of identifiers to previously defined contexts. This
-     *            set may be empty. If this set is not empty, it must only
-     *            contain instances of <code>String</code>. This set must be
-     *            <code>null</code> if definedContextIdsChanged is
+	 * @param contextManager              the instance of the interface that
+	 *                                    changed.
+	 * @param definedContextIdsChanged    true, iff the definedContextIds property
+	 *                                    changed.
+	 * @param enabledContextIdsChanged    true, iff the enabledContextIds property
+	 *                                    changed.
+	 * @param previouslyDefinedContextIds the set of identifiers to previously
+	 *                                    defined contexts. This set may be empty.
+	 *                                    If this set is not empty, it must only
+	 *                                    contain instances of <code>String</code>.
+	 *                                    This set must be <code>null</code> if
+	 *                                    definedContextIdsChanged is
      *            <code>false</code> and must not be null if
-     *            definedContextIdsChanged is <code>true</code>.
-     * @param previouslyEnabledContextIds
-     *            the set of identifiers to previously enabled contexts. This
-     *            set may be empty. If this set is not empty, it must only
-     *            contain instances of <code>String</code>. This set must be
-     *            <code>null</code> if enabledContextIdsChanged is
+	 *                                    definedContextIdsChanged is
+	 *                                    <code>true</code>.
+	 * @param previouslyEnabledContextIds the set of identifiers to previously
+	 *                                    enabled contexts. This set may be empty.
+	 *                                    If this set is not empty, it must only
+	 *                                    contain instances of <code>String</code>.
+	 *                                    This set must be <code>null</code> if
+	 *                                    enabledContextIdsChanged is
      *            <code>false</code> and must not be null if
-     *            enabledContextIdsChanged is <code>true</code>.
+	 *                                    enabledContextIdsChanged is
+	 *                                    <code>true</code>.
      */
-    public ContextManagerEvent(IContextManager contextManager,
-            boolean definedContextIdsChanged, boolean enabledContextIdsChanged,
-            Set previouslyDefinedContextIds, Set previouslyEnabledContextIds) {
+	@Deprecated
+	public ContextManagerEvent(IContextManager contextManager, boolean definedContextIdsChanged,
+			boolean enabledContextIdsChanged, Set previouslyDefinedContextIds, Set previouslyEnabledContextIds) {
         if (contextManager == null) {
 			throw new NullPointerException();
 		}
@@ -103,15 +106,13 @@ public final class ContextManagerEvent {
 		}
 
         if (definedContextIdsChanged) {
-            this.previouslyDefinedContextIds = Util.safeCopy(
-                    previouslyDefinedContextIds, String.class);
+			this.previouslyDefinedContextIds = Util.safeCopy(previouslyDefinedContextIds, String.class);
         } else {
             this.previouslyDefinedContextIds = null;
         }
 
         if (enabledContextIdsChanged) {
-            this.previouslyEnabledContextIds = Util.safeCopy(
-                    previouslyEnabledContextIds, String.class);
+			this.previouslyEnabledContextIds = Util.safeCopy(previouslyEnabledContextIds, String.class);
         } else {
             this.previouslyEnabledContextIds = null;
         }
@@ -127,6 +128,7 @@ public final class ContextManagerEvent {
      * @return the instance of the interface that changed. Guaranteed not to be
      *         <code>null</code>.
      */
+	@Deprecated
     public IContextManager getContextManager() {
         return contextManager;
     }
@@ -134,14 +136,14 @@ public final class ContextManagerEvent {
     /**
      * Returns the set of identifiers to previously defined contexts.
      *
-     * @return the set of identifiers to previously defined contexts. This set
-     *         may be empty. If this set is not empty, it is guaranteed to only
-     *         contain instances of <code>String</code>. This set is
-     *         guaranteed to be <code>null</code> if
-     *         haveDefinedContextIdsChanged() is <code>false</code> and is
-     *         guaranteed to not be null if haveDefinedContextIdsChanged() is
-     *         <code>true</code>.
+	 * @return the set of identifiers to previously defined contexts. This set may
+	 *         be empty. If this set is not empty, it is guaranteed to only contain
+	 *         instances of <code>String</code>. This set is guaranteed to be
+	 *         <code>null</code> if haveDefinedContextIdsChanged() is
+	 *         <code>false</code> and is guaranteed to not be null if
+	 *         haveDefinedContextIdsChanged() is <code>true</code>.
      */
+	@Deprecated
     public Set getPreviouslyDefinedContextIds() {
         return previouslyDefinedContextIds;
     }
@@ -149,14 +151,14 @@ public final class ContextManagerEvent {
     /**
      * Returns the set of identifiers to previously enabled contexts.
      *
-     * @return the set of identifiers to previously enabled contexts. This set
-     *         may be empty. If this set is not empty, it is guaranteed to only
-     *         contain instances of <code>String</code>. This set is
-     *         guaranteed to be <code>null</code> if
-     *         haveEnabledContextIdsChanged() is <code>false</code> and is
-     *         guaranteed to not be null if haveEnabledContextIdsChanged() is
-     *         <code>true</code>.
+	 * @return the set of identifiers to previously enabled contexts. This set may
+	 *         be empty. If this set is not empty, it is guaranteed to only contain
+	 *         instances of <code>String</code>. This set is guaranteed to be
+	 *         <code>null</code> if haveEnabledContextIdsChanged() is
+	 *         <code>false</code> and is guaranteed to not be null if
+	 *         haveEnabledContextIdsChanged() is <code>true</code>.
      */
+	@Deprecated
     public Set getPreviouslyEnabledContextIds() {
         return previouslyEnabledContextIds;
     }
@@ -166,6 +168,7 @@ public final class ContextManagerEvent {
      *
      * @return true, iff the definedContextIds property changed.
      */
+	@Deprecated
     public boolean haveDefinedContextIdsChanged() {
         return definedContextIdsChanged;
     }
@@ -175,6 +178,7 @@ public final class ContextManagerEvent {
      *
      * @return true, iff the enabledContextIds property changed.
      */
+	@Deprecated
     public boolean haveEnabledContextIdsChanged() {
         return enabledContextIdsChanged;
     }

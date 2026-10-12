@@ -14,32 +14,30 @@
 package org.eclipse.ui.themes;
 
 import java.util.Hashtable;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.swt.graphics.RGB;
 
 /**
- * A resuable <code>IColorFactory</code> that may be used to blend two colors.
+ * A reusable <code>IColorFactory</code> that may be used to blend two colors.
  * The colors to blend are specified as per method number two in
  * {@link org.eclipse.core.runtime.IExecutableExtension}.
  * <p>
  * Example usage:
- * <br/>
+ * </p>
+ *
+ * <pre>
  * <code>
- * &lt;colorDefinition
- *     label="Red/Blue Blend"
- *     id="example.redblueblend"&gt;
- *     &lt;colorFactory
- * 				plugin="org.eclipse.ui"
+ * &lt;colorDefinition label="Red/Blue Blend" id="example.redblueblend"&gt;
+ *     &lt;colorFactory plugin="org.eclipse.ui"
  * 				class="org.eclipse.ui.themes.RGBBlendColorFactory"&gt;
  *      	&lt;parameter name="color1" value="255,0,0" /&gt;
  *  		&lt;parameter name="color2" value="COLOR_BLUE" /&gt;
  *     &lt;/colorFactory&gt;
  * &lt;/colorDefinition&gt;
  * </code>
- * </p>
+ * </pre>
  *
  * <p>
  * The color values may be specified as RGB triples or as SWT constants.
@@ -48,8 +46,7 @@ import org.eclipse.swt.graphics.RGB;
  * @see org.eclipse.swt.SWT
  * @since 3.0
  */
-public class RGBBlendColorFactory implements IColorFactory,
-        IExecutableExtension {
+public class RGBBlendColorFactory implements IColorFactory, IExecutableExtension {
 
     private String color1, color2;
 
@@ -69,20 +66,22 @@ public class RGBBlendColorFactory implements IColorFactory,
     }
 
     /**
-     * This executable extension requires parameters to be explicitly declared
-     * via the second method described in the <code>IExecutableExtension</code>
+	 * This executable extension requires parameters to be explicitly declared via
+	 * the second method described in the <code>IExecutableExtension</code>
      * documentation.  This class expects that there will be two parameters,
-     * <code>color1</code> and <code>color2</code>, that describe the two colors
-     * to be blended.  These values may either be RGB triples or SWT constants.
+	 * <code>color1</code> and <code>color2</code>, that describe the two colors to
+	 * be blended. These values may either be RGB triples or SWT constants.
+	 *
+	 * @throws CoreException never thrown but API
      *
-     * @see org.eclipse.core.runtime.IExecutableExtension#setInitializationData(org.eclipse.core.runtime.IConfigurationElement, java.lang.String, java.lang.Object)
+	 * @see org.eclipse.core.runtime.IExecutableExtension#setInitializationData(org.eclipse.core.runtime.IConfigurationElement,
+	 *      java.lang.String, java.lang.Object)
      */
     @Override
-	public void setInitializationData(IConfigurationElement config,
-            String propertyName, Object data) throws CoreException {
+	public void setInitializationData(IConfigurationElement config, String propertyName, Object data)
+			throws CoreException {
 
-        if (data instanceof Hashtable) {
-            Hashtable table = (Hashtable) data;
+		if (data instanceof Hashtable table) {
             color1 = (String) table.get("color1"); //$NON-NLS-1$
             color2 = (String) table.get("color2"); //$NON-NLS-1$
         }

@@ -14,12 +14,12 @@
 
 package org.eclipse.ui.internal;
 
+import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -36,11 +36,11 @@ import org.eclipse.ui.actions.WorkingSetFilterActionGroup;
 public class WorkingSetMenuContributionItem extends ContributionItem {
     private Image image;
 
-    private int id;
+	private final int id;
 
-    private IWorkingSet workingSet;
+	private final IWorkingSet workingSet;
 
-    private WorkingSetFilterActionGroup actionGroup;
+	private final WorkingSetFilterActionGroup actionGroup;
 
     /**
      * Returns the id of this menu contribution item
@@ -58,8 +58,7 @@ public class WorkingSetMenuContributionItem extends ContributionItem {
      * @param id sequential id of the new instance
      * @param actionGroup the action group this contribution item is created in
      */
-    public WorkingSetMenuContributionItem(int id,
-            WorkingSetFilterActionGroup actionGroup, IWorkingSet workingSet) {
+	public WorkingSetMenuContributionItem(int id, WorkingSetFilterActionGroup actionGroup, IWorkingSet workingSet) {
         super(getId(id));
         Assert.isNotNull(actionGroup);
         Assert.isNotNull(workingSet);
@@ -69,8 +68,7 @@ public class WorkingSetMenuContributionItem extends ContributionItem {
     }
 
     /**
-     * Adds a menu item for the working set.
-     * Overrides method from ContributionItem.
+	 * Adds a menu item for the working set. Overrides method from ContributionItem.
      *
      * @see org.eclipse.jface.action.ContributionItem#fill(Menu,int)
      */
@@ -79,19 +77,21 @@ public class WorkingSetMenuContributionItem extends ContributionItem {
         MenuItem mi = new MenuItem(menu, SWT.RADIO, index);
         mi.setText("&" + id + " " + workingSet.getLabel()); //$NON-NLS-1$  //$NON-NLS-2$
         mi.setSelection(workingSet.equals(actionGroup.getWorkingSet()));
-        mi.addSelectionListener(new SelectionAdapter()
-        {
-            public void widgetSelected(SelectionEvent e) 
-            {
+		mi.addSelectionListener(widgetSelectedAdapter(e -> {
                 IWorkingSetManager manager = PlatformUI.getWorkbench().getWorkingSetManager();
                 actionGroup.setWorkingSet(workingSet);
                 manager.addRecentWorkingSet(workingSet);
-            }
-		});
+		}));
         if (image == null) {
 			ImageDescriptor imageDescriptor = workingSet.getImageDescriptor();
-			if (imageDescriptor != null)
+			if (imageDescriptor != null) {
 				image = imageDescriptor.createImage();
+				mi.addDisposeListener(e -> {
+					if (image != null && !image.isDisposed()) {
+						image.dispose();
+					}
+				});
+			}
 		}
 		mi.setImage(image);
     }
@@ -106,12 +106,14 @@ public class WorkingSetMenuContributionItem extends ContributionItem {
 
 	/*
 	 * @see org.eclipse.jface.action.ContributionItem#dispose()
+	 *
 	 * @since 3.3
 	 */
 	@Override
 	public void dispose() {
-		if (image != null && !image.isDisposed())
+		if (image != null && !image.isDisposed()) {
 			image.dispose();
+		}
 		image = null;
 
 		super.dispose();

@@ -18,7 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.osgi.framework.Bundle;
 
@@ -32,14 +32,10 @@ public abstract class BrandingProperties {
 
     /**
      * Create an url from the argument absolute or relative path. The bundle
-     * parameter is used as the base for relative paths and is allowed to be
-     * null.
+	 * parameter is used as the base for relative paths and is allowed to be null.
      *
-     * @param value
-     *            the absolute or relative path
-     * @param definingBundle
-     *            bundle to be used for relative paths (may be null)
-     * @return
+	 * @param value          the absolute or relative path
+	 * @param definingBundle bundle to be used for relative paths (may be null)
      */
     public static URL getUrl(String value, Bundle definingBundle) {
         try {
@@ -48,7 +44,7 @@ public abstract class BrandingProperties {
 			}
         } catch (MalformedURLException e) {
             if (definingBundle != null) {
-				return FileLocator.find(definingBundle, new Path(value));
+				return FileLocator.find(definingBundle, IPath.fromOSString(value));
 			}
         }
 
@@ -56,15 +52,12 @@ public abstract class BrandingProperties {
     }
 
     /**
-     * Create a descriptor from the argument absolute or relative path to an
-     * image file. bundle parameter is used as the base for relative paths and
-     * is allowed to be null.
+	 * Create a descriptor from the argument absolute or relative path to an image
+	 * file. bundle parameter is used as the base for relative paths and is allowed
+	 * to be null.
      *
-     * @param value
-     *            the absolute or relative path
-     * @param definingBundle
-     *            bundle to be used for relative paths (may be null)
-     * @return
+	 * @param value          the absolute or relative path
+	 * @param definingBundle bundle to be used for relative paths (may be null)
      */
     public static ImageDescriptor getImage(String value, Bundle definingBundle) {
         URL url = getUrl(value, definingBundle);
@@ -72,17 +65,15 @@ public abstract class BrandingProperties {
     }
 
     /**
-     * Returns a array of URL for the given property or <code>null</code>.
-     * The property value should be a comma separated list of urls (either
-     * absolute or relative to the argument bundle). Tokens that do not
-     * represent a valid url will be represented with a null entry in the
-     * returned array.
+	 * Returns a array of URL for the given property or <code>null</code>. The
+	 * property value should be a comma separated list of urls (either absolute or
+	 * relative to the argument bundle). Tokens that do not represent a valid url
+	 * will be represented with a null entry in the returned array.
      *
-     * @param value
-     *            value of a property that contains a comma-separated list of
-     *            product relative urls
-     * @param definingBundle
-     *            bundle to be used as base for relative paths (may be null)
+	 * @param value          value of a property that contains a comma-separated
+	 *                       list of product relative urls
+	 * @param definingBundle bundle to be used as base for relative paths (may be
+	 *                       null)
      * @return a URL for the given property, or <code>null</code>
      */
     public static URL[] getURLs(String value, Bundle definingBundle) {
@@ -91,30 +82,27 @@ public abstract class BrandingProperties {
 		}
 
         StringTokenizer tokens = new StringTokenizer(value, ","); //$NON-NLS-1$
-        ArrayList array = new ArrayList(10);
+		ArrayList<URL> array = new ArrayList<>(10);
         while (tokens.hasMoreTokens()) {
 			array.add(getUrl(tokens.nextToken().trim(), definingBundle));
 		}
 
-        return (URL[]) array.toArray(new URL[array.size()]);
+		return array.toArray(new URL[array.size()]);
     }
 
     /**
      * Returns an array of image descriptors for the given property, or
-     * <code>null</code>. The property value should be a comma separated list
-     * of image paths. Each path should either be absolute or relative to the
-     * optional bundle parameter.
+	 * <code>null</code>. The property value should be a comma separated list of
+	 * image paths. Each path should either be absolute or relative to the optional
+	 * bundle parameter.
      *
-     * @param value
-     *            value of a property that contains a comma-separated list of
-     *            product relative urls describing images
-     * @param definingBundle
-     *            bundle to be used for relative paths (may be null)
+	 * @param value          value of a property that contains a comma-separated
+	 *                       list of product relative urls describing images
+	 * @param definingBundle bundle to be used for relative paths (may be null)
      * @return an array of image descriptors for the given property, or
      *         <code>null</code>
      */
-    public static ImageDescriptor[] getImages(String value,
-            Bundle definingBundle) {
+	public static ImageDescriptor[] getImages(String value, Bundle definingBundle) {
         URL[] urls = getURLs(value, definingBundle);
         if (urls == null || urls.length <= 0) {
 			return null;

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -19,7 +16,6 @@ import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.rap.rwt.SingletonUtil;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -27,7 +23,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.activities.WorkbenchActivityHelper;
 import org.eclipse.ui.internal.IWorkbenchHelpContextIds;
 import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.dnd.SwtUtil;
 
 /**
  * Prefence dialog for the workbench including the ability to load/save
@@ -39,7 +34,6 @@ public class WorkbenchPreferenceDialog extends FilteredPreferenceDialog {
 	 * This keeps a handle on this instance, so that attempts to create a second
 	 * dialog should just fail (or return the original instance).
 	 *
-	 * @since 3.1
 	 */
 // RAP [fappel]: we need one instance per session
 //	private static WorkbenchPreferenceDialog instance = null;
@@ -57,7 +51,6 @@ public class WorkbenchPreferenceDialog extends FilteredPreferenceDialog {
 	 * different concrete implementations don't necessarily store their bounds
 	 * in the same settings.
 	 *
-	 * @since 3.2
 	 */
 	private static final String DIALOG_SETTINGS_SECTION = "WorkbenchPreferenceDialogSettings"; //$NON-NLS-1$
 
@@ -80,7 +73,6 @@ public class WorkbenchPreferenceDialog extends FilteredPreferenceDialog {
 	 *            <code>null</code>. If it is <code>null</code>, then the
 	 *            preference page is not selected or modified in any way.
 	 * @return The selected preference page.
-	 * @since 3.1
 	 */
 	public static final WorkbenchPreferenceDialog createDialogOn(Shell shell, final String preferencePageId) {
 		final WorkbenchPreferenceDialog dialog;
@@ -155,7 +147,9 @@ public class WorkbenchPreferenceDialog extends FilteredPreferenceDialog {
 	}
 
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.window.Window#close()
+	 */
 	public boolean close() {
 		getInstance().dialog = null;
 		return super.close();
@@ -170,7 +164,6 @@ public class WorkbenchPreferenceDialog extends FilteredPreferenceDialog {
 	 *
 	 * @see org.eclipse.jface.preference.PreferenceDialog#findNodeMatching(java.lang.String)
 	 */
-	@Override
 	protected IPreferenceNode findNodeMatching(String nodeId) {
 		IPreferenceNode node = super.findNodeMatching(nodeId);
 		if (WorkbenchActivityHelper.filterItem(node)) {
@@ -179,12 +172,17 @@ public class WorkbenchPreferenceDialog extends FilteredPreferenceDialog {
 		return node;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+	 */
 	protected void okPressed() {
 		super.okPressed();
 	}
 
-	@Override
+	/* (non-Javadoc)
+     * @see org.eclipse.jface.window.Dialog#getDialogBoundsSettings()
+     * 
+     */
 	protected IDialogSettings getDialogBoundsSettings() {
         IDialogSettings settings = WorkbenchPlugin.getDefault().getDialogSettings();
         IDialogSettings section = settings.getSection(DIALOG_SETTINGS_SECTION);
@@ -194,34 +192,28 @@ public class WorkbenchPreferenceDialog extends FilteredPreferenceDialog {
         return section;
 	}
 
-	/**
+	/* (non-Javadoc)
+     * @see org.eclipse.jface.window.Dialog#getDialogBoundsStrategy()
+     * 
 	 * Overridden to persist only the location, not the size, since the current
 	 * page dictates the most appropriate size for the dialog.
-	 *
-	 * @since 3.2
 	 */
-	@Override
 	protected int getDialogBoundsStrategy() {
 		return DIALOG_PERSISTLOCATION;
 	}
 
-	/**
-	 *
-	 * Overrides to set focus to the specific page if it a specific page was
-	 * requested.
-	 *
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.PreferenceDialog#open()
+	 * Overrides to set focus to the specific page if it a specific page was requested. 
 	 * @since 3.5
 	 */
-	@Override
 	public int open() {
 		IPreferencePage selectedPage = getCurrentPage();
 		if ((initialPageId != null) && (selectedPage != null)) {
 			Shell shell = getShell();
 			if ((shell != null) && (!shell.isDisposed())) {
 				shell.open(); // make the dialog visible to properly set the focus
-				Control control = selectedPage.getControl();
-				if (!SwtUtil.isFocusAncestor(control))
-					control.setFocus();
+				selectedPage.getControl().setFocus();
 			}
 		}
 		return super.open();
@@ -240,5 +232,4 @@ public class WorkbenchPreferenceDialog extends FilteredPreferenceDialog {
 	private static WorkbenchPreferenceDialogProvider getInstance() {
 		return WorkbenchPreferenceDialogProvider.getInstance();
 	}
-
 }

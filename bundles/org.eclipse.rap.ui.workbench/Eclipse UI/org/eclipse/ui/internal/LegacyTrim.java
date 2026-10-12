@@ -14,8 +14,8 @@
 
 package org.eclipse.ui.internal;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
@@ -31,7 +31,6 @@ import org.eclipse.ui.menus.IWorkbenchWidget;
 
 /**
  * @since 3.5
- *
  */
 public class LegacyTrim {
 
@@ -40,14 +39,15 @@ public class LegacyTrim {
 	@PostConstruct
 	void createWidget(IWorkbenchWindow iwbw, Composite parent, MToolControl toolControl) {
 		IConfigurationElement ice = ((WorkbenchWindow) iwbw).getICEFor(toolControl);
-		if (ice == null)
+		if (ice == null) {
 			return;
+		}
 
 		parent = new Composite(parent, SWT.NONE);
 		parent.setLayout(new RowLayout());
 
-		widget = (IWorkbenchWidget) Util.safeLoadExecutableExtension(ice,
-				IWorkbenchRegistryConstants.ATT_CLASS, IWorkbenchWidget.class);
+		widget = (IWorkbenchWidget) Util.safeLoadExecutableExtension(ice, IWorkbenchRegistryConstants.ATT_CLASS,
+				IWorkbenchWidget.class);
 		widget.init(iwbw);
 		if (widget instanceof AbstractTrimWidget) {
 			((AbstractTrimWidget) widget).fill(parent, SWT.DEFAULT, getSide(toolControl));

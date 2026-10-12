@@ -1,19 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package org.eclipse.ui.internal.themes;
 
-//import org.eclipse.e4.ui.internal.css.swt.definition.IFontDefinitionOverridable;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.graphics.FontData;
@@ -23,17 +19,20 @@ import org.eclipse.ui.PlatformUI;
  * The FontDefiniton is the representation of the fontDefinition
  * from the plugin.xml of a type.
  */
-public class FontDefinition extends ThemeElementDefinition implements
-		IHierarchalThemeElementDefinition, ICategorizedThemeElementDefinition, IEditable
-//		,
-//		IFontDefinitionOverridable 
-		{
+public class FontDefinition implements IHierarchalThemeElementDefinition,
+        ICategorizedThemeElementDefinition, IEditable {
+
+    private String label;
+
+    private String id;
 
 	private String defaultsTo;
 
-    private String value;
+    private String categoryId;
 
-	private String defaultValue;
+    private String description;
+
+    private String value;
 
     private boolean isEditable;
 
@@ -51,9 +50,12 @@ public class FontDefinition extends ThemeElementDefinition implements
     public FontDefinition(String fontName, String uniqueId, String defaultsId,
             String value, String categoryId, boolean isEditable,
             String fontDescription) {
-		super(uniqueId, fontName, fontDescription, categoryId);
+        this.label = fontName;
+        this.id = uniqueId;
         this.defaultsTo = defaultsId;
         this.value = value;
+        this.categoryId = categoryId;
+        this.description = fontDescription;
         this.isEditable = isEditable;
     }
 
@@ -66,8 +68,10 @@ public class FontDefinition extends ThemeElementDefinition implements
      * @param datas the FontData[] value
      */
     public FontDefinition(FontDefinition originalFont, FontData[] datas) {
-		super(originalFont.getId(), originalFont.getName(), originalFont.getDescription(),
-				originalFont.getCategoryId());
+        this.label = originalFont.getName();
+        this.id = originalFont.getId();
+        this.categoryId = originalFont.getCategoryId();
+        this.description = originalFont.getDescription();
         this.isEditable = originalFont.isEditable();
         this.parsedValue = datas;
     }
@@ -77,9 +81,40 @@ public class FontDefinition extends ThemeElementDefinition implements
      * that this font defualts to.
      * @return String or <pre>null</pre>.
      */
-    @Override
 	public String getDefaultsTo() {
         return defaultsTo;
+    }
+
+    /**
+     * Returns the description.
+     * @return String or <pre>null</pre>.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Returns the label.
+     * @return String
+     */
+    public String getName() {
+        return label;
+    }
+
+    /**
+     * Returns the id.
+     * @return String
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Returns the categoryId.
+     * @return String
+     */
+    public String getCategoryId() {
+        return categoryId;
     }
 
     /**
@@ -87,7 +122,6 @@ public class FontDefinition extends ThemeElementDefinition implements
      *
      * @return FontData []
      */
-//    @Override
 	public FontData[] getValue() {
         if (value == null) {
 			return null;
@@ -101,19 +135,16 @@ public class FontDefinition extends ThemeElementDefinition implements
         return parsedValue;
     }
 
-	@Override
-	public void resetToDefaultValue() {
-		value = defaultValue;
-		parsedValue = null;
-		super.resetToDefaultValue();
-	}
-
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.internal.themes.IEditable#isEditable()
+     */
 	public boolean isEditable() {
         return isEditable;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
 	public boolean equals(Object obj) {
         if (obj instanceof FontDefinition) {
             return getId().equals(((FontDefinition)obj).getId());
@@ -121,20 +152,10 @@ public class FontDefinition extends ThemeElementDefinition implements
         return false;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
 	public int hashCode() {
-		return getId().hashCode();
-	}
-
-//	@Override
-	public void setValue(FontData[] data) {
-		if (data != null && data.length > 0) {
-			if (defaultValue == null) {
-				defaultValue = value;
-			}
-			value = data[0].getName();
-			parsedValue = data;
-			appendState(State.OVERRIDDEN);
-		}
+        return id.hashCode();
 	}
 }

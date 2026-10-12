@@ -65,6 +65,10 @@ public class ModeledPageLayout implements IPageLayout {
 	public static final String SHOW_IN_PART_TAG = "persp.showIn:"; //$NON-NLS-1$
 	public static final String SHOW_VIEW_TAG = "persp.viewSC:"; //$NON-NLS-1$
 	public static final String EDITOR_STACK_TAG = "EditorStack"; //$NON-NLS-1$
+	public static final String EDITOR_ONBOARDING = "persp.editorOnboarding"; //$NON-NLS-1$
+	public static final String EDITOR_ONBOARDING_TEXT = EDITOR_ONBOARDING + "Text:"; //$NON-NLS-1$
+	public static final String EDITOR_ONBOARDING_IMAGE = EDITOR_ONBOARDING + "ImageUri:"; //$NON-NLS-1$
+	public static final String EDITOR_ONBOARDING_COMMAND = EDITOR_ONBOARDING + "Command:"; //$NON-NLS-1$
 	public static final String HIDDEN_MENU_PREFIX = "persp.hideMenuSC:"; //$NON-NLS-1$
 	public static final String HIDDEN_TOOLBAR_PREFIX = "persp.hideToolbarSC:"; //$NON-NLS-1$
 	public static final String HIDDEN_ACTIONSET_PREFIX = "persp.hideActionSetSC:"; //$NON-NLS-1$
@@ -193,13 +197,11 @@ public class ModeledPageLayout implements IPageLayout {
 		perspModel.getTags().add(ACTION_SET_TAG + actionSetId);
 	}
 
-	@Override
 	public void addFastView(String viewId) {
 		E4Util.unsupported("addFastView: " + viewId); //$NON-NLS-1$
 		logDeprecatedWarning(viewId);
 	}
 
-	@Override
 	public void addFastView(String viewId, float ratio) {
 		E4Util.unsupported("addFastView: " + viewId); //$NON-NLS-1$
 		logDeprecatedWarning(viewId);
@@ -637,4 +639,20 @@ public class ModeledPageLayout implements IPageLayout {
 		}
 	}
 
+	@Override
+	public void setEditorOnboardingText(String text) {
+		perspModel.getTags().add(EDITOR_ONBOARDING_TEXT + text);
+	}
+
+	@Override
+	public void setEditorOnboardingImageUri(String imageUri) {
+		perspModel.getTags().add(EDITOR_ONBOARDING_IMAGE + imageUri);
+	}
+
+	@Override
+	public void addEditorOnboardingCommandId(String commandId) {
+		perspModel.getTags().add(EDITOR_ONBOARDING_COMMAND + commandId);
+	}
+
 }
+

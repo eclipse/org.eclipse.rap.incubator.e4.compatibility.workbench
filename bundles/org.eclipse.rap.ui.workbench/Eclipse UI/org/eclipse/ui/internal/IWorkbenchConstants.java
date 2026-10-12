@@ -22,8 +22,6 @@ import org.eclipse.ui.PlatformUI;
  */
 public interface IWorkbenchConstants {
 
-    public static final String DEFAULT_PRESENTATION_ID = "org.eclipse.ui.presentations.default"; //$NON-NLS-1$
-        
     /**
      * @deprecated
      */
@@ -45,6 +43,12 @@ public interface IWorkbenchConstants {
 	// ID of the MPerspectiveStack in the IDE e4 model
 	String PERSPECTIVE_STACK_ID = "org.eclipse.ui.ide.perspectivestack"; //$NON-NLS-1$
 
+	// ID of the main MTrimBar in the IDE e4 model
+	String MAIN_TOOLBAR_ID = "org.eclipse.ui.main.toolbar"; //$NON-NLS-1$
+
+	// ID of the main MMenu in the IDE e4 model
+	String MAIN_MENU_ID = "org.eclipse.ui.main.menu"; //$NON-NLS-1$
+
     //mappings for type/extension to an editor - backward compatibility only.
 	String EDITOR_FILE_NAME = "editors.xml"; //$NON-NLS-1$
 
@@ -57,26 +61,13 @@ public interface IWorkbenchConstants {
 	String WORKBENCH_VISIBLE_VIEW_ID = "Workbench.visibleViewID"; //$NON-NLS-1$
 
     // Identifier of workbench info properties page
-	String WORKBENCH_PROPERTIES_PAGE_INFO = PlatformUI.PLUGIN_ID
-            + ".propertypages.info.file"; //$NON-NLS-1$
+	String WORKBENCH_PROPERTIES_PAGE_INFO = PlatformUI.PLUGIN_ID + ".propertypages.info.file"; //$NON-NLS-1$
 
     // Various editor.
-	String OLE_EDITOR_ID = PlatformUI.PLUGIN_ID
-            + ".OleEditor"; //$NON-NLS-1$
+	String OLE_EDITOR_ID = PlatformUI.PLUGIN_ID + ".OleEditor"; //$NON-NLS-1$
 
     // Default view category.
 	String DEFAULT_CATEGORY_ID = PlatformUI.PLUGIN_ID;
-
-    // Persistance tags.
-	String TRUE = "true"; //$NON-NLS-1$
-
-	String FALSE = "false"; //$NON-NLS-1$
-
-	String TAG_WORKBENCH_ADVISOR = "workbenchAdvisor"; //$NON-NLS-1$
-
-	String TAG_WORKBENCH_WINDOW_ADVISOR = "workbenchWindowAdvisor"; //$NON-NLS-1$
-
-	String TAG_ACTION_BAR_ADVISOR = "actionBarAdvisor"; //$NON-NLS-1$
 
 	String TAG_ID = "id"; //$NON-NLS-1$
 
@@ -92,13 +83,9 @@ public interface IWorkbenchConstants {
 
 	String TAG_WORKBOOK = "workbook"; //$NON-NLS-1$
 
-	String TAG_ACTIVE_WORKBOOK = "activeWorkbook"; //$NON-NLS-1$
-
 	String TAG_AREA = "editorArea"; //$NON-NLS-1$
 
 	String TAG_AREA_VISIBLE = "editorAreaVisible"; //$NON-NLS-1$
-
-	String TAG_AREA_HIDDEN = "editorAreaHidden"; //$NON-NLS-1$
 
 	String TAG_AREA_TRIM_STATE = "editorAreaTrimState"; //$NON-NLS-1$
 
@@ -113,12 +100,6 @@ public interface IWorkbenchConstants {
 	String TAG_X = "x"; //$NON-NLS-1$
 
 	String TAG_Y = "y"; //$NON-NLS-1$
-
-	String TAG_FLOAT = "float"; //$NON-NLS-1$
-
-	String TAG_ITEM_WRAP_INDEX = "wrapIndex"; //$NON-NLS-1$
-
-	String TAG_TOOLBAR_LAYOUT = "toolbarLayout"; //$NON-NLS-1$
 
 	String TAG_WIDTH = "width"; //$NON-NLS-1$
 
@@ -158,8 +139,6 @@ public interface IWorkbenchConstants {
 
 	String TAG_INTRO = "intro"; //$NON-NLS-1$
 
-	String TAG_STANDBY = "standby"; //$NON-NLS-1$
-
 	String TAG_LABEL = "label"; //$NON-NLS-1$
 
 	String TAG_CONTENT = "content"; //$NON-NLS-1$
@@ -197,8 +176,6 @@ public interface IWorkbenchConstants {
 	String TAG_ACTION_SET = "actionSet"; //$NON-NLS-1$
 
 	String TAG_ALWAYS_ON_ACTION_SET = "alwaysOnActionSet"; //$NON-NLS-1$
-
-	String TAG_ALWAYS_OFF_ACTION_SET = "alwaysOffActionSet"; //$NON-NLS-1$
 
 	String TAG_SHOW_VIEW_ACTION = "show_view_action"; //$NON-NLS-1$
 
@@ -244,17 +221,8 @@ public interface IWorkbenchConstants {
 
 	String TAG_FAST_VIEW_BARS = "fastViewBars"; //$NON-NLS-1$
 
-	String TAG_GLOBAL_FAST_VIEWS = "globalFastViews"; //$NON-NLS-1$
-
-	String TAG_FAST_GROUPS = "fastGroups"; //$NON-NLS-1$
-
-	String TAG_FIXED = "fixed";//$NON-NLS-1$
-
 	String TAG_CLOSEABLE = "closeable";//$NON-NLS-1$
 
-	String TAG_MOVEABLE = "moveable";//$NON-NLS-1$
-
-	String TAG_APPEARANCE = "appearance"; //$NON-NLS-1$
 
 	String TAG_PRESENTATION = "presentation"; //$NON-NLS-1$
 
@@ -264,15 +232,9 @@ public interface IWorkbenchConstants {
 
 	String TAG_VIEW_STATE = "viewState"; //$NON-NLS-1$
 
-	String TAG_SINGLETON = "singleton"; //$NON-NLS-1$
-
-	String TAG_EDITOR_REUSE_THRESHOLD = "editorReuseThreshold"; //$NON-NLS-1$
-
 	String TAG_PERSISTABLE = "persistable"; //$NON-NLS-1$
 
 	String TAG_MRU_LIST = "mruList"; //$NON-NLS-1$
-
-	String TAG_PERSPECTIVE_HISTORY = "perspHistory"; //$NON-NLS-1$
 
 	String TAG_WORKING_SET_MANAGER = "workingSetManager"; //$NON-NLS-1$
 
@@ -284,25 +246,6 @@ public interface IWorkbenchConstants {
 
 	String TAG_EDIT_PAGE_ID = "editPageId"; //$NON-NLS-1$
 
-	String TAG_COOLBAR_LAYOUT = "coolbarLayout"; //$NON-NLS-1$
-
-	String TAG_ITEM_SIZE = "itemSize"; //$NON-NLS-1$
-
-	String TAG_ITEM_X = "x"; //$NON-NLS-1$
-
-	String TAG_ITEM_Y = "y"; //$NON-NLS-1$
-
-	String TAG_ITEM_TYPE = "itemType"; //$NON-NLS-1$
-
-	String TAG_TYPE_SEPARATOR = "typeSeparator"; //$NON-NLS-1$
-
-	String TAG_TYPE_GROUPMARKER = "typeGroupMarker"; //$NON-NLS-1$
-
-	String TAG_TYPE_TOOLBARCONTRIBUTION = "typeToolBarContribution"; //$NON-NLS-1$
-
-	String TAG_TYPE_PLACEHOLDER = "typePlaceholder"; //$NON-NLS-1$
-
-	String TAG_COOLITEM = "coolItem"; //$NON-NLS-1$
 
 	String TAG_INDEX = "index"; //$NON-NLS-1$
 
@@ -333,14 +276,6 @@ public interface IWorkbenchConstants {
 	String TAG_STARTUP = "startup"; //$NON-NLS-1$
 
 	String TAG_FAST_VIEW_SIDE = "fastViewLocation"; //$NON-NLS-1$
-
-	String TAG_FAST_VIEW_DATA = "fastViewData"; //$NON-NLS-1$
-
-	String TAG_FAST_VIEW_ORIENTATION = "orientation"; //$NON-NLS-1$
-
-	String TAG_FAST_VIEW_SEL_ID = "selectedTabId"; //$NON-NLS-1$
-
-	String TAG_FAST_VIEW_STYLE = "style"; //$NON-NLS-1$
 
 	String TAG_THEME = "theme";//$NON-NLS-1$
 

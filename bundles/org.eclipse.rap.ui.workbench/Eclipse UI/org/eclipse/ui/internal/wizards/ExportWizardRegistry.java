@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -21,7 +18,6 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
  * Registry that contains wizards contributed via the <code>exportWizards</code>
  * extension point.
  *
- * @since 3.1
  */
 public class ExportWizardRegistry extends AbstractExtensionWizardRegistry {
 
@@ -49,12 +45,16 @@ public class ExportWizardRegistry extends AbstractExtensionWizardRegistry {
 		super();
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.wizards.AbstractExtensionWizardRegistry#getExtensionPoint()
+	 */
 	protected String getExtensionPoint() {
 		return IWorkbenchRegistryConstants.PL_EXPORT;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.wizards.AbstractExtensionWizardRegistry#getPlugin()
+	 */
 	protected String getPlugin() {
         // RAP [bm]:
 //      return PlatformUI.PLUGIN_ID;

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -34,7 +31,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * This class may be instantiated; it is not intended to be subclassed.
  * </p>
  *
- * @since 3.1
+ * @since 1.1
  */
 public class NewWizardDropDownAction extends Action implements
         ActionFactory.IWorkbenchAction {
@@ -69,18 +66,23 @@ public class NewWizardDropDownAction extends Action implements
             }
         }
 
-        @Override
+        /* (non-Javadoc)
+         * @see org.eclipse.jface.action.IMenuCreator#getMenu(org.eclipse.swt.widgets.Control)
+         */
 		public Menu getMenu(Control parent) {
             createDropDownMenuMgr();
             return dropDownMenuMgr.createContextMenu(parent);
         }
 
-        @Override
+        /* (non-Javadoc)
+         * @see org.eclipse.jface.action.IMenuCreator#getMenu(org.eclipse.swt.widgets.Menu)
+         */
 		public Menu getMenu(Menu parent) {
             createDropDownMenuMgr();
             Menu menu = new Menu(parent);
             IContributionItem[] items = dropDownMenuMgr.getItems();
-            for (IContributionItem item : items) {
+            for (int i = 0; i < items.length; i++) {
+                IContributionItem item = items[i];
                 IContributionItem newItem = item;
                 if (item instanceof ActionContributionItem) {
                     newItem = new ActionContributionItem(
@@ -91,7 +93,9 @@ public class NewWizardDropDownAction extends Action implements
             return menu;
         }
 
-        @Override
+        /* (non-Javadoc)
+         * @see org.eclipse.jface.action.IMenuCreator#dispose()
+         */
 		public void dispose() {
 			if (dropDownMenuMgr != null) {
 				// remove the wizard menu before disposing the menu manager, the
@@ -102,7 +106,6 @@ public class NewWizardDropDownAction extends Action implements
 				// the owning action (NewWizardDropDownAction) is disposed, see
 				// bug 309716
 				dropDownMenuMgr.remove(newWizardMenu);
-
 				dropDownMenuMgr.dispose();
 				dropDownMenuMgr = null;
 			}
@@ -153,7 +156,9 @@ public class NewWizardDropDownAction extends Action implements
     }
 
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.actions.ActionFactory.IWorkbenchAction#dispose()
+     */
 	public void dispose() {
         if (workbenchWindow == null) {
             // action has already been disposed
@@ -169,7 +174,6 @@ public class NewWizardDropDownAction extends Action implements
     /**
      * Runs the action, which opens the New wizard dialog.
      */
-    @Override
 	public void run() {
         if (workbenchWindow == null) {
             // action has been disposed

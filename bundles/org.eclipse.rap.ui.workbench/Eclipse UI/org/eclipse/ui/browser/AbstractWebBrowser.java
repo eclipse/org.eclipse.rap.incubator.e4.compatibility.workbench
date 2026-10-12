@@ -21,13 +21,12 @@ package org.eclipse.ui.browser;
  * @since 3.1
  */
 public abstract class AbstractWebBrowser implements IWebBrowser {
-	private String id;
+	private final String id;
 
 	/**
 	 * The constructor that accepts the unique browser identifier.
 	 *
-	 * @param id
-	 *            the unique browser identifier
+	 * @param id the unique browser identifier
 	 */
 	public AbstractWebBrowser(String id) {
 		this.id = id;

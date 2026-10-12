@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2003, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -22,7 +19,7 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
  * The PendingUpdateAdapter is a convenience object that can be used
  * by a BaseWorkbenchContentProvider that wants to show a pending update.
  *
- * @since 3.2
+ * @since 1.0
  */
 public class PendingUpdateAdapter implements IWorkbenchAdapter, IAdaptable {
 
@@ -51,38 +48,47 @@ public class PendingUpdateAdapter implements IWorkbenchAdapter, IAdaptable {
         //No initial behavior
     }
 
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
+     */
+    public Object getAdapter(Class adapter) {
         if (adapter == IWorkbenchAdapter.class) {
-			return adapter.cast(this);
+			return this;
 		}
         return null;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IWorkbenchAdapter#getChildren(java.lang.Object)
+     */
 	public Object[] getChildren(Object o) {
         return new Object[0];
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IWorkbenchAdapter#getImageDescriptor(java.lang.Object)
+     */
 	public ImageDescriptor getImageDescriptor(Object object) {
         return null;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IWorkbenchAdapter#getLabel(java.lang.Object)
+     */
 	public String getLabel(Object o) {
         return ProgressMessages.get().PendingUpdateAdapter_PendingLabel;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IWorkbenchAdapter#getParent(java.lang.Object)
+     */
 	public Object getParent(Object o) {
         return null;
     }
 
     /**
-	 * @since 3.4
+	 * @since 1.1
 	 */
-    @Override
 	public String toString() {
     	return getLabel(null);
     }

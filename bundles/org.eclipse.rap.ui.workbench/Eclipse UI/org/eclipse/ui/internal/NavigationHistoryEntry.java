@@ -14,7 +14,7 @@
 
 package org.eclipse.ui.internal;
 
-import java.util.ArrayList;
+import java.util.Objects;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.INavigationLocation;
@@ -28,7 +28,7 @@ import org.eclipse.ui.XMLMemento;
  */
 public class NavigationHistoryEntry {
 
-    private IWorkbenchPage page;
+	private final IWorkbenchPage page;
 
     NavigationHistoryEditorInfo editorInfo;
 
@@ -42,8 +42,8 @@ public class NavigationHistoryEntry {
     /**
      * Constructs a new HistoryEntry and intializes its editor input and editor id.
      */
-    public NavigationHistoryEntry(NavigationHistoryEditorInfo editorInfo,
-            IWorkbenchPage page, IEditorPart part, INavigationLocation location) {
+	public NavigationHistoryEntry(NavigationHistoryEditorInfo editorInfo, IWorkbenchPage page, IEditorPart part,
+			INavigationLocation location) {
         this.editorInfo = editorInfo;
         this.page = page;
         this.location = location;
@@ -51,7 +51,7 @@ public class NavigationHistoryEntry {
             historyText = location.getText();
         }
         // ensure that the historyText is initialized to something
-        if (historyText == null || historyText.length() == 0) {
+		if (historyText == null || historyText.isEmpty()) {
             if (part != null) {
 				historyText = part.getTitle();
 			}
@@ -59,24 +59,24 @@ public class NavigationHistoryEntry {
     }
 
     /**
-     * Restores the state of the entry and the location if needed and then
-     * restores the location.
+	 * Restores the state of the entry and the location if needed and then restores
+	 * the location.
      */
     void restoreLocation() {
         if (editorInfo.editorInput != null && editorInfo.editorID != null) {
             try {
-                IEditorPart editor = page.openEditor(editorInfo.editorInput,
-                        editorInfo.editorID, true);
+				IEditorPart editor = page.openEditor(editorInfo.editorInput, editorInfo.editorID, true,
+						IWorkbenchPage.MATCH_ID | IWorkbenchPage.MATCH_INPUT);
                 if (location == null) {
                     if (editor instanceof INavigationLocationProvider) {
-						location = ((INavigationLocationProvider) editor)
-                                .createEmptyNavigationLocation();
+						location = ((INavigationLocationProvider) editor).createEmptyNavigationLocation();
 					}
                 }
 
                 if (location != null) {
                     if (locationMemento != null) {
                         location.setInput(editorInfo.editorInput);
+						location.setId(editorInfo.editorID);
                         location.restoreState(locationMemento);
                         locationMemento = null;
                     }
@@ -89,8 +89,8 @@ public class NavigationHistoryEntry {
     }
 
     /**
-     * Return the label to display in the history drop down list.  Use the
-     * history entry text if the location has not been restored yet.
+	 * Return the label to display in the history drop down list. Use the history
+	 * entry text if the location has not been restored yet.
      */
     String getHistoryText() {
         if (location != null) {
@@ -99,7 +99,7 @@ public class NavigationHistoryEntry {
             // be saved.  Doing so handles cases where getText() value
             // may be dynamic.
             String text = location.getText();
-            if ((text == null) || text.equals("")) { //$NON-NLS-1$
+			if ((text == null) || text.isEmpty()) {
                 text = historyText;
             } else {
                 historyText = text;
@@ -110,16 +110,15 @@ public class NavigationHistoryEntry {
     }
 
     /**
-     * Saves the state of this entry and its location.
-     * Returns true if possible otherwise returns false.
+	 * Saves the state of this entry and its location. Returns true if possible
+	 * otherwise returns false.
      */
     boolean handlePartClosed() {
         if (!editorInfo.isPersistable()) {
 			return false;
 		}
         if (location != null) {
-            locationMemento = XMLMemento
-                    .createWriteRoot(IWorkbenchConstants.TAG_POSITION);
+			locationMemento = XMLMemento.createWriteRoot(IWorkbenchConstants.TAG_POSITION);
             location.saveState(locationMemento);
             location.releaseState();
         }
@@ -129,15 +128,13 @@ public class NavigationHistoryEntry {
     /**
      * Saves the state of this entry and its location.
      */
-    void saveState(IMemento mem, ArrayList entries) {
+	final void saveState(IMemento mem) {
         mem.putString(IWorkbenchConstants.TAG_HISTORY_LABEL, getHistoryText());
         if (locationMemento != null) {
-            IMemento childMem = mem
-                    .createChild(IWorkbenchConstants.TAG_POSITION);
+			IMemento childMem = mem.createChild(IWorkbenchConstants.TAG_POSITION);
             childMem.putMemento(locationMemento);
         } else if (location != null) {
-            IMemento childMem = mem
-                    .createChild(IWorkbenchConstants.TAG_POSITION);
+			IMemento childMem = mem.createChild(IWorkbenchConstants.TAG_POSITION);
             location.saveState(childMem);
         }
     }
@@ -166,13 +163,12 @@ public class NavigationHistoryEntry {
     }
 
     /**
-     * Merges this entry into the current entry. Returns true
-     * if the merge was possible otherwise returns false.
+	 * Merges this entry into the current entry. Returns true if the merge was
+	 * possible otherwise returns false.
      */
     boolean mergeInto(NavigationHistoryEntry currentEntry) {
-        if (editorInfo.editorInput != null
-                && editorInfo.editorInput
-                        .equals(currentEntry.editorInfo.editorInput)) {
+		if (Objects.equals(editorInfo.editorInput, currentEntry.editorInfo.editorInput)
+				&& Objects.equals(editorInfo.editorID, currentEntry.editorInfo.editorID)) {
             if (location != null) {
                 if (currentEntry.location == null) {
                     currentEntry.location = location;

@@ -19,13 +19,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import org.eclipse.ui.internal.util.Util;
 
 public final class ActivityPatternBindingDefinition {
     private static final int HASH_FACTOR = 89;
 
-    private static final int HASH_INITIAL = ActivityPatternBindingDefinition.class
-            .getName().hashCode();
+	private static final int HASH_INITIAL = ActivityPatternBindingDefinition.class.getName().hashCode();
 
 	static Map<String, Collection<ActivityPatternBindingDefinition>> activityPatternBindingDefinitionsByActivityId(
 			Collection<ActivityPatternBindingDefinition> activityPatternBindingDefinitions) {
@@ -55,13 +55,13 @@ public final class ActivityPatternBindingDefinition {
         return map;
     }
 
-    private String activityId;
+	private final String activityId;
 
     private transient int hashCode = HASH_INITIAL;
 
-    private String pattern;
+	private final String pattern;
 
-    private String sourceId;
+	private final String sourceId;
 
     private transient String string;
 
@@ -69,15 +69,14 @@ public final class ActivityPatternBindingDefinition {
      * If the string is taken "as is", without interpreting it as a regular
      * expression.
      */
-    private boolean isEqualityPattern;
+	private final boolean isEqualityPattern;
 
-    public ActivityPatternBindingDefinition(String activityId, String pattern,
-            String sourceId) {
+	public ActivityPatternBindingDefinition(String activityId, String pattern, String sourceId) {
     	this(activityId, pattern, sourceId, false);
     }
 
-    public ActivityPatternBindingDefinition(String activityId, String pattern,
-			String sourceId, boolean isEqualityPattern) {
+	public ActivityPatternBindingDefinition(String activityId, String pattern, String sourceId,
+			boolean isEqualityPattern) {
 		this.activityId = activityId;
 		this.pattern = pattern;
 		this.sourceId = sourceId;
@@ -94,34 +93,24 @@ public final class ActivityPatternBindingDefinition {
             if (compareTo == 0) {
             	compareTo = Util.compare(isEqualityPattern, castedObject.isEqualityPattern);
 
-            	if (compareTo == 0)
+				if (compareTo == 0) {
             		compareTo = Util.compare(sourceId, castedObject.sourceId);
 			}
         }
+		}
 
         return compareTo;
     }
 
     @Override
 	public boolean equals(Object object) {
-        if (!(object instanceof ActivityPatternBindingDefinition)) {
-			return false;
-		}
-
-        final ActivityPatternBindingDefinition castedObject = (ActivityPatternBindingDefinition) object;
-        if (!Util.equals(activityId, castedObject.activityId)) {
+		if (!(object instanceof final ActivityPatternBindingDefinition castedObject)) {
             return false;
         }
 
-        if (!Util.equals(pattern, castedObject.pattern)) {
-            return false;
-        }
-
-        if (!Util.equals(isEqualityPattern, castedObject.isEqualityPattern)) {
-            return false;
-        }
-
-        return Util.equals(sourceId, castedObject.sourceId);
+		return Objects.equals(activityId, castedObject.activityId) && Objects.equals(pattern, castedObject.pattern)
+				&& isEqualityPattern == castedObject.isEqualityPattern
+				&& Objects.equals(sourceId, castedObject.sourceId);
     }
 
     public String getActivityId() {
@@ -143,9 +132,9 @@ public final class ActivityPatternBindingDefinition {
     @Override
 	public int hashCode() {
         if (hashCode == HASH_INITIAL) {
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(activityId);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(pattern);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(sourceId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(activityId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(pattern);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(sourceId);
             if (hashCode == HASH_INITIAL) {
 				hashCode++;
 			}

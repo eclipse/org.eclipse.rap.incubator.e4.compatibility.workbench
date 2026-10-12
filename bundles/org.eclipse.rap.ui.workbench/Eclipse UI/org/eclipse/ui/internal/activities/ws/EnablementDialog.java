@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2018 IBM Corporation and others.
+ * Copyright (c) 2004, 2022 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -14,7 +14,7 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.activities.ws;
 
-import com.ibm.icu.text.MessageFormat;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
@@ -24,7 +24,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.window.Window;
-import org.eclipse.rap.rwt.RWT;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -52,17 +51,13 @@ public class EnablementDialog extends Dialog {
 	/**
      * The translation bundle in which to look up internationalized text.
      */
-// RAP [fappel]: NLS must be session/request aware
-//  private final static ResourceBundle RESOURCE_BUNDLE = ResourceBundle
-//          .getBundle(EnablementDialog.class.getName());
-	private final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(EnablementDialog.class.getName(),
-			RWT.getLocale());
+	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(EnablementDialog.class.getName());
 
     private Button dontAskButton;
 
-	private Set<String> activitiesToEnable = new HashSet<>(7);
+	private final Set<String> activitiesToEnable = new HashSet<>(7);
 
-	private Collection<String> activityIds;
+	private final Collection<String> activityIds;
 
     private boolean dontAsk;
 
@@ -78,7 +73,7 @@ public class EnablementDialog extends Dialog {
 
     private Text detailsText;
 
-	private Properties strings;
+	private final Properties strings;
 
     /**
 	 * Create a new instance of the receiver.
@@ -101,8 +96,7 @@ public class EnablementDialog extends Dialog {
         Label text = new Label(composite, SWT.NONE);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         text.setFont(dialogFont);
-        IActivityManager manager = PlatformUI.getWorkbench()
-                .getActivitySupport().getActivityManager();
+		IActivityManager manager = PlatformUI.getWorkbench().getActivitySupport().getActivityManager();
 
         if (activityIds.size() == 1) {
             String activityId = activityIds.iterator().next();
@@ -116,24 +110,31 @@ public class EnablementDialog extends Dialog {
             } catch (NotDefinedException e) {
                 activityText = activity.getId();
             }
-            text.setText(MessageFormat.format(RESOURCE_BUNDLE
-                    .getString("requiresSingle"), //$NON-NLS-1$
+			text.setText(MessageFormat.format(RESOURCE_BUNDLE.getString("requiresSingle"), //$NON-NLS-1$
 					activityText));
 
-            text = new Label(composite, SWT.NONE);
-			text
-					.setText(strings
-							.getProperty(
-									WorkbenchTriggerPointAdvisor.PROCEED_SINGLE,
-									RESOURCE_BUNDLE
-											.getString(WorkbenchTriggerPointAdvisor.PROCEED_SINGLE)));
+			/*
+			 * Label doesn't grab tab focus, hence is not read by Accessible tools like
+			 * JAWS. Hence nesting it inside a composite and setting an explicit TabList
+			 * works. For more details :
+			 * https://github.com/eclipse-platform/eclipse.platform.ui/issues/272
+			 */
+			Composite tabStopComposite = (Composite) super.createDialogArea(composite);
+			tabStopComposite.setFont(dialogFont);
+			GridLayout gridLayout = (GridLayout) tabStopComposite.getLayout();
+			gridLayout.marginWidth = 0;
+			gridLayout.marginHeight = 0;
+			text = new Label(tabStopComposite, SWT.NONE);
+			tabStopComposite.setTabList(new Control[] { text });
+			text.setText(strings.getProperty(WorkbenchTriggerPointAdvisor.PROCEED_SINGLE,
+					RESOURCE_BUNDLE.getString(WorkbenchTriggerPointAdvisor.PROCEED_SINGLE)));
             text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             text.setFont(dialogFont);
         } else {
             text.setText(RESOURCE_BUNDLE.getString("requiresMulti")); //$NON-NLS-1$
 			Set<String> activityIdsCopy = new HashSet<>(activityIds);
-            CheckboxTableViewer viewer = CheckboxTableViewer.newCheckList(
-					composite, SWT.CHECK | SWT.BORDER | SWT.SINGLE);
+			CheckboxTableViewer viewer = CheckboxTableViewer.newCheckList(composite,
+					SWT.CHECK | SWT.BORDER | SWT.SINGLE);
             viewer.setContentProvider(new ActivityContentProvider());
             viewer.setLabelProvider(new ActivityLabelProvider(manager));
             viewer.setInput(activityIdsCopy);
@@ -145,8 +146,7 @@ public class EnablementDialog extends Dialog {
 					activitiesToEnable.remove(event.getElement());
 				}
 
-			    getButton(Window.OK).setEnabled(
-			            !activitiesToEnable.isEmpty());
+				getButton(Window.OK).setEnabled(!activitiesToEnable.isEmpty());
 			});
             viewer.addSelectionChangedListener(event -> {
 				selectedActivity = (String) event.getStructuredSelection().getFirstElement();
@@ -154,13 +154,24 @@ public class EnablementDialog extends Dialog {
 			});
             activitiesToEnable.addAll(activityIdsCopy);
 
-            viewer.getControl().setLayoutData(
-                    new GridData(GridData.FILL_HORIZONTAL));
+			viewer.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             viewer.getControl().setFont(dialogFont);
 
-            text = new Label(composite, SWT.NONE);
-            text.setText(strings.getProperty(WorkbenchTriggerPointAdvisor.PROCEED_MULTI, RESOURCE_BUNDLE
-					.getString(WorkbenchTriggerPointAdvisor.PROCEED_MULTI)));
+			/*
+			 * Label doesn't grab tab focus, hence is not read by Accessible tools like
+			 * JAWS. Hence nesting it inside a composite and setting an explicit TabList
+			 * works. For more details :
+			 * https://github.com/eclipse-platform/eclipse.platform.ui/issues/272
+			 */
+			Composite tabStopComposite = (Composite) super.createDialogArea(composite);
+			tabStopComposite.setFont(dialogFont);
+			GridLayout gridLayout = (GridLayout) tabStopComposite.getLayout();
+			gridLayout.marginWidth = 0;
+			gridLayout.marginHeight = 0;
+			text = new Label(tabStopComposite, SWT.NONE);
+			tabStopComposite.setTabList(new Control[] { text });
+			text.setText(strings.getProperty(WorkbenchTriggerPointAdvisor.PROCEED_MULTI,
+					RESOURCE_BUNDLE.getString(WorkbenchTriggerPointAdvisor.PROCEED_MULTI)));
             text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             text.setFont(dialogFont);
         }
@@ -170,9 +181,8 @@ public class EnablementDialog extends Dialog {
         dontAskButton = new Button(composite, SWT.CHECK);
         dontAskButton.setSelection(false);
         dontAskButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        dontAskButton.setText(strings.getProperty(
-				WorkbenchTriggerPointAdvisor.DONT_ASK, RESOURCE_BUNDLE
-						.getString(WorkbenchTriggerPointAdvisor.DONT_ASK)));
+		dontAskButton.setText(strings.getProperty(WorkbenchTriggerPointAdvisor.DONT_ASK,
+				RESOURCE_BUNDLE.getString(WorkbenchTriggerPointAdvisor.DONT_ASK)));
         dontAskButton.setFont(dialogFont);
 
         detailsComposite = new Composite(composite, SWT.NONE);
@@ -184,8 +194,7 @@ public class EnablementDialog extends Dialog {
         detailsLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         detailsLabel.setFont(dialogFont);
 
-        detailsText = new Text(detailsComposite, SWT.WRAP | SWT.V_SCROLL
-                | SWT.BORDER | SWT.READ_ONLY);
+		detailsText = new Text(detailsComposite, SWT.WRAP | SWT.V_SCROLL | SWT.BORDER | SWT.READ_ONLY);
         detailsText.setLayoutData(new GridData(GridData.FILL_BOTH));
         detailsText.setFont(dialogFont);
 
@@ -203,16 +212,12 @@ public class EnablementDialog extends Dialog {
      */
     protected void setDetails() {
         if (selectedActivity == null) {
-            detailsLabel
-					.setText(strings
-							.getProperty(
-									WorkbenchTriggerPointAdvisor.NO_DETAILS,
-									RESOURCE_BUNDLE
-											.getString(WorkbenchTriggerPointAdvisor.NO_DETAILS)));
+			detailsLabel.setText(strings.getProperty(WorkbenchTriggerPointAdvisor.NO_DETAILS,
+					RESOURCE_BUNDLE.getString(WorkbenchTriggerPointAdvisor.NO_DETAILS)));
             detailsText.setText(""); //$NON-NLS-1$
         } else {
-            IActivity activity = PlatformUI.getWorkbench().getActivitySupport()
-                    .getActivityManager().getActivity(selectedActivity);
+			IActivity activity = PlatformUI.getWorkbench().getActivitySupport().getActivityManager()
+					.getActivity(selectedActivity);
             String name;
             try {
                 name = activity.getName();
@@ -225,15 +230,11 @@ public class EnablementDialog extends Dialog {
             } catch (NotDefinedException e) {
                 desc = RESOURCE_BUNDLE.getString("noDescAvailable"); //$NON-NLS-1$
             }
-            detailsLabel.setText(MessageFormat.format(RESOURCE_BUNDLE
-					.getString("detailsLabel"), name)); //$NON-NLS-1$
+			detailsLabel.setText(MessageFormat.format(RESOURCE_BUNDLE.getString("detailsLabel"), name)); //$NON-NLS-1$
             detailsText.setText(desc);
         }
     }
 
-    /**
-     *
-     */
     protected void setDetailHints() {
         GridData data = (GridData) detailsComposite.getLayoutData();
         if (showDetails) {
@@ -247,7 +248,8 @@ public class EnablementDialog extends Dialog {
     }
 
     /**
-     * Set the label of the detail button based on whether we're currently showing the description text.
+	 * Set the label of the detail button based on whether we're currently showing
+	 * the description text.
      */
     private void setDetailButtonLabel() {
         if (!showDetails) {
@@ -287,8 +289,7 @@ public class EnablementDialog extends Dialog {
     @Override
 	protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
-        detailsButton = createButton(parent, IDialogConstants.DETAILS_ID,
-                "", false); //$NON-NLS-1$
+		detailsButton = createButton(parent, IDialogConstants.DETAILS_ID, "", false); //$NON-NLS-1$
         setDetailButtonLabel();
     }
 

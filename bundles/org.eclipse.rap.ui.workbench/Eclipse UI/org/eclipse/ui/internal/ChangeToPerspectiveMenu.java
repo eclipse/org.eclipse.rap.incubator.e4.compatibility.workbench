@@ -37,8 +37,7 @@ import org.eclipse.ui.internal.util.PrefUtil;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 /**
- * Change the perspective of the active page in the window
- * to the selected one.
+ * Change the perspective of the active page in the window to the selected one.
  */
 public class ChangeToPerspectiveMenu extends PerspectiveMenu {
 
@@ -52,8 +51,7 @@ public class ChangeToPerspectiveMenu extends PerspectiveMenu {
         super(window, id);
         // indicate that a open perspectives submenu has been created
 		if (window instanceof WorkbenchWindow) {
-			((WorkbenchWindow) window)
-					.addSubmenu(WorkbenchWindow.OPEN_PERSPECTIVE_SUBMENU);
+			((WorkbenchWindow) window).addSubmenu(WorkbenchWindow.OPEN_PERSPECTIVE_SUBMENU);
 		}
         showActive(true);
     }
@@ -68,18 +66,12 @@ public class ChangeToPerspectiveMenu extends PerspectiveMenu {
 			persp = page.getPerspective();
 		}
 
-		IHandlerService handlerService = getWindow()
-				.getService(IHandlerService.class);
-		ICommandService commandService = getWindow()
-				.getService(ICommandService.class);
+		IHandlerService handlerService = getWindow().getService(IHandlerService.class);
+		ICommandService commandService = getWindow().getService(ICommandService.class);
 
-		Command command = commandService
-				.getCommand(IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE);
+		Command command = commandService.getCommand(IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE);
 		Map parameters = new HashMap();
-		parameters
-				.put(
-						IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE_PARM_ID,
-						desc.getId());
+		parameters.put(IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE_PARM_ID, desc.getId());
 
 		// Only open a new window if user preference is set and the window
 		// has an active perspective.
@@ -87,30 +79,14 @@ public class ChangeToPerspectiveMenu extends PerspectiveMenu {
 
 			//Call the handler!
 			//Set up the param for newWindow!
-			parameters
-					.put(
-							"org.eclipse.ui.perspectives.showPerspective.newWindow", "true"); //$NON-NLS-1$//$NON-NLS-2$
+			parameters.put("org.eclipse.ui.perspectives.showPerspective.newWindow", "true"); //$NON-NLS-1$//$NON-NLS-2$
 		}
 
-		ParameterizedCommand pCommand = ParameterizedCommand.generateCommand(
-				command, parameters);
+		ParameterizedCommand pCommand = ParameterizedCommand.generateCommand(command, parameters);
 		try {
 			handlerService.executeCommand(pCommand, null);
-		} catch (ExecutionException e) {
-			StatusManager.getManager().handle(
-					new Status(IStatus.WARNING, WorkbenchPlugin.PI_WORKBENCH,
-							"Failed to execute " + IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE, e)); //$NON-NLS-1$
-		} catch (NotDefinedException e) {
-			StatusManager.getManager().handle(
-					new Status(IStatus.WARNING, WorkbenchPlugin.PI_WORKBENCH,
-							"Failed to execute " + IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE, e)); //$NON-NLS-1$
-		} catch (NotEnabledException e) {
-			StatusManager.getManager().handle(
-					new Status(IStatus.WARNING, WorkbenchPlugin.PI_WORKBENCH,
-							"Failed to execute " + IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE, e)); //$NON-NLS-1$
-		} catch (NotHandledException e) {
-			StatusManager.getManager().handle(
-					new Status(IStatus.WARNING, WorkbenchPlugin.PI_WORKBENCH,
+		} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
+			StatusManager.getManager().handle(new Status(IStatus.WARNING, WorkbenchPlugin.PI_WORKBENCH,
 							"Failed to execute " + IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE, e)); //$NON-NLS-1$
 		}
 	}

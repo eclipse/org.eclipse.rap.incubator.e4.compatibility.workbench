@@ -19,22 +19,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.activities.WorkbenchActivityHelper;
 import org.eclipse.ui.views.IViewCategory;
 import org.eclipse.ui.views.IViewDescriptor;
 
 public class ViewCategory implements IViewCategory {
 
-	private String id;
-	private String label;
-	private IPath path;
-	private List<IViewDescriptor> descriptors = new ArrayList<>();
+	private final String id;
+	private final String label;
+	private final IPath path;
+	private final List<IViewDescriptor> descriptors = new ArrayList<>();
 
 	public ViewCategory(String id, String label) {
 		this.id = id;
 		this.label = label;
-		this.path = new Path(id);
+		this.path = IPath.fromOSString(id);
 	}
 
 	void addDescriptor(IViewDescriptor descriptor) {
@@ -43,8 +42,7 @@ public class ViewCategory implements IViewCategory {
 
 	@Override
 	public IViewDescriptor[] getViews() {
-		Collection<?> allowedViews = WorkbenchActivityHelper.restrictCollection(descriptors,
-				new ArrayList<>());
+		Collection<?> allowedViews = WorkbenchActivityHelper.restrictCollection(descriptors, new ArrayList<>());
 		return allowedViews.toArray(new IViewDescriptor[allowedViews.size()]);
 	}
 

@@ -16,10 +16,8 @@ package org.eclipse.ui.internal.actions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.events.MenuAdapter;
@@ -40,8 +38,8 @@ import org.eclipse.ui.internal.registry.WorkingSetRegistry;
  *
  * @since 3.3
  */
-public abstract class AbstractWorkingSetPulldownDelegate implements
-		IWorkbenchWindowActionDelegate, IWorkbenchWindowPulldownDelegate2 {
+public abstract class AbstractWorkingSetPulldownDelegate
+		implements IWorkbenchWindowActionDelegate, IWorkbenchWindowPulldownDelegate2 {
 
 	private Menu menubarMenu;
 
@@ -51,9 +49,6 @@ public abstract class AbstractWorkingSetPulldownDelegate implements
 
 	private IWorkbenchWindow window;
 
-	/**
-	 *
-	 */
 	public AbstractWorkingSetPulldownDelegate() {
 		super();
 	}
@@ -108,9 +103,6 @@ public abstract class AbstractWorkingSetPulldownDelegate implements
 		});
 	}
 
-	/**
-	 * @param m
-	 */
 	protected abstract void fillMenu(Menu m);
 
 	/**
@@ -120,31 +112,28 @@ public abstract class AbstractWorkingSetPulldownDelegate implements
 	 * @return an array of arrays
 	 */
 	protected IWorkingSet[][] splitSets() {
-		IWorkingSet[] allSets = getWindow().getWorkbench().getWorkingSetManager()
-				.getWorkingSets();
+		IWorkingSet[] allSets = getWindow().getWorkbench().getWorkingSetManager().getWorkingSets();
 
-		Map map = new HashMap();
-		WorkingSetRegistry registry = WorkbenchPlugin.getDefault()
-				.getWorkingSetRegistry();
+		Map<String, List<IWorkingSet>> map = new HashMap<>();
+		WorkingSetRegistry registry = WorkbenchPlugin.getDefault().getWorkingSetRegistry();
 
 		for (IWorkingSet allSet : allSets) {
 			String setType = allSet.getId();
-			if (WorkbenchActivityHelper.filterItem(registry
-					.getWorkingSetDescriptor(setType))) {
+			if (WorkbenchActivityHelper.filterItem(registry.getWorkingSetDescriptor(setType))) {
 				continue;
 			}
-			List setsOfType = (List) map.get(setType);
+			List<IWorkingSet> setsOfType = map.get(setType);
 			if (setsOfType == null) {
-				setsOfType = new ArrayList();
+				setsOfType = new ArrayList<>();
 				map.put(setType, setsOfType);
 			}
 			setsOfType.add(allSet);
 		}
 
-		IWorkingSet[][] typedSets = new IWorkingSet[map.keySet().size()][];
+		IWorkingSet[][] typedSets = new IWorkingSet[map.size()][];
 		int i = 0;
-		for (Iterator iter = map.keySet().iterator(); iter.hasNext();) {
-			List setsOfType = (List) map.get(iter.next());
+		for (Map.Entry<String, List<IWorkingSet>> entry : map.entrySet()) {
+			List<IWorkingSet> setsOfType = entry.getValue();
 			typedSets[i] = new IWorkingSet[setsOfType.size()];
 			setsOfType.toArray(typedSets[i++]);
 		}

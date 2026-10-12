@@ -28,23 +28,22 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 /**
  * ActionSetDescriptor
  */
-public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
-        IWorkbenchAdapter, IPluginContribution {
+public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable, IWorkbenchAdapter, IPluginContribution {
     private static final Object[] NO_CHILDREN = new Object[0];
 
     private static final String INITIALLY_HIDDEN_PREF_ID_PREFIX = "actionSet.initiallyHidden."; //$NON-NLS-1$
 
-    private String id;
+	private final String id;
 
-    private String pluginId;
+	private final String pluginId;
 
-    private String label;
+	private final String label;
 
     private boolean visible;
 
-    private String description;
+	private final String description;
 
-    private IConfigurationElement configElement;
+	private final IConfigurationElement configElement;
 
     /**
      * Create a descriptor from a configuration element.
@@ -52,8 +51,7 @@ public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
      * @param configElement the configuration element
      * @throws CoreException thrown if there is an issue creating the descriptor
      */
-    public ActionSetDescriptor(IConfigurationElement configElement)
-            throws CoreException {
+	public ActionSetDescriptor(IConfigurationElement configElement) throws CoreException {
         super();
         this.configElement = configElement;
         id = configElement.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
@@ -67,8 +65,7 @@ public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
 
         // Sanity check.
         if (label == null) {
-            throw new CoreException(new Status(IStatus.ERROR,
-                    WorkbenchPlugin.PI_WORKBENCH, 0,
+			throw new CoreException(new Status(IStatus.ERROR, WorkbenchPlugin.PI_WORKBENCH, 0,
                     "Invalid extension (missing label): " + id,//$NON-NLS-1$
                     null));
         }
@@ -80,14 +77,13 @@ public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
      * @return the action set
      */
     @Override
-	public IActionSet createActionSet() throws CoreException {
+	public IActionSet createActionSet() {
         return new PluginActionSet(this);
     }
 
     /**
-     * Returns an object which is an instance of the given class
-     * associated with this object. Returns <code>null</code> if
-     * no such object can be found.
+	 * Returns an object which is an instance of the given class associated with
+	 * this object. Returns <code>null</code> if no such object can be found.
      */
 	@Override
 	public <T> T getAdapter(Class<T> adapter) {
@@ -103,10 +99,8 @@ public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
     @Override
 	public Object[] getChildren(Object o) {
 
-
         return NO_CHILDREN;
     }
-
 
     @Override
 	public IConfigurationElement getConfigurationElement() {
@@ -114,8 +108,8 @@ public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
     }
 
     /**
-     * Returns this action set's description.
-     * This is the value of its <code>"description"</code> attribute.
+	 * Returns this action set's description. This is the value of its
+	 * <code>"description"</code> attribute.
      *
      * @return the description
      */
@@ -125,9 +119,8 @@ public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
     }
 
     /**
-     * Returns this action set's id.
-     * This is the value of its <code>"id"</code> attribute.
-     * <p>
+	 * Returns this action set's id. This is the value of its <code>"id"</code>
+	 * attribute.
      *
      * @return the action set id
      */
@@ -137,8 +130,8 @@ public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
     }
 
     /**
-     * Returns this action set's label.
-     * This is the value of its <code>"label"</code> attribute.
+	 * Returns this action set's label. This is the value of its
+	 * <code>"label"</code> attribute.
      *
      * @return the label
      */
@@ -175,8 +168,8 @@ public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
     }
 
     /**
-     * Sets whether this action set is initially visible.
-     * If the action set identifier is undefined, then this is ignored.
+	 * Sets whether this action set is initially visible. If the action set
+	 * identifier is undefined, then this is ignored.
      *
      * @since 3.0
      */
@@ -212,11 +205,9 @@ public class ActionSetDescriptor implements IActionSetDescriptor, IAdaptable,
 
     @Override
 	public boolean equals(Object arg0) {
-        if (!(arg0 instanceof ActionSetDescriptor)) {
+		if (!(arg0 instanceof ActionSetDescriptor descr)) {
             return false;
         }
-
-        ActionSetDescriptor descr = (ActionSetDescriptor) arg0;
 
         return id.equals(descr.id) && descr.pluginId.equals(pluginId);
     }

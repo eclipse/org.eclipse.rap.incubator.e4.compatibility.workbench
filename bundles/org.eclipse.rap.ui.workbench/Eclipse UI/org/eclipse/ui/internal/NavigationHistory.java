@@ -577,7 +577,7 @@ public class NavigationHistory implements INavigationHistory {
             if (entry == cEntry) {
 				childMem.putString(IWorkbenchConstants.TAG_ACTIVE, "true"); //$NON-NLS-1$
 			}
-            entry.saveState(childMem, list);
+            entry.saveState(childMem);
             childMem.putInteger(IWorkbenchConstants.TAG_INDEX, editors
                     .indexOf(entry.editorInfo));
         }
@@ -949,3 +949,4 @@ public class NavigationHistory implements INavigationHistory {
 		return true;
     }
 }
+

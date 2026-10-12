@@ -20,7 +20,6 @@ import org.eclipse.core.expressions.EvaluationResult;
 import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.expressions.ExpressionInfo;
 import org.eclipse.core.expressions.IEvaluationContext;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchPage;
@@ -34,7 +33,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * </p>
  *
  * @since 3.3
- *
  */
 public class CloseOthersHandler extends AbstractEvaluationHandler {
 	private Expression enabledWhen;
@@ -45,21 +43,19 @@ public class CloseOthersHandler extends AbstractEvaluationHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		IWorkbenchWindow window = HandlerUtil
-				.getActiveWorkbenchWindowChecked(event);
+		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		IWorkbenchPage page = window.getActivePage();
 		if (page != null) {
 			IEditorReference[] refArray = page.getEditorReferences();
 			if (refArray != null && refArray.length > 1) {
 				IEditorReference[] otherEditors = new IEditorReference[refArray.length - 1];
-				IEditorReference activeEditor = (IEditorReference) page
-						.getReference(page.getActiveEditor());
+				IEditorReference activeEditor = (IEditorReference) page.getReference(page.getActiveEditor());
 				for (int i = 0; i < refArray.length; i++) {
-					if (refArray[i] != activeEditor)
+					if (refArray[i] != activeEditor) {
 						continue;
+					}
 					System.arraycopy(refArray, 0, otherEditors, 0, i);
-					System.arraycopy(refArray, i + 1, otherEditors, i,
-							refArray.length - 1 - i);
+					System.arraycopy(refArray, i + 1, otherEditors, i, refArray.length - 1 - i);
 					break;
 				}
 				page.closeEditors(otherEditors, true);
@@ -74,15 +70,12 @@ public class CloseOthersHandler extends AbstractEvaluationHandler {
 		if (enabledWhen == null) {
 			enabledWhen = new Expression() {
 				@Override
-				public EvaluationResult evaluate(IEvaluationContext context)
-						throws CoreException {
-					IWorkbenchWindow window = InternalHandlerUtil
-							.getActiveWorkbenchWindow(context);
+				public EvaluationResult evaluate(IEvaluationContext context) {
+					IWorkbenchWindow window = InternalHandlerUtil.getActiveWorkbenchWindow(context);
 					if (window != null) {
 						IWorkbenchPage page = window.getActivePage();
 						if (page != null) {
-							IEditorReference[] refArray = page
-									.getEditorReferences();
+							IEditorReference[] refArray = page.getEditorReferences();
 							if (refArray != null && refArray.length > 1) {
 								return EvaluationResult.TRUE;
 
@@ -94,8 +87,7 @@ public class CloseOthersHandler extends AbstractEvaluationHandler {
 
 				@Override
 				public void collectExpressionInfo(ExpressionInfo info) {
-					info
-							.addVariableNameAccess(ISources.ACTIVE_WORKBENCH_WINDOW_NAME);
+					info.addVariableNameAccess(ISources.ACTIVE_WORKBENCH_WINDOW_NAME);
 				}
 			};
 		}

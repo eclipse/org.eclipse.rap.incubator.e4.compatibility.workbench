@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -15,6 +12,7 @@ package org.eclipse.ui.internal;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
 import org.eclipse.jface.action.AbstractGroupMarker;
@@ -49,7 +47,6 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
      * Used by the workbench window extension handler to unhook action sets from
      * their associated window.
      *
-     * @since 3.1
      */
 	public static class Binding implements IDisposable {
         PluginActionSetBuilder builder;
@@ -57,7 +54,11 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
         IWorkbenchWindow window;
 		IExtensionTracker tracker;
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.ui.services.IDisposable#dispose()
+		 */
 		public void dispose() {
 			if (tracker != null) {
 				tracker.unregisterObject(set.getConfigElement()
@@ -115,7 +116,9 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
         registerBinding(set);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PluginActionBuilder.
+     */
 	protected ActionDescriptor createActionDescriptor(
             IConfigurationElement element) {
         // As of 2.1, the "pulldown" attribute was deprecated and replaced by
@@ -143,7 +146,9 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
         return desc;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PluginActionBuilder.
+     */
 	protected BasicContribution createContribution() {
         return new ActionSetContribution(actionSet.getDesc().getId(), window);
     }
@@ -224,7 +229,8 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
             builder.readActionExtensions(set, window);
             builders[i] = builder;
         }
-        for (PluginActionSetBuilder builder : builders) {
+        for (int i = 0; i < builders.length; i++) {
+            PluginActionSetBuilder builder = builders[i];
             builder.processAdjunctContributions();
         }
     }
@@ -324,7 +330,6 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
         /**
          * This implementation inserts the group into the action set additions group.
          */
-        @Override
 		protected void addGroup(IContributionManager mgr, String name) {
             IContributionItem refItem = findInsertionPoint(
                     IWorkbenchActionConstants.MB_ADDITIONS, actionSetId, mgr,
@@ -484,7 +489,9 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
             return false;
         }
 
-        @Override
+        /* (non-Javadoc)
+         * Method declared on Basic Contribution.
+         */
 		protected void insertMenuGroup(IMenuManager menu,
                 AbstractGroupMarker marker) {
             if (actionSetId != null) {
@@ -492,13 +499,14 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
                 // Loop thru all the current groups looking for the first
                 // group whose id > than the current action set id. Insert
                 // current marker just before this item then.
-                for (IContributionItem item : items) {
+                for (int i = 0; i < items.length; i++) {
+                    IContributionItem item = items[i];
                     if (item.isSeparator() || item.isGroupMarker()) {
                         if (item instanceof IActionSetContributionItem) {
                             String testId = ((IActionSetContributionItem) item)
                                     .getActionSetId();
                             if (actionSetId.compareTo(testId) < 0) {
-                                menu.insertBefore(item.getId(), marker);
+                                menu.insertBefore(items[i].getId(), marker);
                                 return;
                             }
                         }
@@ -539,7 +547,7 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
                     break;
                 }
 
-                if (itemId != null) {
+                if (itemId != null && testId != null) {
                     if (itemId.compareTo(testId) < 1) {
 						break;
 					}
@@ -561,7 +569,9 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
             return adjunctActions.size() > 0;
         }
 
-        @Override
+        /* (non-Javadoc)
+         * Method declared on Basic Contribution.
+         */
 		protected void insertAfter(IContributionManager mgr, String refId,
                 IContributionItem item) {
             IContributionItem refItem = findInsertionPoint(refId, actionSetId,
@@ -630,25 +640,25 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
             IContributionItem[] items = menuMgr.getItems();
             ArrayList itemsToRemove = new ArrayList();
             String id;
-            for (IContributionItem item : items) {
-				if (item instanceof IMenuManager) {
-                    revokeActionSetFromMenu((IMenuManager) item,
+            for (int i = 0; i < items.length; i++) {
+				if (items[i] instanceof IMenuManager) {
+                    revokeActionSetFromMenu((IMenuManager) items[i],
                             actionsetId);
-                } else if (item instanceof ActionSetContributionItem) {
-                    id = ((ActionSetContributionItem) item)
+                } else if (items[i] instanceof ActionSetContributionItem) {
+                    id = ((ActionSetContributionItem) items[i])
                             .getActionSetId();
                     if (actionsetId.equals(id)) {
-						itemsToRemove.add(item);
+						itemsToRemove.add(items[i]);
 					}
-                } else if (item instanceof Separator) {
-                    id = ((Separator) item).getId();
+                } else if (items[i] instanceof Separator) {
+                    id = ((Separator) items[i]).getId();
                     if (actionsetId.equals(id)) {
-						itemsToRemove.add(item);
+						itemsToRemove.add(items[i]);
 					}
-                } else if (item instanceof GroupMarker) {
-                    id = ((GroupMarker) item).getId();
+                } else if (items[i] instanceof GroupMarker) {
+                    id = ((GroupMarker) items[i]).getId();
                     if (actionsetId.equals(id)) {
-						itemsToRemove.add(item);
+						itemsToRemove.add(items[i]);
 					}
                 }
 			}
@@ -666,24 +676,24 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
             IContributionItem[] items = coolbarMgr.getItems();
             ArrayList itemsToRemove = new ArrayList();
             String id;
-            for (IContributionItem item : items) {
-                id = item.getId();
+            for (int i = 0; i < items.length; i++) {
+                id = items[i].getId();
                 if (actionsetId.equals(id)) {
-                    itemsToRemove.add(item);
+                    itemsToRemove.add(items[i]);
                     continue;
                 }
-                if (item instanceof IToolBarManager) {
-                    revokeActionSetFromToolbar((IToolBarManager) item,
+                if (items[i] instanceof IToolBarManager) {
+                    revokeActionSetFromToolbar((IToolBarManager) items[i],
                             actionsetId);
-                } else if (item instanceof IToolBarContributionItem) {
-                    id = ((IToolBarContributionItem) item).getId();
+                } else if (items[i] instanceof IToolBarContributionItem) {
+                    id = ((IToolBarContributionItem) items[i]).getId();
                     if (actionsetId.equals(id)) {
-						itemsToRemove.add(item);
+						itemsToRemove.add(items[i]);
 					}
-                } else if (item instanceof GroupMarker) {
-                    id = ((GroupMarker) item).getId();
+                } else if (items[i] instanceof GroupMarker) {
+                    id = ((GroupMarker) items[i]).getId();
                     if (actionsetId.equals(id)) {
-						itemsToRemove.add(item);
+						itemsToRemove.add(items[i]);
 					}
                 }
             }
@@ -700,27 +710,27 @@ public class PluginActionSetBuilder extends PluginActionBuilder {
             IContributionItem[] items = toolbarMgr.getItems();
             ArrayList itemsToRemove = new ArrayList();
             String id;
-            for (IContributionItem item : items) {
-                id = item.getId();
+            for (int i = 0; i < items.length; i++) {
+                id = items[i].getId();
                 if (id.equals(actionsetId)) {
-                    itemsToRemove.add(item);
+                    itemsToRemove.add(items[i]);
                     continue;
                 }
-                if (item instanceof PluginActionCoolBarContributionItem) {
-                    id = ((PluginActionCoolBarContributionItem) item)
+                if (items[i] instanceof PluginActionCoolBarContributionItem) {
+                    id = ((PluginActionCoolBarContributionItem) items[i])
                             .getActionSetId();
                     if (actionsetId.equals(id)) {
-						itemsToRemove.add(item);
+						itemsToRemove.add(items[i]);
 					}
-                } else if (item instanceof ActionContributionItem) {
-                    id = ((ActionContributionItem) item).getId();
+                } else if (items[i] instanceof ActionContributionItem) {
+                    id = ((ActionContributionItem) items[i]).getId();
                     if (actionsetId.equals(id)) {
-						itemsToRemove.add(item);
+						itemsToRemove.add(items[i]);
 					}
-                } else if (item instanceof GroupMarker) {
-                    id = ((GroupMarker) item).getId();
+                } else if (items[i] instanceof GroupMarker) {
+                    id = ((GroupMarker) items[i]).getId();
                     if (actionsetId.equals(id)) {
-						itemsToRemove.add(item);
+						itemsToRemove.add(items[i]);
 					}
                 }
             }

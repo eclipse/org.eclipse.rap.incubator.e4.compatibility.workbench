@@ -131,6 +131,12 @@ public class IntroRegistry implements IIntroRegistry {
 	 * String)
 	 */
 	@Override
+	public IIntroDescriptor getIntroForProduct(String targetProductId) {
+		// RAP applications expose branding rather than an Eclipse product. Keep the
+		// 3.x API contract by resolving the supplied id as a branding id.
+		return getIntroForBranding(targetProductId);
+	}
+
 	public IIntroDescriptor getIntroForBranding(String targetBrandingId) {
 		// RAP [bm]: replaced namespace
 //      IExtensionPoint point = Platform.getExtensionRegistry()
@@ -243,3 +249,4 @@ public class IntroRegistry implements IIntroRegistry {
 		return null;
 	}
 }
+

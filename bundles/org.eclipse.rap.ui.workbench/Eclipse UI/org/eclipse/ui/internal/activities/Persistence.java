@@ -71,8 +71,8 @@ public final class Persistence {
     public static final String shortContextTemplate = " (contributed by ''{0}'')"; //$NON-NLS-1$;
     public static final String fullContextTemplate = " (contributed by ''{0}'', extension ID ''{1}'')"; //$NON-NLS-1$;
 
-    static ActivityRequirementBindingDefinition readActivityRequirementBindingDefinition(
-            IMemento memento, String sourceIdOverride) { //, IStatus status) {
+	static ActivityRequirementBindingDefinition readActivityRequirementBindingDefinition(IMemento memento,
+			String sourceIdOverride) { // , IStatus status) {
         String childActivityId = memento.getString(TAG_REQUIRED_ACTIVITY_ID);
         if (childActivityId == null) {
         	log(memento, ACTIVITY_REQUIREMENT_BINDING_DESC, "missing ID of the required activity"); //$NON-NLS-1$
@@ -83,18 +83,15 @@ public final class Persistence {
         	log(memento, ACTIVITY_REQUIREMENT_BINDING_DESC, "missing ID of the activity to bind"); //$NON-NLS-1$
 			return null;
 		}
-        String sourceId = sourceIdOverride != null ? sourceIdOverride : memento
-                .getString(TAG_SOURCE_ID);
-        return new ActivityRequirementBindingDefinition(childActivityId,
-                parentActivityId, sourceId);
+		String sourceId = sourceIdOverride != null ? sourceIdOverride : memento.getString(TAG_SOURCE_ID);
+		return new ActivityRequirementBindingDefinition(childActivityId, parentActivityId, sourceId);
     }
 
     static String readDefaultEnablement(IMemento memento) {
         return memento.getString(TAG_ID);
     }
 
-    static ActivityDefinition readActivityDefinition(IMemento memento,
-            String sourceIdOverride) {
+	static ActivityDefinition readActivityDefinition(IMemento memento, String sourceIdOverride) {
 
         String id = memento.getString(TAG_ID);
         if (id == null) {
@@ -110,13 +107,12 @@ public final class Persistence {
         if (description == null) {
 			description = ""; //$NON-NLS-1$
 		}
-        String sourceId = sourceIdOverride != null ? sourceIdOverride : memento
-                .getString(TAG_SOURCE_ID);
+		String sourceId = sourceIdOverride != null ? sourceIdOverride : memento.getString(TAG_SOURCE_ID);
         return new ActivityDefinition(id, name, sourceId, description);
     }
 
-    static ActivityPatternBindingDefinition readActivityPatternBindingDefinition(
-            IMemento memento, String sourceIdOverride) {
+	static ActivityPatternBindingDefinition readActivityPatternBindingDefinition(IMemento memento,
+			String sourceIdOverride) {
 
         String activityId = memento.getString(TAG_ACTIVITY_ID);
         if (activityId == null) {
@@ -128,19 +124,16 @@ public final class Persistence {
         	log(memento, ACTIVITY_PATTERN_BINDING_DESC, "missing the pattern to be bound"); //$NON-NLS-1$
 			return null;
 		}
-        String sourceId = sourceIdOverride != null ? sourceIdOverride : memento
-                .getString(TAG_SOURCE_ID);
+		String sourceId = sourceIdOverride != null ? sourceIdOverride : memento.getString(TAG_SOURCE_ID);
 
         final String isEqualityPatternStr = memento.getString(TAG_IS_EQUALITY_PATTERN);
-        final boolean isEqualityPattern = (isEqualityPatternStr != null && isEqualityPatternStr
-				.equals("true")); //$NON-NLS-1$
+		final boolean isEqualityPattern = (isEqualityPatternStr != null && isEqualityPatternStr.equals("true")); //$NON-NLS-1$
 
-        return new ActivityPatternBindingDefinition(activityId, pattern,
-                sourceId, isEqualityPattern);
+		return new ActivityPatternBindingDefinition(activityId, pattern, sourceId, isEqualityPattern);
     }
 
-    static CategoryActivityBindingDefinition readCategoryActivityBindingDefinition(
-            IMemento memento, String sourceIdOverride) {
+	static CategoryActivityBindingDefinition readCategoryActivityBindingDefinition(IMemento memento,
+			String sourceIdOverride) {
 
         String activityId = memento.getString(TAG_ACTIVITY_ID);
         if (activityId == null) {
@@ -152,14 +145,11 @@ public final class Persistence {
         	log(memento, CATEGORY_ACTIVITY_BINDING_DESC, "missing the ID of the category to bind"); //$NON-NLS-1$
 			return null;
 		}
-        String sourceId = sourceIdOverride != null ? sourceIdOverride : memento
-                .getString(TAG_SOURCE_ID);
-        return new CategoryActivityBindingDefinition(activityId, categoryId,
-                sourceId);
+		String sourceId = sourceIdOverride != null ? sourceIdOverride : memento.getString(TAG_SOURCE_ID);
+		return new CategoryActivityBindingDefinition(activityId, categoryId, sourceId);
     }
 
-    static CategoryDefinition readCategoryDefinition(IMemento memento,
-            String sourceIdOverride) {
+	static CategoryDefinition readCategoryDefinition(IMemento memento, String sourceIdOverride) {
 
         String id = memento.getString(TAG_ID);
         if (id == null) {
@@ -175,8 +165,7 @@ public final class Persistence {
         if (description == null) {
 			description = ""; //$NON-NLS-1$
 		}
-        String sourceId = sourceIdOverride != null ? sourceIdOverride : memento
-                .getString(TAG_SOURCE_ID);
+		String sourceId = sourceIdOverride != null ? sourceIdOverride : memento.getString(TAG_SOURCE_ID);
         return new CategoryDefinition(id, name, sourceId, description);
     }
 
@@ -185,12 +174,12 @@ public final class Persistence {
     }
 
     static public void log(IMemento memento, String elementName, String msg) {
-    	if (memento instanceof ConfigurationElementMemento) {
-    		ConfigurationElementMemento cMemento = (ConfigurationElementMemento) memento;
+		if (memento instanceof ConfigurationElementMemento cMemento) {
     		log(elementName, msg, cMemento.getContributorName(), cMemento.getExtensionID());
-    	} else
+		} else {
     		log(elementName, msg, null, null);
     }
+	}
 
     static public void log(IConfigurationElement element, String elementName, String msg) {
     	String contributorName = element.getContributor().getName();
@@ -200,10 +189,11 @@ public final class Persistence {
 
     static public void log(String elementName, String msg, String contributorName, String extensionID) {
     	String msgInContext = elementName + ": " + msg; //$NON-NLS-1$;
-    	if (contributorName != null && extensionID != null)
+		if (contributorName != null && extensionID != null) {
     		msgInContext += NLS.bind(fullContextTemplate, contributorName, extensionID);
-    	else if (contributorName != null)
+		} else if (contributorName != null) {
     		msgInContext += NLS.bind(shortContextTemplate, contributorName);
+		}
         WorkbenchPlugin.log(msgInContext);
     }
 }

@@ -1,33 +1,27 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     James Blackburn (Broadcom Corp.) - Bug 294628 multiple selection
- *     Lucas Bullen (Red Hat Inc.) - Bug 530654 - Import/Export Preferences buttons visible on other dialogs
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
 import java.util.Iterator;
-import org.eclipse.core.runtime.Adapters;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.IWorkbenchHelpContextIds;
 import org.eclipse.ui.internal.WorkbenchMessages;
+import org.eclipse.ui.internal.util.Util;
 import org.eclipse.ui.model.IContributionService;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 
@@ -96,40 +90,19 @@ public class PropertyDialog extends FilteredPreferenceDialog {
 
 	}
 
-	@Override
-	protected void addButtonsToHelpControl(Control control) {
-		// Overridden to remove import/export buttons
-	}
-
 	/**
-	 * Returns the name of the given element(s). Prints at most 3 names.
+	 * Returns the name of the given element.
 	 *
 	 * @param element
-	 *            the element / IStructuredSelection
+	 *            the element
 	 * @return the name of the element
 	 */
 	private static String getName(Object element) {
-		Object[] elements;
-		if (element instanceof IStructuredSelection)
-			elements = ((IStructuredSelection) element).toArray();
-		else
-			elements = new Object[] { element };
-		StringBuilder sb = new StringBuilder();
-		// Print at most 3 entries...
-		for (int i = 0; i < elements.length; i++) {
-			element = elements[i];
-			if (i > 2) {
-				sb.append(" ..."); //$NON-NLS-1$
-				break;
-			}
-			IWorkbenchAdapter adapter = Adapters.adapt(element, IWorkbenchAdapter.class);
+		IWorkbenchAdapter adapter = (IWorkbenchAdapter)Util.getAdapter(element, IWorkbenchAdapter.class);
 			if (adapter != null) {
-				if (sb.length() > 0)
-					sb.append(", "); //$NON-NLS-1$
-				sb.append(adapter.getLabel(element));
-			}
+			return adapter.getLabel(element);
 		}
-		return sb.toString();
+		return "";//$NON-NLS-1$
 	}
 
 	/**
@@ -167,7 +140,6 @@ public class PropertyDialog extends FilteredPreferenceDialog {
 	/**
 	 * Get the name of the selected item preference
 	 */
-	@Override
 	protected String getSelectedNodePreference() {
 		return lastPropertyId;
 	}
@@ -175,7 +147,6 @@ public class PropertyDialog extends FilteredPreferenceDialog {
 	/**
 	 * Get the name of the selected item preference
 	 */
-	@Override
 	protected void setSelectedNodePreference(String pageId) {
 		lastPropertyId = pageId;
 	}
@@ -187,7 +158,6 @@ public class PropertyDialog extends FilteredPreferenceDialog {
 	 *
 	 * @return a string, the contributionType
 	 */
-	@Override
 	protected String getContributionType() {
 		return IContributionService.TYPE_PROPERTY;
 	}

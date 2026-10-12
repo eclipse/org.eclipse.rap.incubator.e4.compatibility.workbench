@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 
 /**
@@ -34,21 +33,20 @@ public class ThemeDescriptor implements IThemeDescriptor {
 
     private static final String ATT_NAME = "name";//$NON-NLS-1$
 
-    private Collection colors = new HashSet();
+	private final Collection<ColorDefinition> colors = new HashSet<>();
 
     private String description;
 
-    private Collection fonts = new HashSet();
+	private final Collection<FontDefinition> fonts = new HashSet<>();
 
-    private String id;
+	private final String id;
 
     private String name;
 
-    private Map dataMap = new HashMap();
+	private final Map<String, Object> dataMap = new HashMap<>();
 
     /**
      * Create a new ThemeDescriptor
-     * @param id
      */
     public ThemeDescriptor(String id) {
         this.id = id;
@@ -94,8 +92,7 @@ public class ThemeDescriptor implements IThemeDescriptor {
 
     @Override
 	public ColorDefinition[] getColors() {
-        ColorDefinition[] defs = (ColorDefinition[]) colors
-                .toArray(new ColorDefinition[colors.size()]);
+		ColorDefinition[] defs = colors.toArray(new ColorDefinition[colors.size()]);
         Arrays.sort(defs, IThemeRegistry.ID_COMPARATOR);
         return defs;
     }
@@ -107,8 +104,7 @@ public class ThemeDescriptor implements IThemeDescriptor {
 
     @Override
 	public FontDefinition[] getFonts() {
-        FontDefinition[] defs = (FontDefinition[]) fonts
-                .toArray(new FontDefinition[fonts.size()]);
+		FontDefinition[] defs = fonts.toArray(new FontDefinition[fonts.size()]);
         Arrays.sort(defs, IThemeRegistry.ID_COMPARATOR);
         return defs;
     }
@@ -120,8 +116,9 @@ public class ThemeDescriptor implements IThemeDescriptor {
 
     @Override
 	public String getName() {
-    	if (name == null)
+		if (name == null) {
     		return getId();
+		}
         return name;
     }
 

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -24,13 +21,13 @@ import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 
 /**
- * @since 3.0
  */
 public final class ThemeElementHelper {
 
@@ -56,13 +53,14 @@ public final class ThemeElementHelper {
         Arrays.sort(copyOfDefinitions, new IThemeRegistry.HierarchyComparator(
                 definitions));
 
-        for (FontDefinition definition : copyOfDefinitions) {
+        for (int i = 0; i < copyOfDefinitions.length; i++) {
+            FontDefinition definition = copyOfDefinitions[i];
             installFont(definition, theme, store, true);
         }
 
         if (defaults != null) {
-            for (FontDefinition fontDef : defaults) {
-                installFont(fontDef, theme, store, false);
+            for (int i = 0; i < defaults.length; i++) {
+                installFont(defaults[i], theme, store, false);
             }
         }
     }
@@ -105,18 +103,13 @@ public final class ThemeElementHelper {
         FontData[] defaultFont = null;
         if (definition.getValue() != null) {
 			defaultFont = definition.getValue();
-        }
-        else if (definition.getDefaultsTo() != null)
-        {
-            defaultFont = registry.filterData(registry.getFontData(definition.getDefaultsTo()), PlatformUI
-                    .getWorkbench().getDisplay());
-        }
-        else
-        {
+		} else if (definition.getDefaultsTo() != null) {
+			defaultFont = registry.filterData(registry
+                    .getFontData(definition.getDefaultsTo()), PlatformUI.getWorkbench().getDisplay());
+		} else {
             // values pushed in from jface property files.  Very ugly.
             // RAP [rh] work around missing FontRegistry#bestDataArray()
-            // defaultFont =
-            // registry.bestDataArray(JFaceResources.getFontRegistry().getFontData(id),
+//			defaultFont = registry.bestDataArray(JFaceResources.getFontRegistry().getFontData(id),
             // Workbench.getInstance().getDisplay());
             defaultFont = JFaceResources.getFontRegistry().getFontData(id);
         }
@@ -126,9 +119,6 @@ public final class ThemeElementHelper {
                     || prefFont == PreferenceConverter.FONTDATA_ARRAY_DEFAULT_DEFAULT) {
                 prefFont = defaultFont;
             }
-			if (!definition.isEditable()) {
-				prefFont = defaultFont;
-			}
 
             if (prefFont != null) {
                 registry.put(id, prefFont);
@@ -163,13 +153,14 @@ public final class ThemeElementHelper {
         Arrays.sort(copyOfDefinitions, new IThemeRegistry.HierarchyComparator(
                 definitions));
 
-        for (ColorDefinition definition : copyOfDefinitions) {
+        for (int i = 0; i < copyOfDefinitions.length; i++) {
+            ColorDefinition definition = copyOfDefinitions[i];
             installColor(definition, theme, store, true);
         }
 
         if (defaults != null) {
-			for (ColorDefinition colorDef : defaults) {
-				installColor(colorDef, theme, store, false);
+            for (int i = 0; i < defaults.length; i++) {
+                installColor(defaults[i], theme, store, false);
             }
         }
     }
@@ -238,7 +229,8 @@ public final class ThemeElementHelper {
 		System.arraycopy(allDefs, 0, copy, 0, allDefs.length);
 
         Arrays.sort(allDefs, new IThemeRegistry.HierarchyComparator(copy));
-        for (IHierarchalThemeElementDefinition def : allDefs) {
+        for (int i = 0; i < allDefs.length; i++) {
+            IHierarchalThemeElementDefinition def = allDefs[i];
             if (def.getDefaultsTo() != null) {
                 if (set.contains(def.getDefaultsTo())) {
 					set.add(def);
@@ -274,37 +266,22 @@ public final class ThemeElementHelper {
         RGB prefColor = store != null
         	? PreferenceConverter.getColor(store, key)
         	: null;
-		RGB defaultColor;
-		if (definition.getValue() != null) {
-			defaultColor = definition.getValue();
-		} else if (definition.getDefaultsTo() != null) {
-			String defaultsToKey = createPreferenceKey(theme, definition.getDefaultsTo());
-			defaultColor = PreferenceConverter.getDefaultColor(store, defaultsToKey);
-		} else {
-			defaultColor = null;
-		}
+        RGB defaultColor = (definition.getValue() != null)
+        	? definition.getValue()
+            : registry.getRGB(definition.getDefaultsTo());
 
-        if (defaultColor == null) {
-			// default is null, likely because we have a bad definition - the
-			// defaultsTo color doesn't exist. We still need a sensible default,
-			// however.
-			defaultColor = PreferenceConverter.COLOR_DEFAULT_DEFAULT;
-		}
-
-		if (prefColor == null || prefColor == PreferenceConverter.COLOR_DEFAULT_DEFAULT) {
-			if (definition.getValue() != null) {
-				prefColor = definition.getValue();
-			} else if (definition.getDefaultsTo() != null) {
-				prefColor = registry.getRGB(definition.getDefaultsTo());
-			}
-		}
-
-		if (prefColor == null || !definition.isEditable()) {
+        if (prefColor == null
+                || prefColor == PreferenceConverter.COLOR_DEFAULT_DEFAULT) {
 			prefColor = defaultColor;
 		}
 
+        //if the preference value isn't the default then retain that pref value
+        RGB colorToUse = ! store.isDefault(key)
+        	 ? prefColor
+             : defaultColor;
+
         if (setInRegistry) {
-        	registry.put(id, prefColor);
+        	registry.put(id, colorToUse);
         }
 
         if (store != null) {
@@ -334,7 +311,8 @@ public final class ThemeElementHelper {
     public static String[] splitPropertyName(Theme theme, String property) {
     	IThemeDescriptor[] descriptors = WorkbenchPlugin.getDefault()
 				.getThemeRegistry().getThemes();
-		for (IThemeDescriptor themeDescriptor : descriptors) {
+		for (int i = 0; i < descriptors.length; i++) {
+			IThemeDescriptor themeDescriptor = descriptors[i];
 			String id = themeDescriptor.getId();
 			if (property.startsWith(id + '.')) { // the property starts with
 													// a known theme ID -

@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
@@ -627,7 +627,7 @@ public class PerspectiveBuilder {
 	}
 
 	private static IExtension[] getPerspectiveExtensions() {
-		IExtensionPoint point = Platform.getExtensionRegistry().getExtensionPoint(PlatformUI.PLUGIN_ID,
+		IExtensionPoint point = Platform.getExtensionRegistry().getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 				IWorkbenchRegistryConstants.PL_PERSPECTIVE_EXTENSIONS);
         if (point == null) {
 			return null;
@@ -720,3 +720,4 @@ public class PerspectiveBuilder {
 	}
 
 }
+

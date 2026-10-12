@@ -1,13 +1,10 @@
 // RAP [rh] Disabled OpenPerspectiveMenu as it is deprectated
 ///*******************************************************************************
-// * Copyright (c) 2000, 2015 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2000, 2007 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -48,7 +45,6 @@
 // * @deprecated  See IWorkbench.showPerspective methods.
 // * @noextend This class is not intended to be subclassed by clients.
 // */
-//@Deprecated
 //public class OpenPerspectiveMenu extends PerspectiveMenu {
 //    private IAdaptable pageInput;
 //
@@ -124,7 +120,6 @@
 //     *
 //     * @param desc the selected perspective
 //     */
-//    @Override
 //	protected void run(IPerspectiveDescriptor desc) {
 //        openPage(desc, 0);
 //    }
@@ -136,11 +131,13 @@
 //     * @param desc the selected perspective
 //     * @param event the event sent along with the selection callback
 //     */
-//    @Override
 //	protected void run(IPerspectiveDescriptor desc, SelectionEvent event) {
 //        openPage(desc, event.stateMask);
 //    }
 //
+//    /* (non-Javadoc)
+//     * Opens a new page with a particular perspective and input.
+//     */
 //    private void openPage(IPerspectiveDescriptor desc, int keyStateMask) {
 //        // Verify page input.
 //        if (pageInput == null) {

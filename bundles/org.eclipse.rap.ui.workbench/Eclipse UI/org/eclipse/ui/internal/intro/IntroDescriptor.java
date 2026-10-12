@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -27,7 +24,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 /**
  * Describes an introduction extension.
  *
- * @since 3.0
+ * @since 1.2
  */
 public class IntroDescriptor implements IIntroDescriptor, IPluginContribution {
 
@@ -45,13 +42,15 @@ public class IntroDescriptor implements IIntroDescriptor, IPluginContribution {
 
     	if (configElement.getAttribute(IWorkbenchRegistryConstants.ATT_CLASS) == null) {
             throw new CoreException(new Status(IStatus.ERROR, configElement
-					.getContributor().getName(), 0,
+                    .getNamespace(), 0,
                     "Invalid extension (Missing class name): " + getId(), //$NON-NLS-1$
                     null));
         }
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.intro.IIntroDescriptor#createIntro()
+     */
 	public IIntroPart createIntro() throws CoreException {
     	return (IIntroPart) element.createExecutableExtension(IWorkbenchRegistryConstants.ATT_CLASS);
     }
@@ -63,12 +62,16 @@ public class IntroDescriptor implements IIntroDescriptor, IPluginContribution {
     	return (IntroContentDetector) element.createExecutableExtension(IWorkbenchRegistryConstants.ATT_CONTENT_DETECTOR);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IIntroDescriptor#getId()
+     */
 	public String getId() {
         return element.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IIntroDescriptor#getImageDescriptor()
+     */
 	public ImageDescriptor getImageDescriptor() {
         if (imageDescriptor != null) {
 			return imageDescriptor;
@@ -79,31 +82,37 @@ public class IntroDescriptor implements IIntroDescriptor, IPluginContribution {
 		}
 
 		imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element
-				.getContributor().getName(), iconName);
+                .getNamespace(), iconName);
         return imageDescriptor;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IPluginContribution#getLocalId()
+     */
 	public String getLocalId() {
         return element.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IPluginContribution#getPluginId()
+     */
 	public String getPluginId() {
-		return element.getContributor().getName();
+        return element.getNamespace();
     }
 
     /**
      * Returns the configuration element.
      *
      * @return the configuration element
-     * @since 3.1
+     * @since 1.2
      */
     public IConfigurationElement getConfigurationElement() {
     	return element;
     }
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.internal.intro.IIntroDescriptor#getLabelOverride()
+	 */
 	public String getLabelOverride() {
 		return element.getAttribute(IWorkbenchRegistryConstants.ATT_LABEL);
 	}

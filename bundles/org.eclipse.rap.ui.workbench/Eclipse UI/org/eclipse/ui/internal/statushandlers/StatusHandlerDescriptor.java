@@ -33,17 +33,14 @@ public class StatusHandlerDescriptor implements IPluginContribution {
 
 	private static final String PREFIX = "prefix"; //$NON-NLS-1$
 
-	private IConfigurationElement configElement;
+	private final IConfigurationElement configElement;
 
-	private String id;
+	private final String id;
 
-	private String pluginId;
+	private final String pluginId;
 
 	private String prefix;
 
-	/**
-	 * @param configElement
-	 */
 	public StatusHandlerDescriptor(IConfigurationElement configElement) {
 		super();
 		this.configElement = configElement;
@@ -55,21 +52,17 @@ public class StatusHandlerDescriptor implements IPluginContribution {
 	 * Gets an instance of the status handler defined in the descriptor.
 	 *
 	 * @return the status handler
-	 * @throws CoreException
-	 *             thrown if there is a problem creating the handler
+	 * @throws CoreException thrown if there is a problem creating the handler
 	 */
-	public synchronized AbstractStatusHandler getStatusHandler()
-			throws CoreException {
+	public synchronized AbstractStatusHandler getStatusHandler() throws CoreException {
 		if (cachedInstance == null) {
 			AbstractStatusHandler statusHandler = (AbstractStatusHandler) configElement
 					.createExecutableExtension(IWorkbenchRegistryConstants.ATT_CLASS);
-			statusHandler.setId(configElement
-					.getAttribute(IWorkbenchRegistryConstants.ATT_ID));
+			statusHandler.setId(configElement.getAttribute(IWorkbenchRegistryConstants.ATT_ID));
 
-			IConfigurationElement parameters[] = configElement
-					.getChildren(IWorkbenchRegistryConstants.TAG_PARAMETER);
+			IConfigurationElement parameters[] = configElement.getChildren(IWorkbenchRegistryConstants.TAG_PARAMETER);
 
-			Map params = new HashMap();
+			Map<String, String> params = new HashMap<>();
 
 			for (IConfigurationElement configElement : parameters) {
 				params.put(configElement.getAttribute(IWorkbenchRegistryConstants.ATT_NAME),

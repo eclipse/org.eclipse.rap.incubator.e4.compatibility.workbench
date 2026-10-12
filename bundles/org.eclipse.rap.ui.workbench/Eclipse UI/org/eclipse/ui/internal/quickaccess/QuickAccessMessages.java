@@ -15,39 +15,50 @@
 
 package org.eclipse.ui.internal.quickaccess;
 
-import org.eclipse.osgi.util.NLS;
+//import org.eclipse.osgi.util.NLS;
+import org.eclipse.rap.rwt.RWT;
 
 /**
  * @since 3.2
  *
  */
-public class QuickAccessMessages extends NLS {
+//RAP need session aware NLS
+//public class QuickAccessMessages extends NLS {
+public class QuickAccessMessages  {
 	private static final String BUNDLE_NAME = "org.eclipse.ui.internal.quickaccess.messages"; //$NON-NLS-1$
-	public static String QuickAccess_TooltipDescription;
-	public static String QuickAccess_TooltipDescription_Empty;
-	public static String QuickAccess_Perspectives;
-	public static String QuickAccess_Commands;
-	public static String QuickAccess_Properties;
-	public static String QuickAccess_Editors;
-	public static String QuickAccess_Menus;
-	public static String QuickAccess_New;
-	public static String QuickAccess_Preferences;
-	public static String QuickAccess_Previous;
-	public static String QuickAccess_Views;
-	public static String QuickAccess_PressKeyToShowAllMatches;
-	public static String QuickAccess_StartTypingToFindMatches;
-	public static String QuickAccess_AvailableCategories;
-	public static String QuickAccess_EnterSearch;
-	public static String QuickAccess_SelectedString;
-	public static String QuickAccess_ViewWithCategory;
-	public static String QuickAccessContents_NoMatchingResults;
-	public static String QuickAccessContents_PressKeyToLimitResults;
-	public static String QuickAccessContents_QuickAccess;
-	public static String QuickAccessContents_SearchInHelpLabel;
-	public static String QuickAccessContents_RestoringPreviousChoicesLabel;
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, QuickAccessMessages.class);
+	public String QuickAccess_TooltipDescription;
+	public String QuickAccess_TooltipDescription_Empty;
+	public String QuickAccess_Perspectives;
+	public String QuickAccess_Commands;
+	public String QuickAccess_Properties;
+	public String QuickAccess_Editors;
+	public String QuickAccess_Menus;
+	public String QuickAccess_New;
+	public String QuickAccess_Preferences;
+	public String QuickAccess_Previous;
+	public String QuickAccess_Views;
+	public String QuickAccess_PressKeyToShowAllMatches;
+	public String QuickAccess_StartTypingToFindMatches;
+	public String QuickAccess_AvailableCategories;
+	public String QuickAccess_ViewWithCategory;
+	public String QuickAccessContents_NoMatchingResults;
+	public String QuickAccessContents_PressKeyToLimitResults;
+	public String QuickAccessContents_QuickAccess;
+	public String QuickAccessContents_SearchInHelpLabel;
+	public String QuickAccessContents_HelpCategory;
+	public String QuickAccessContents_activate;
+	public String QuickAccessContents_computeMatchingEntries_displayFeedback_jobName;
+	public String QuickaAcessContents_computeMatchingEntries;
+	public String QuickAccessContents_processingProviderInUI;
+
+	//RAP need session aware NLS	
+//	static {
+//		// initialize resource bundle
+//		NLS.initializeMessages(BUNDLE_NAME, QuickAccessMessages.class);
+//	}
+
+    public static QuickAccessMessages get() {
+        return RWT.NLS.getISO8859_1Encoded( BUNDLE_NAME, QuickAccessMessages.class );
 	}
 
 	private QuickAccessMessages() {

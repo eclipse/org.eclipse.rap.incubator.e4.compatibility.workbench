@@ -19,10 +19,9 @@ import org.eclipse.ui.IMemento;
 
 public final class ConfigurationElementMemento implements IMemento {
 
-    private IConfigurationElement configurationElement;
+	private final IConfigurationElement configurationElement;
 
-    public ConfigurationElementMemento(
-            IConfigurationElement configurationElement) {
+	public ConfigurationElementMemento(IConfigurationElement configurationElement) {
         if (configurationElement == null) {
 			throw new NullPointerException();
 		}
@@ -42,8 +41,7 @@ public final class ConfigurationElementMemento implements IMemento {
 
     @Override
 	public IMemento getChild(String type) {
-        IConfigurationElement[] configurationElements = configurationElement
-                .getChildren(type);
+		IConfigurationElement[] configurationElements = configurationElement.getChildren(type);
 
         if (configurationElements != null && configurationElements.length >= 1) {
 			return new ConfigurationElementMemento(configurationElements[0]);
@@ -61,8 +59,7 @@ public final class ConfigurationElementMemento implements IMemento {
 
     @Override
 	public IMemento[] getChildren(String type) {
-        IConfigurationElement[] configurationElements = configurationElement
-                .getChildren(type);
+		IConfigurationElement[] configurationElements = configurationElement.getChildren(type);
 
         return getMementoArray(configurationElements);
     }
@@ -72,8 +69,7 @@ public final class ConfigurationElementMemento implements IMemento {
             IMemento mementos[] = new ConfigurationElementMemento[configurationElements.length];
 
             for (int i = 0; i < configurationElements.length; i++) {
-				mementos[i] = new ConfigurationElementMemento(
-                        configurationElements[i]);
+				mementos[i] = new ConfigurationElementMemento(configurationElements[i]);
 			}
 
             return mementos;

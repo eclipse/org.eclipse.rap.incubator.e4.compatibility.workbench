@@ -14,6 +14,7 @@
 
 package org.eclipse.ui.internal.activities;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 import org.eclipse.ui.activities.IActivityPatternBinding;
 import org.eclipse.ui.internal.util.Util;
@@ -21,10 +22,9 @@ import org.eclipse.ui.internal.util.Util;
 public final class ActivityPatternBinding implements IActivityPatternBinding {
     private static final int HASH_FACTOR = 89;
 
-    private static final int HASH_INITIAL = ActivityPatternBinding.class
-            .getName().hashCode();
+	private static final int HASH_INITIAL = ActivityPatternBinding.class.getName().hashCode();
 
-    private String activityId;
+	private final String activityId;
 
     private transient int hashCode = HASH_INITIAL;
 
@@ -32,7 +32,7 @@ public final class ActivityPatternBinding implements IActivityPatternBinding {
 
     private String patternString;
 
-    private boolean isEqualityPattern;
+	private final boolean isEqualityPattern;
 
     private transient String string;
 
@@ -47,13 +47,13 @@ public final class ActivityPatternBinding implements IActivityPatternBinding {
     /**
      *
      * @param activityId The id
-     * @param pattern This string will be used as plain string, or as pattern-
-     * 		  matcher pattern. The use depends on parameter <code>nonRegExp</code>.
+	 * @param pattern           This string will be used as plain string, or as
+	 *                          pattern- matcher pattern. The use depends on
+	 *                          parameter <code>nonRegExp</code>.
      * @param isEqualityPattern If true the <code>pattern</code> string will be
      * 	      interpreted as normal string, not as pattern.
      */
-    public ActivityPatternBinding(String activityId, String pattern, boolean
-    		isEqualityPattern) {
+	public ActivityPatternBinding(String activityId, String pattern, boolean isEqualityPattern) {
     	if (pattern == null) {
 			throw new NullPointerException();
 		}
@@ -86,12 +86,11 @@ public final class ActivityPatternBinding implements IActivityPatternBinding {
         int compareTo = Util.compare(activityId, castedObject.activityId);
 
         if (compareTo == 0) {
-        	compareTo = Util.compare(isEqualityPattern,
-					castedObject.isEqualityPattern);
+			compareTo = Util.compare(isEqualityPattern, castedObject.isEqualityPattern);
 
-        	if (compareTo == 0)
-				compareTo = Util.compare(getPattern().pattern(), castedObject
-						.getPattern().pattern());
+			if (compareTo == 0) {
+				compareTo = Util.compare(getPattern().pattern(), castedObject.getPattern().pattern());
+			}
 		}
 
         return compareTo;
@@ -99,20 +98,13 @@ public final class ActivityPatternBinding implements IActivityPatternBinding {
 
     @Override
 	public boolean equals(Object object) {
-        if (!(object instanceof ActivityPatternBinding)) {
-			return false;
-		}
-
-        final ActivityPatternBinding castedObject = (ActivityPatternBinding) object;
-        if (!Util.equals(activityId, castedObject.activityId)) {
+		if (!(object instanceof final ActivityPatternBinding castedObject)) {
             return false;
         }
 
-        if (!Util.equals(isEqualityPattern, castedObject.isEqualityPattern)) {
-            return false;
-        }
-
-        return Util.equals(getPattern(), castedObject.getPattern());
+		return Objects.equals(activityId, castedObject.activityId)
+				&& isEqualityPattern == castedObject.isEqualityPattern
+				&& Objects.equals(getPattern(), castedObject.getPattern());
     }
 
     @Override
@@ -141,17 +133,15 @@ public final class ActivityPatternBinding implements IActivityPatternBinding {
 		return isEqualityPattern;
 	}
 
-
     @Override
 	public int hashCode() {
         if (hashCode == HASH_INITIAL) {
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(activityId);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(pattern);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(activityId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(pattern);
             if (hashCode == HASH_INITIAL) {
 				hashCode++;
 			}
         }
-
         return hashCode;
     }
 

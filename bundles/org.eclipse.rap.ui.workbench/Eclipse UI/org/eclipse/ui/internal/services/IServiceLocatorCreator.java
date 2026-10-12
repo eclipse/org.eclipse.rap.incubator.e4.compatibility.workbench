@@ -24,7 +24,7 @@ import org.eclipse.ui.services.IServiceLocator;
  * service locator for the new component. For use with the component framework.
  * <p>
  * <b>Note:</b> Must not be implemented or extended by clients.
- * <p>
+ * </p>
  * <p>
  * <strong>PROVISIONAL</strong>. This class or interface has been added as part
  * of a work in progress. There is a guarantee neither that this API will work
@@ -37,19 +37,15 @@ import org.eclipse.ui.services.IServiceLocator;
  */
 public interface IServiceLocatorCreator {
 	/**
-	 * Creates a service locator that can be used for hosting a new service
-	 * context. It will have the appropriate child services created as needed,
-	 * and can be used with the Dependency Injection framework to reuse
-	 * components (by simply providing your own implementation for certain
-	 * services).
+	 * Creates a service locator that can be used for hosting a new service context.
+	 * It will have the appropriate child services created as needed, and can be
+	 * used with the Dependency Injection framework to reuse components (by simply
+	 * providing your own implementation for certain services).
 	 *
-	 * @param parent
-	 *            the parent locator
-	 * @param factory
-	 *            a factory that can lazily provide services if requested. This
+	 * @param parent  the parent locator
+	 * @param factory a factory that can lazily provide services if requested. This
 	 *            may be <code>null</code>
-	 * @param owner
-	 *            an object whose {@link IDisposable#dispose()} method will be
+	 * @param owner   an object whose {@link IDisposable#dispose()} method will be
 	 *            called on the UI thread if the created service locator needs
 	 *            to be disposed (typically, because a plug-in contributing
 	 *            services to the service locator via an
@@ -59,13 +55,12 @@ public interface IServiceLocatorCreator {
 	 *            is to do whatever is necessary to stop using the created
 	 *            service locator, and then to call
 	 *            {@link IDisposable#dispose()} on the service locator.
-	 * @return the created service locator. The returned service locator will be
-	 *         an instance of {@link IDisposable}.
+	 * @return the created service locator. The returned service locator will be an
+	 *         instance of {@link IDisposable}.
 	 */
-	IServiceLocator createServiceLocator(IServiceLocator parent,
-			AbstractServiceFactory factory, IDisposable owner);
+	IServiceLocator createServiceLocator(IServiceLocator parent, AbstractServiceFactory factory, IDisposable owner);
 
-	IServiceLocator createServiceLocator(IServiceLocator parent,
-			AbstractServiceFactory factory, IDisposable owner, IEclipseContext context);
+	IServiceLocator createServiceLocator(IServiceLocator parent, AbstractServiceFactory factory, IDisposable owner,
+			IEclipseContext context);
 
 }

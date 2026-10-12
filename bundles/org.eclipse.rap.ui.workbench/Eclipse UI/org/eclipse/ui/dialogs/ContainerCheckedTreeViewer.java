@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
+ * Copyright (c) 2005, 2019 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -10,14 +10,18 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
+ *     Alexander Fedorov <alexander.fedorov@arsysop.ru> - Bug 548314
  *******************************************************************************/
 package org.eclipse.ui.dialogs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
@@ -25,16 +29,18 @@ import org.eclipse.swt.widgets.Widget;
 
 /**
  * CheckboxTreeViewer with special behaviour of the checked / gray state on
- * container (non-leaf) nodes:
- * The grayed state is used to visualize the checked state of its children.
- * Containers are checked and non-gray if all contained leafs are checked. The
- * container is grayed if some but not all leafs are checked.
+ * container (non-leaf) nodes: The grayed state is used to visualize the checked
+ * state of its children. Containers are checked and non-gray if all contained
+ * leafs are checked. The container is grayed if some but not all leafs are
+ * checked.
+ *
  * @since 3.1
  */
 public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 
     /**
      * Constructor for ContainerCheckedTreeViewer.
+	 *
      * @see CheckboxTreeViewer#CheckboxTreeViewer(Composite)
      */
     public ContainerCheckedTreeViewer(Composite parent) {
@@ -44,6 +50,7 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 
     /**
      * Constructor for ContainerCheckedTreeViewer.
+	 *
      * @see CheckboxTreeViewer#CheckboxTreeViewer(Composite,int)
      */
     public ContainerCheckedTreeViewer(Composite parent, int style) {
@@ -53,6 +60,7 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 
     /**
      * Constructor for ContainerCheckedTreeViewer.
+	 *
      * @see CheckboxTreeViewer#CheckboxTreeViewer(Tree)
      */
     public ContainerCheckedTreeViewer(Tree tree) {
@@ -80,17 +88,44 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 
 	/**
 	 * Update element after a checkstate change.
-	 * @param element
+	 *
+	 * @param element the element to update
 	 */
     protected void doCheckStateChanged(Object element) {
         Widget item = findItem(element);
-        if (item instanceof TreeItem) {
-            TreeItem treeItem = (TreeItem) item;
+		if (item instanceof TreeItem treeItem) {
             treeItem.setGrayed(false);
             updateChildrenItems(treeItem);
             updateParentItems(treeItem.getParentItem());
         }
     }
+
+	/**
+	 * Update elements after a checkstate change. This is identical to
+	 * {@link #doCheckStateChanged(Object)}, but unifies the parent update of many
+	 * checked siblings into a single update (instead of repeatedly updating the
+	 * same parent) for performance reasons.
+	 *
+	 * @param elements tree elements
+	 */
+	private void doCheckStateChanged(Object[] elements) {
+		HashSet<TreeItem> parents = new HashSet<>();
+		for (Object element : elements) {
+			Widget item = findItem(element);
+			if (item instanceof TreeItem treeItem) {
+				treeItem.setGrayed(false);
+				updateChildrenItems(treeItem);
+				TreeItem parentItem = treeItem.getParentItem();
+				// avoid updating the same parents repeatedly for big lists of siblings
+				if (parentItem != null) {
+					parents.add(parentItem);
+				}
+			}
+		}
+		for (TreeItem parent : parents) {
+			updateParentItems(parent);
+		}
+	}
 
     /**
      * The item has expanded. Updates the checked state of its children.
@@ -109,8 +144,7 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
         boolean state = parent.getChecked();
         for (Item element : children) {
             TreeItem curr = (TreeItem) element;
-            if (curr.getData() != null
-                    && ((curr.getChecked() != state) || curr.getGrayed())) {
+			if (curr.getData() != null && ((curr.getChecked() != state) || curr.getGrayed())) {
                 curr.setChecked(state);
                 curr.setGrayed(false);
                 updateChildrenItems(curr);
@@ -128,15 +162,38 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
             boolean containsUnchecked = false;
             for (Item element : children) {
                 TreeItem curr = (TreeItem) element;
-                containsChecked |= curr.getChecked();
-                containsUnchecked |= (!curr.getChecked() || curr.getGrayed());
+				boolean currChecked = curr.getChecked();
+				containsChecked |= currChecked;
+				// avoid fetching the grayed state, if we already found at least one grayed item
+				if (!containsUnchecked) {
+					containsUnchecked = !currChecked || curr.getGrayed();
+				}
+				// return as soon as both flags are set
+				if (containsChecked && containsUnchecked) {
+					break;
             }
+			}
+
+			// avoid accessing the widget, if there are no updates
+			boolean updated = false;
+			boolean checked = item.getChecked();
+			if (checked != containsChecked) {
             item.setChecked(containsChecked);
-            item.setGrayed(containsChecked && containsUnchecked);
-            updateParentItems(item.getParentItem());
+				updated = true;
         }
+			boolean grayed = item.getGrayed();
+			boolean newGrayed = containsChecked && containsUnchecked;
+			if (grayed != newGrayed) {
+				item.setGrayed(newGrayed);
+				updated = true;
     }
 
+			// if this item did not change, no further parent will change
+			if (updated) {
+				updateParentItems(item.getParentItem());
+			}
+		}
+	}
 
     @Override
 	public boolean setChecked(Object element, boolean state) {
@@ -147,15 +204,38 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
         return false;
     }
 
-
     @Override
 	public void setCheckedElements(Object[] elements) {
+		Object[] oldCheckedElements = getCheckedElements();
         super.setCheckedElements(elements);
-        for (Object element : elements) {
-            doCheckStateChanged(element);
+
+		Control tree = getControl();
+		try {
+			tree.setRedraw(false);
+			if (oldCheckedElements.length > 0) {
+				// calculate intersection of previously and newly checked elements to avoid
+				// no-op updates
+				HashSet<Object> changedElements = new HashSet<>(Arrays.asList(elements));
+				for (Object element : oldCheckedElements) {
+					changedElements.remove(element);
+				}
+				doCheckStateChanged(changedElements.toArray());
+			} else {
+				doCheckStateChanged(elements);
+			}
+		} finally {
+			tree.setRedraw(true);
         }
     }
 
+	@Override
+	public boolean setSubtreeChecked(Object element, boolean state) {
+		if (super.setSubtreeChecked(element, state)) {
+			doCheckStateChanged(element);
+			return true;
+		}
+		return false;
+	}
 
     @Override
 	protected void setExpanded(Item item, boolean expand) {
@@ -165,12 +245,11 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
         }
     }
 
-
     @Override
 	public Object[] getCheckedElements() {
         Object[] checked = super.getCheckedElements();
         // add all items that are children of a checked node but not created yet
-        ArrayList result = new ArrayList();
+		ArrayList<Object> result = new ArrayList<>();
         for (Object curr : checked) {
             result.add(curr);
             Widget item = findItem(curr);
@@ -188,10 +267,8 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 
 	/**
 	 * Recursively add the filtered children of element to the result.
-	 * @param element
-	 * @param result
 	 */
-    private void collectChildren(Object element, ArrayList result) {
+	private void collectChildren(Object element, ArrayList<Object> result) {
         Object[] filteredChildren = getFilteredChildren(element);
         for (Object curr : filteredChildren) {
             result.add(curr);

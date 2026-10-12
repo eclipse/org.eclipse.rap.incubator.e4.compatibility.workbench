@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2016 vogella GmbH and others.
  *
- * This program
- * and the accompanying materials are made available under the terms of the
- * Eclipse Public License 2.0 which accompanies this distribution, and is
-t https://www.eclipse.org/legal/epl-2.0/
-t
-t SPDX-License-Identifier: EPL-2.0
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * 	Simon Scholz <simon.scholz@vogella.com> - initial API and implementation;
@@ -17,7 +17,6 @@ package org.eclipse.ui.internal.handlers;
 
 import java.util.Arrays;
 import java.util.Optional;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ParameterizedCommand;
@@ -51,14 +50,11 @@ import org.eclipse.ui.keys.IBindingService;
  * Handler, which enables a full screen mode.
  *
  * @since 3.5
- *
  */
 public class FullScreenHandler extends AbstractHandler {
 
 	private static final String FULL_SCREEN_COMMAND_ID = "org.eclipse.ui.window.fullscreenmode"; //$NON-NLS-1$
 	private static final String FULL_SCREEN_COMMAND_DO_NOT_SHOW_INFO_AGAIN_PREF_ID = "org.eclipse.ui.window.fullscreenmode.donotshowinfoagain"; //$NON-NLS-1$
-
-	private boolean showInfoPopup;
 
 	private int timeLastEvent;
 	private FullScreenInfoPopup fullScreenInfoPopup;
@@ -76,13 +72,13 @@ public class FullScreenHandler extends AbstractHandler {
 		BindingTableManager bindingTableManager = window.getService(BindingTableManager.class);
 		IContextService bindingContextService = window.getService(IContextService.class);
 
-		showInfoPopup = !WorkbenchPlugin.getDefault().getPreferenceStore()
+		boolean showInfoPopup = !WorkbenchPlugin.getDefault().getPreferenceStore()
 				.getBoolean(FULL_SCREEN_COMMAND_DO_NOT_SHOW_INFO_AGAIN_PREF_ID);
 
 		Optional<TriggerSequence> sequence = getKeybindingSequence(bindingService, commandService, bindingTableManager,
 				bindingContextService, FULL_SCREEN_COMMAND_ID);
 
-		String keybinding = sequence.map(t -> t.format()).orElse(""); //$NON-NLS-1$
+		String keybinding = sequence.map(TriggerSequence::format).orElse(""); //$NON-NLS-1$
 
 		shell.setFullScreen(!shell.getFullScreen());
 
@@ -92,23 +88,21 @@ public class FullScreenHandler extends AbstractHandler {
 				message = NLS.bind(WorkbenchMessages.get().ToggleFullScreenMode_ActivationPopup_Description, keybinding);
 			}
 			if (showInfoPopup) {
-				fullScreenInfoPopup = new FullScreenInfoPopup(shell, PopupDialog.HOVER_SHELLSTYLE, true, false,
-						false, false, false, null, null, message);
+				fullScreenInfoPopup = new FullScreenInfoPopup(shell, PopupDialog.HOVER_SHELLSTYLE, true, false, false,
+						false, false, null, null, message);
 				fullScreenInfoPopup.open();
 			}
-		} else {
-			if (fullScreenInfoPopup != null) {
+		} else if (fullScreenInfoPopup != null) {
 				fullScreenInfoPopup.close();
-			}
 		}
 		shell.requestLayout();
 		return Status.OK_STATUS;
 	}
 
 	/**
-	 * Check if an event is duplicate, by recording and comparing the time of
-	 * the trigger event. Returns true if an event is triggered twice with an
-	 * event with the same time
+	 * Check if an event is duplicate, by recording and comparing the time of the
+	 * trigger event. Returns true if an event is triggered twice with an event with
+	 * the same time
 	 */
 	boolean checkDuplicatedEvent(ExecutionEvent event) {
 		if (event != null && event.getTrigger() != null && event.getTrigger() instanceof Event) {
@@ -123,8 +117,8 @@ public class FullScreenHandler extends AbstractHandler {
 
 	private static class FullScreenInfoPopup extends PopupDialog {
 
-		private String message;
-		private String messageDoNotShowAgain;
+		private final String message;
+		private final String messageDoNotShowAgain;
 
 		public FullScreenInfoPopup(Shell parent, int shellStyle, boolean takeFocusOnOpen, boolean persistSize,
 				boolean persistLocation, boolean showDialogMenu, boolean showPersistActions, String titleText,
@@ -168,7 +162,7 @@ public class FullScreenHandler extends AbstractHandler {
 			gd2.verticalIndent = PopupDialog.POPUP_VERTICALSPACING;
 			btnDoNotShow.setLayoutData(gd2);
 
-			composite.addDisposeListener((e) -> {
+			composite.addDisposeListener(e -> {
 				WorkbenchPlugin.getDefault().getPreferenceStore()
 						.setValue(FULL_SCREEN_COMMAND_DO_NOT_SHOW_INFO_AGAIN_PREF_ID, btnDoNotShow.getSelection());
 			});

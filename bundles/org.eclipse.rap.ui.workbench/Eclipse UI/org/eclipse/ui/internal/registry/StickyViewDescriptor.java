@@ -25,44 +25,23 @@ import org.eclipse.ui.views.IStickyViewDescriptor;
 /**
  * @since 3.0
  */
-public class StickyViewDescriptor implements IStickyViewDescriptor,
-	IPluginContribution {
+public class StickyViewDescriptor implements IStickyViewDescriptor, IPluginContribution {
 
-    private IConfigurationElement configurationElement;
+	private final IConfigurationElement configurationElement;
 
-	private String id;
+	private final String id;
 
 	/**
 	 * Folder constant for right sticky views.
 	 */
 	public static final String STICKY_FOLDER_RIGHT = "stickyFolderRight"; //$NON-NLS-1$
 
-	/**
-	 * Folder constant for left sticky views.
-	 */
-	public static final String STICKY_FOLDER_LEFT = "stickyFolderLeft"; //$NON-NLS-1$
 
-	/**
-	 * Folder constant for top sticky views.
-	 */
-	public static final String STICKY_FOLDER_TOP = "stickyFolderTop"; //$NON-NLS-1$
-
-	/**
-	 * Folder constant for bottom sticky views.
-	 */
-	public static final String STICKY_FOLDER_BOTTOM = "stickyFolderBottom"; //$NON-NLS-1$
-
-    /**
-     * @param element
-     * @throws CoreException
-     */
-    public StickyViewDescriptor(IConfigurationElement element)
-            throws CoreException {
+	public StickyViewDescriptor(IConfigurationElement element) throws CoreException {
     	this.configurationElement = element;
     	id = configurationElement.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
         if (id == null) {
-			throw new CoreException(new Status(IStatus.ERROR, element
-					.getContributor().getName(), 0,
+			throw new CoreException(new Status(IStatus.ERROR, element.getContributor().getName(), 0,
                     "Invalid extension (missing id) ", null));//$NON-NLS-1$
 		}
     }
@@ -108,7 +87,6 @@ public class StickyViewDescriptor implements IStickyViewDescriptor,
 	public String getPluginId() {
     	return configurationElement.getContributor().getName();
     }
-
 
     @Override
 	public boolean isCloseable() {

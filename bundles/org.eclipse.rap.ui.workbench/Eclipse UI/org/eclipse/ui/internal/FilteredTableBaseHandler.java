@@ -207,7 +207,7 @@ public abstract class FilteredTableBaseHandler extends AbstractHandler implement
 			tableViewer.addFilter(getFilter());
 			addModifyListener(text);
 			addKeyListener(text);
-			text.setMessage(WorkbenchMessages.FilteredTableBase_Filter);
+			text.setMessage(WorkbenchMessages.get().FilteredTableBase_Filter);
 			text.setText(EMPTY_STRING);
 		}
 
@@ -956,3 +956,4 @@ public abstract class FilteredTableBaseHandler extends AbstractHandler implement
 
 	}
 }
+

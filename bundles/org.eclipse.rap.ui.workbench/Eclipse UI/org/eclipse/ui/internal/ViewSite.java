@@ -28,15 +28,13 @@ import org.eclipse.ui.internal.e4.compatibility.ActionBars;
  */
 public class ViewSite extends PartSite implements IViewSite {
 
-	public ViewSite(MPart model, IWorkbenchPart part, IWorkbenchPartReference ref,
-			IConfigurationElement element) {
+	public ViewSite(MPart model, IWorkbenchPart part, IWorkbenchPartReference ref, IConfigurationElement element) {
 		super(model, part, ref, element);
 		initializeDefaultServices();
 	}
 
 	private void initializeDefaultServices() {
-		setActionBars(new ActionBars(((WorkbenchPage) getPage()).getActionBars(), serviceLocator,
-				model));
+		setActionBars(new ActionBars(((WorkbenchPage) getPage()).getActionBars(), serviceLocator, model));
 		serviceLocator.registerService(IViewPart.class, getPart());
 	}
 
@@ -45,8 +43,9 @@ public class ViewSite extends PartSite implements IViewSite {
 		MPart part = getModel();
 
 		int colonIndex = part.getElementId().indexOf(':');
-		if (colonIndex == -1 || colonIndex == (part.getElementId().length() - 1))
+		if (colonIndex == -1 || colonIndex == (part.getElementId().length() - 1)) {
 			return null;
+		}
 
 		return part.getElementId().substring(colonIndex + 1);
 	}
@@ -60,3 +59,4 @@ public class ViewSite extends PartSite implements IViewSite {
 		super.dispose();
 	}
 }
+

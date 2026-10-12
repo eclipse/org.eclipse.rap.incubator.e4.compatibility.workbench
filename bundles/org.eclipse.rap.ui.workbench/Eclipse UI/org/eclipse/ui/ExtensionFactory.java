@@ -37,8 +37,7 @@ import org.eclipse.ui.internal.progress.ProgressView;
  *
  * @since 3.1
  */
-public class ExtensionFactory implements IExecutableExtensionFactory,
-		IExecutableExtension {
+public class ExtensionFactory implements IExecutableExtensionFactory, IExecutableExtension {
 
 	/**
 	 * Factory ID for the Appearance preference page.
@@ -129,15 +128,14 @@ public class ExtensionFactory implements IExecutableExtensionFactory,
 
 	private Object configure(Object obj) throws CoreException {
 		if (obj instanceof IExecutableExtension) {
-			((IExecutableExtension) obj).setInitializationData(config,
-					propertyName, null);
+			((IExecutableExtension) obj).setInitializationData(config, propertyName, null);
 		}
 		return obj;
 	}
 
 	/**
-	 * Creates the object referenced by the factory id obtained from the
-	 * extension data.
+	 * Creates the object referenced by the factory id obtained from the extension
+	 * data.
 	 */
 	@Override
 	public Object create() throws CoreException {
@@ -187,22 +185,20 @@ public class ExtensionFactory implements IExecutableExtensionFactory,
 //			return configure(new ContentTypesPreferencePage());
 //		}
 		if (SHOW_IN_CONTRIBUTION.equals(id)) {
-			ShowInMenu showInMenu = new ShowInMenu();
-			return showInMenu;
+			return new ShowInMenu();
 		}
 
-		throw new CoreException(new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID,
-				0, "Unknown id in data argument for " + getClass(), null)); //$NON-NLS-1$
+		throw new CoreException(new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, 0,
+				"Unknown id in data argument for " + getClass(), null)); //$NON-NLS-1$
 	}
 
 	@Override
-	public void setInitializationData(IConfigurationElement config,
-			String propertyName, Object data) throws CoreException {
+	public void setInitializationData(IConfigurationElement config, String propertyName, Object data)
+			throws CoreException {
 		if (data instanceof String) {
 			id = (String) data;
 		} else {
-			throw new CoreException(new Status(IStatus.ERROR,
-					PlatformUI.PLUGIN_ID, 0,
+			throw new CoreException(new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, 0,
 					"Data argument must be a String for " + getClass(), null)); //$NON-NLS-1$
 		}
 		this.config = config;

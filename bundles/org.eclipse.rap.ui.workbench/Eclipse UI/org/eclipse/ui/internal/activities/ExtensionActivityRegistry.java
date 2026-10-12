@@ -25,14 +25,9 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionDelta;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.IRegistryChangeEvent;
-import org.eclipse.core.runtime.IRegistryChangeListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.rap.rwt.RWT;
-import org.eclipse.rap.rwt.service.UISessionEvent;
-import org.eclipse.rap.rwt.service.UISessionListener;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
@@ -46,19 +41,19 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
 	 */
 	private static final String PREFIX = "UIActivities."; //$NON-NLS-1$
 
-	private List<ActivityRequirementBindingDefinition> activityRequirementBindingDefinitions;
+	private List<ActivityRequirementBindingDefinition> extensionActivityRequirementBindingDefinitions;
 
-	private List<ActivityDefinition> activityDefinitions;
+	private List<ActivityDefinition> extensionActivityDefinitions;
 
-	private List<ActivityPatternBindingDefinition> activityPatternBindingDefinitions;
+	private List<ActivityPatternBindingDefinition> extensionActivityPatternBindingDefinitions;
 
-	private List<CategoryActivityBindingDefinition> categoryActivityBindingDefinitions;
+	private List<CategoryActivityBindingDefinition> extensionCategoryActivityBindingDefinitions;
 
-	private List<CategoryDefinition> categoryDefinitions;
+	private List<CategoryDefinition> extensionCategoryDefinitions;
 
-	private List<String> defaultEnabledActivities;
+	private List<String> extensionDefaultEnabledActivities;
 
-    private IExtensionRegistry extensionRegistry;
+	private final IExtensionRegistry extensionRegistry;
 
 	ExtensionActivityRegistry(IExtensionRegistry extensionRegistry) {
 		if (extensionRegistry == null) {
@@ -67,36 +62,13 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
 
 		this.extensionRegistry = extensionRegistry;
 
-// RAP [fappel]: changelistener needs to be removed on session end to avoid
-//
-//		this.extensionRegistry.addRegistryChangeListener(registryChangeEvent -> {
-//			IExtensionDelta[] extensionDeltas = registryChangeEvent.getExtensionDeltas(Persistence.PACKAGE_PREFIX,
-//					Persistence.PACKAGE_BASE);
-//
-//			if (extensionDeltas.length != 0) {
-//				load();
-//			}
-//		});
-//
-//		load();
-//	}
-		final IRegistryChangeListener listener = new IRegistryChangeListener() {
-			@Override
-			public void registryChanged(IRegistryChangeEvent registryChangeEvent) {
+		this.extensionRegistry.addRegistryChangeListener(registryChangeEvent -> {
 				IExtensionDelta[] extensionDeltas = registryChangeEvent.getExtensionDeltas(Persistence.PACKAGE_PREFIX,
 						Persistence.PACKAGE_BASE);
 
 				if (extensionDeltas.length != 0) {
 					load();
 				}
-			}
-		};
-		this.extensionRegistry.addRegistryChangeListener(listener);
-		RWT.getUISession().addUISessionListener(new UISessionListener() {
-			@Override
-			public void beforeDestroy(final UISessionEvent event) {
-				ExtensionActivityRegistry.this.extensionRegistry.removeRegistryChangeListener(listener);
-			}
 		});
 
 		load();
@@ -120,13 +92,13 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
      * Returns the activity definition found at this id.
      *
      * @param id <code>ActivityDefinition</code> id.
-     * @return <code>ActivityDefinition</code> with given id or <code>null</code> if not found.
+	 * @return <code>ActivityDefinition</code> with given id or <code>null</code> if
+	 *         not found.
      */
     private ActivityDefinition getActivityDefinitionById(String id) {
-		int size = activityDefinitions.size();
+		int size = extensionActivityDefinitions.size();
 		for (int i = 0; i < size; i++) {
-			ActivityDefinition activityDef = activityDefinitions
-					.get(i);
+			ActivityDefinition activityDef = extensionActivityDefinitions.get(i);
 			if (activityDef.getId().equals(id)) {
 				return activityDef;
 			}
@@ -135,40 +107,40 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
 	}
 
 	private void load() {
-        if (activityRequirementBindingDefinitions == null) {
-			activityRequirementBindingDefinitions = new ArrayList<>();
+		if (extensionActivityRequirementBindingDefinitions == null) {
+			extensionActivityRequirementBindingDefinitions = new ArrayList<>();
 		} else {
-			activityRequirementBindingDefinitions.clear();
+			extensionActivityRequirementBindingDefinitions.clear();
 		}
 
-        if (activityDefinitions == null) {
-			activityDefinitions = new ArrayList<>();
+		if (extensionActivityDefinitions == null) {
+			extensionActivityDefinitions = new ArrayList<>();
 		} else {
-			activityDefinitions.clear();
+			extensionActivityDefinitions.clear();
 		}
 
-        if (activityPatternBindingDefinitions == null) {
-			activityPatternBindingDefinitions = new ArrayList<>();
+		if (extensionActivityPatternBindingDefinitions == null) {
+			extensionActivityPatternBindingDefinitions = new ArrayList<>();
 		} else {
-			activityPatternBindingDefinitions.clear();
+			extensionActivityPatternBindingDefinitions.clear();
 		}
 
-        if (categoryActivityBindingDefinitions == null) {
-			categoryActivityBindingDefinitions = new ArrayList<>();
+		if (extensionCategoryActivityBindingDefinitions == null) {
+			extensionCategoryActivityBindingDefinitions = new ArrayList<>();
 		} else {
-			categoryActivityBindingDefinitions.clear();
+			extensionCategoryActivityBindingDefinitions.clear();
 		}
 
-        if (categoryDefinitions == null) {
-			categoryDefinitions = new ArrayList<>();
+		if (extensionCategoryDefinitions == null) {
+			extensionCategoryDefinitions = new ArrayList<>();
 		} else {
-			categoryDefinitions.clear();
+			extensionCategoryDefinitions.clear();
 		}
 
-        if (defaultEnabledActivities == null) {
-			defaultEnabledActivities = new ArrayList<>();
+		if (extensionDefaultEnabledActivities == null) {
+			extensionDefaultEnabledActivities = new ArrayList<>();
 		} else {
-			defaultEnabledActivities.clear();
+			extensionDefaultEnabledActivities.clear();
 		}
 
         IConfigurationElement[] configurationElements = extensionRegistry
@@ -177,50 +149,55 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
         for (IConfigurationElement configurationElement : configurationElements) {
             String name = configurationElement.getName();
 
-            if (Persistence.TAG_ACTIVITY_REQUIREMENT_BINDING.equals(name)) {
+			switch (name) {
+			case Persistence.TAG_ACTIVITY_REQUIREMENT_BINDING:
 				readActivityRequirementBindingDefinition(configurationElement);
-			} else if (Persistence.TAG_ACTIVITY.equals(name)) {
+				break;
+			case Persistence.TAG_ACTIVITY:
 				readActivityDefinition(configurationElement);
-			} else if (Persistence.TAG_ACTIVITY_PATTERN_BINDING.equals(name)) {
+				break;
+			case Persistence.TAG_ACTIVITY_PATTERN_BINDING:
 				readActivityPatternBindingDefinition(configurationElement);
-			} else if (Persistence.TAG_CATEGORY_ACTIVITY_BINDING.equals(name)) {
+				break;
+			case Persistence.TAG_CATEGORY_ACTIVITY_BINDING:
 				readCategoryActivityBindingDefinition(configurationElement);
-			} else if (Persistence.TAG_CATEGORY.equals(name)) {
+				break;
+			case Persistence.TAG_CATEGORY:
 				readCategoryDefinition(configurationElement);
-			} else if (Persistence.TAG_DEFAULT_ENABLEMENT.equals(name)) {
+				break;
+			case Persistence.TAG_DEFAULT_ENABLEMENT:
 				readDefaultEnablement(configurationElement);
+				break;
+			default:
+				break;
 			}
         }
 
 		// merge enablement overrides from plugin_customization.ini
 		IPreferenceStore store = WorkbenchPlugin.getDefault().getPreferenceStore();
-		for (Iterator<ActivityDefinition> i = activityDefinitions.iterator(); i.hasNext();) {
-			ActivityDefinition activityDef = i.next();
+		for (ActivityDefinition activityDef : extensionActivityDefinitions) {
 			String id = activityDef.getId();
 			String preferenceKey = createPreferenceKey(id);
-			if ("".equals(store.getDefaultString(preferenceKey))) //$NON-NLS-1$
+			if ("".equals(store.getDefaultString(preferenceKey))) { //$NON-NLS-1$
 				continue;
+			}
 			if (store.getDefaultBoolean(preferenceKey)) {
-				if (!defaultEnabledActivities.contains(id) && activityDef.getEnabledWhen() == null)
-					defaultEnabledActivities.add(id);
+				if (!extensionDefaultEnabledActivities.contains(id) && activityDef.getEnabledWhen() == null) {
+					extensionDefaultEnabledActivities.add(id);
+				}
 			} else {
-				defaultEnabledActivities.remove(id);
+				extensionDefaultEnabledActivities.remove(id);
 			}
 		}
 
         // Removal of all defaultEnabledActivites which target to expression
         // controlled activities.
-		for (int i = 0; i < defaultEnabledActivities.size();) {
-			String id = defaultEnabledActivities.get(i);
+		for (int i = 0; i < extensionDefaultEnabledActivities.size();) {
+			String id = extensionDefaultEnabledActivities.get(i);
 			ActivityDefinition activityDef = getActivityDefinitionById(id);
 			if (activityDef != null && activityDef.getEnabledWhen() != null) {
-				defaultEnabledActivities.remove(i);
-				StatusManager
-						.getManager()
-						.handle(
-								new Status(
-										IStatus.WARNING,
-										PlatformUI.PLUGIN_ID,
+				extensionDefaultEnabledActivities.remove(i);
+				StatusManager.getManager().handle(new Status(IStatus.WARNING, PlatformUI.PLUGIN_ID,
 										"Default enabled activity declarations will be ignored (id: " + id + ")")); //$NON-NLS-1$ //$NON-NLS-2$
 			} else {
 				i++;
@@ -228,7 +205,7 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
 		}
 
 		// remove all requirement bindings that reference expression-bound activities
-		for (Iterator<ActivityRequirementBindingDefinition> i = activityRequirementBindingDefinitions.iterator(); i
+		for (Iterator<ActivityRequirementBindingDefinition> i = extensionActivityRequirementBindingDefinitions.iterator(); i
 				.hasNext();) {
 			ActivityRequirementBindingDefinition bindingDef = i.next();
 			ActivityDefinition activityDef = getActivityDefinitionById(bindingDef.getRequiredActivityId());
@@ -249,40 +226,36 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
 
         boolean activityRegistryChanged = false;
 
-        if (!activityRequirementBindingDefinitions
-                .equals(super.activityRequirementBindingDefinitions)) {
-            super.activityRequirementBindingDefinitions = Collections
-					.unmodifiableList(new ArrayList<>(activityRequirementBindingDefinitions));
+		if (!extensionActivityRequirementBindingDefinitions.equals(super.activityRequirementBindingDefinitions)) {
+			activityRequirementBindingDefinitions = Collections
+					.unmodifiableList(new ArrayList<>(extensionActivityRequirementBindingDefinitions));
             activityRegistryChanged = true;
         }
 
-		if (!activityDefinitions.equals(super.activityDefinitions)) {
-			super.activityDefinitions = Collections.unmodifiableList(new ArrayList<>(activityDefinitions));
+		if (!extensionActivityDefinitions.equals(super.activityDefinitions)) {
+			activityDefinitions = Collections.unmodifiableList(new ArrayList<>(extensionActivityDefinitions));
 			activityRegistryChanged = true;
 		}
 
-        if (!activityPatternBindingDefinitions
-                .equals(super.activityPatternBindingDefinitions)) {
-            super.activityPatternBindingDefinitions = Collections
-					.unmodifiableList(new ArrayList<>(activityPatternBindingDefinitions));
+		if (!extensionActivityPatternBindingDefinitions.equals(super.activityPatternBindingDefinitions)) {
+			activityPatternBindingDefinitions = Collections
+					.unmodifiableList(new ArrayList<>(extensionActivityPatternBindingDefinitions));
             activityRegistryChanged = true;
         }
 
-        if (!categoryActivityBindingDefinitions
-                .equals(super.categoryActivityBindingDefinitions)) {
-            super.categoryActivityBindingDefinitions = Collections
-					.unmodifiableList(new ArrayList<>(categoryActivityBindingDefinitions));
+		if (!extensionCategoryActivityBindingDefinitions.equals(super.categoryActivityBindingDefinitions)) {
+			categoryActivityBindingDefinitions = Collections
+					.unmodifiableList(new ArrayList<>(extensionCategoryActivityBindingDefinitions));
             activityRegistryChanged = true;
         }
 
-        if (!categoryDefinitions.equals(super.categoryDefinitions)) {
-            super.categoryDefinitions = Collections
-					.unmodifiableList(new ArrayList<>(categoryDefinitions));
+		if (!extensionCategoryDefinitions.equals(super.categoryDefinitions)) {
+			categoryDefinitions = Collections.unmodifiableList(new ArrayList<>(extensionCategoryDefinitions));
             activityRegistryChanged = true;
         }
 
-		if (!defaultEnabledActivities.equals(super.defaultEnabledActivities)) {
-			super.defaultEnabledActivities = Collections.unmodifiableList(new ArrayList<>(defaultEnabledActivities));
+		if (!extensionDefaultEnabledActivities.equals(super.defaultEnabledActivities)) {
+			defaultEnabledActivities = Collections.unmodifiableList(new ArrayList<>(extensionDefaultEnabledActivities));
 			activityRegistryChanged = true;
 		}
 
@@ -294,8 +267,7 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
 	/**
 	 * Create the preference key for the activity.
 	 *
-	 * @param activityId
-	 *            the activity id.
+	 * @param activityId the activity id.
 	 * @return String a preference key representing the activity.
 	 */
 	private String createPreferenceKey(String activityId) {
@@ -307,30 +279,24 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
 				.readDefaultEnablement(new ConfigurationElementMemento(configurationElement));
 
 		if (enabledActivity != null) {
-			defaultEnabledActivities.add(enabledActivity);
+			extensionDefaultEnabledActivities.add(enabledActivity);
 		}
 
 	}
 
-    private void readActivityRequirementBindingDefinition(
-            IConfigurationElement configurationElement) {
+	private void readActivityRequirementBindingDefinition(IConfigurationElement configurationElement) {
         ActivityRequirementBindingDefinition activityRequirementBindingDefinition = Persistence
-                .readActivityRequirementBindingDefinition(
-                        new ConfigurationElementMemento(configurationElement),
+				.readActivityRequirementBindingDefinition(new ConfigurationElementMemento(configurationElement),
                         getNamespace(configurationElement));
 
         if (activityRequirementBindingDefinition != null) {
-			activityRequirementBindingDefinitions
-                    .add(activityRequirementBindingDefinition);
+			extensionActivityRequirementBindingDefinitions.add(activityRequirementBindingDefinition);
 		}
     }
 
-    private void readActivityDefinition(
-            IConfigurationElement configurationElement) {
-        ActivityDefinition activityDefinition = Persistence
-                .readActivityDefinition(new ConfigurationElementMemento(
-                        configurationElement),
-                        getNamespace(configurationElement));
+	private void readActivityDefinition(IConfigurationElement configurationElement) {
+		ActivityDefinition activityDefinition = Persistence.readActivityDefinition(
+				new ConfigurationElementMemento(configurationElement), getNamespace(configurationElement));
 
         if (activityDefinition != null) {
         	// this is not ideal, but core expressions takes an
@@ -338,57 +304,46 @@ final class ExtensionActivityRegistry extends AbstractActivityRegistry {
 			IConfigurationElement[] enabledWhen = configurationElement
 					.getChildren(IWorkbenchRegistryConstants.TAG_ENABLED_WHEN);
 			if (enabledWhen.length == 1) {
-				IConfigurationElement[] expElement = enabledWhen[0]
-						.getChildren();
+				IConfigurationElement[] expElement = enabledWhen[0].getChildren();
 				if (expElement.length == 1) {
 					try {
-						Expression expression = ExpressionConverter
-								.getDefault().perform(expElement[0]);
+						Expression expression = ExpressionConverter.getDefault().perform(expElement[0]);
 						activityDefinition.setEnabledWhen(expression);
 					} catch (CoreException e) {
 						StatusManager.getManager().handle(e, WorkbenchPlugin.PI_WORKBENCH);
 					}
 				}
 			}
-			activityDefinitions.add(activityDefinition);
+			extensionActivityDefinitions.add(activityDefinition);
 		}
     }
 
-    private void readActivityPatternBindingDefinition(
-            IConfigurationElement configurationElement) {
+	private void readActivityPatternBindingDefinition(IConfigurationElement configurationElement) {
         ActivityPatternBindingDefinition activityPatternBindingDefinition = Persistence
-                .readActivityPatternBindingDefinition(
-                        new ConfigurationElementMemento(configurationElement),
+				.readActivityPatternBindingDefinition(new ConfigurationElementMemento(configurationElement),
                         getNamespace(configurationElement));
 
         if (activityPatternBindingDefinition != null) {
-			activityPatternBindingDefinitions
-                    .add(activityPatternBindingDefinition);
+			extensionActivityPatternBindingDefinitions.add(activityPatternBindingDefinition);
 		}
     }
 
-    private void readCategoryActivityBindingDefinition(
-            IConfigurationElement configurationElement) {
+	private void readCategoryActivityBindingDefinition(IConfigurationElement configurationElement) {
         CategoryActivityBindingDefinition categoryActivityBindingDefinition = Persistence
-                .readCategoryActivityBindingDefinition(
-                        new ConfigurationElementMemento(configurationElement),
+				.readCategoryActivityBindingDefinition(new ConfigurationElementMemento(configurationElement),
                         getNamespace(configurationElement));
 
         if (categoryActivityBindingDefinition != null) {
-			categoryActivityBindingDefinitions
-                    .add(categoryActivityBindingDefinition);
+			extensionCategoryActivityBindingDefinitions.add(categoryActivityBindingDefinition);
 		}
     }
 
-    private void readCategoryDefinition(
-            IConfigurationElement configurationElement) {
-        CategoryDefinition categoryDefinition = Persistence
-                .readCategoryDefinition(new ConfigurationElementMemento(
-                        configurationElement),
-                        getNamespace(configurationElement));
+	private void readCategoryDefinition(IConfigurationElement configurationElement) {
+		CategoryDefinition categoryDefinition = Persistence.readCategoryDefinition(
+				new ConfigurationElementMemento(configurationElement), getNamespace(configurationElement));
 
         if (categoryDefinition != null) {
-			categoryDefinitions.add(categoryDefinition);
+			extensionCategoryDefinitions.add(categoryDefinition);
 		}
     }
 }

@@ -1,23 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2009, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Krzysztof Daniel <krzysztof.daniel@gmail.com> - Bug 355030
  ******************************************************************************/
 package org.eclipse.ui.internal.statushandlers;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.ToolBarManager;
@@ -31,6 +26,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
@@ -41,6 +37,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolBar;
@@ -85,7 +82,13 @@ public class SupportTray extends DialogTray implements
 
 	private StatusAdapter lastSelectedStatus;
 
-	@Override
+	private AbstractStatusAreaProvider userSupportProvider;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.DialogTray#createContents(org.eclipse.swt.widgets.Composite)
+	 */
 	protected Control createContents(Composite parent) {
 		Composite container = new Composite(parent, SWT.NONE);
 
@@ -104,7 +107,11 @@ public class SupportTray extends DialogTray implements
 		GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		container.setLayoutData(layoutData);
 
-		container.addListener(SWT.Dispose, event -> destroyImages());
+		container.addListener(SWT.Dispose, new Listener() {
+			public void handleEvent(Event event) {
+				destroyImages();
+			}
+		});
 
 		if (!hideSupportButtons) {
 			ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
@@ -224,7 +231,6 @@ public class SupportTray extends DialogTray implements
 	private void createActions() {
 		createImages();
 		closeAction = new ContributionItem() {
-			@Override
 			public void fill(ToolBar parent, int index) {
 				final ToolItem item = new ToolItem(parent, SWT.PUSH);
 				item.setImage(normal);
@@ -285,12 +291,9 @@ public class SupportTray extends DialogTray implements
 	public ErrorSupportProvider getSupportProvider() {
 		ErrorSupportProvider provider = Policy.getErrorSupportProvider();
 
-		Object userSupportProvider = dialogState
-				.get(IStatusDialogConstants.CUSTOM_SUPPORT_PROVIDER);
-		if (userSupportProvider instanceof AbstractStatusAreaProvider) {
-			provider = (ErrorSupportProvider) userSupportProvider;
+		if (userSupportProvider != null) {
+			provider = userSupportProvider;
 		}
-
 
 		if (getBooleanValue(IStatusDialogConstants.ENABLE_DEFAULT_SUPPORT_AREA) && provider == null) {
 			provider = new StackTraceSupportArea();
@@ -333,7 +336,11 @@ public class SupportTray extends DialogTray implements
 		return provider;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
+	 */
 	public void selectionChanged(SelectionChangedEvent event) {
 		lastSelectedStatus = getStatusAdapterFromEvent(event);
 		if (supportArea != null && !supportArea.isDisposed()) {

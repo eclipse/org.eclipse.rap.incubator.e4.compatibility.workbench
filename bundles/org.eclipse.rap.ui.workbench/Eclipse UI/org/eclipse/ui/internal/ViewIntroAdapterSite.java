@@ -25,15 +25,15 @@ import org.eclipse.ui.internal.intro.IntroDescriptor;
 import org.eclipse.ui.intro.IIntroSite;
 
 /**
- * Simple <code>IIntroSite</code> that wraps a <code>IViewSite</code>.  For use in conjunction with
- * <code>ViewIntroAdapterPart</code>.
+ * Simple <code>IIntroSite</code> that wraps a <code>IViewSite</code>. For use
+ * in conjunction with <code>ViewIntroAdapterPart</code>.
  *
  * @since 3.0
  */
 final class ViewIntroAdapterSite implements IIntroSite {
-    private IntroDescriptor descriptor;
+	private final IntroDescriptor descriptor;
 
-    private IViewSite viewSite;
+	private final IViewSite viewSite;
 
     public ViewIntroAdapterSite(IViewSite viewSite, IntroDescriptor descriptor) {
         this.viewSite = viewSite;

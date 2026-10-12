@@ -36,17 +36,17 @@ import org.osgi.service.prefs.Preferences;
  * Note: Preference change listeners registered on this node will only receive
  * events from this node and not events based on the original backing node.
  * </p>
+ *
  * @since 3.1
  */
-public class WorkingCopyPreferences extends EventManager implements
-		IEclipsePreferences {
+public class WorkingCopyPreferences extends EventManager implements IEclipsePreferences {
 
 	private static final String TRUE = "true"; //$NON-NLS-1$
 
 	private final Map<String, Object> temporarySettings;
 	private final IEclipsePreferences original;
 	private boolean removed = false;
-	private org.eclipse.ui.preferences.WorkingCopyManager manager;
+	private final org.eclipse.ui.preferences.WorkingCopyManager manager;
 
 	/**
 	 * @param original the underlying preference node
@@ -60,8 +60,8 @@ public class WorkingCopyPreferences extends EventManager implements
 	}
 
 	/*
-	 * Convenience method for throwing an exception when methods
-	 * are called on a removed node.
+	 * Convenience method for throwing an exception when methods are called on a
+	 * removed node.
 	 */
 	private void checkRemoved() {
 		if (removed) {
@@ -109,7 +109,6 @@ public class WorkingCopyPreferences extends EventManager implements
 		// mark as removed
 		removed = true;
 	}
-
 
 	@Override
 	public Preferences node(String path) {
@@ -424,7 +423,7 @@ public class WorkingCopyPreferences extends EventManager implements
 	@Override
 	public boolean nodeExists(String pathName) throws BackingStoreException {
 		// short circuit for this node
-		if (pathName.length() == 0) {
+		if (pathName.isEmpty()) {
 			return removed ? false : getOriginal().nodeExists(pathName);
 		}
 		return getOriginal().nodeExists(pathName);

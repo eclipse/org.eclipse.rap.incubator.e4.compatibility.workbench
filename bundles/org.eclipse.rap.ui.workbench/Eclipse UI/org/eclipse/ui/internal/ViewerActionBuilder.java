@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -45,7 +42,9 @@ public class ViewerActionBuilder extends PluginActionBuilder {
     public ViewerActionBuilder() {
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PluginActionBuilder.
+     */
 	protected ActionDescriptor createActionDescriptor(
             IConfigurationElement element) {
         if (part instanceof IViewPart) {
@@ -54,7 +53,9 @@ public class ViewerActionBuilder extends PluginActionBuilder {
 		return new ActionDescriptor(element, ActionDescriptor.T_EDITOR, part);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PluginActionBuilder.
+     */
 	protected BasicContribution createContribution() {
         return new ViewerContribution(provider);
     }
@@ -71,7 +72,9 @@ public class ViewerActionBuilder extends PluginActionBuilder {
         }
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PluginActionBuilder.
+     */
 	protected boolean readElement(IConfigurationElement element) {
         String tag = element.getName();
 
@@ -136,7 +139,9 @@ public class ViewerActionBuilder extends PluginActionBuilder {
             visibilityTest = new ActionExpression(element);
         }
 
-        @Override
+        /* (non-Javadoc)
+         * Method declared on BasicContribution.
+         */
 		public void contribute(IMenuManager menu, boolean menuAppendIfMissing,
                 IToolBarManager toolbar, boolean toolAppendIfMissing) {
             boolean visible = true;
@@ -157,7 +162,9 @@ public class ViewerActionBuilder extends PluginActionBuilder {
 			}
         }
 
-		@Override
+		/* (non-Javadoc)
+		 * @see org.eclipse.ui.internal.PluginActionBuilder.BasicContribution#dispose()
+		 */
 		public void dispose() {
 			if (selProvider != null) {
 				selProvider.removeSelectionChangedListener(this);
@@ -175,15 +182,17 @@ public class ViewerActionBuilder extends PluginActionBuilder {
 		 * @see ISelectionChangedListener
 		 * @since 3.1
 		 */
-		@Override
 		public void selectionChanged(SelectionChangedEvent event) {
 			if (actions != null) {
+			if (actions != null) {
 				for (int i = 0; i < actions.size(); i++) {
-					PluginAction proxy = ((ActionDescriptor) actions.get(i)).getAction();
+						PluginAction proxy = ((ActionDescriptor) actions.get(i))
+								.getAction();
 					proxy.selectionChanged(event);
 				}
 			}
 		}
+    }
     }
 
 }

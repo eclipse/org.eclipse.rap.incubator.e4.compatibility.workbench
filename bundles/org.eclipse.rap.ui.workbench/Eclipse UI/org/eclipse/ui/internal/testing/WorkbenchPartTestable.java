@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -21,7 +18,6 @@ import org.eclipse.ui.testing.IWorkbenchPartTestable;
 /**
  * Implementation of {@link IWorkbenchPartTestable}.
  *
- * @since 3.3
  */
 public class WorkbenchPartTestable implements IWorkbenchPartTestable {
 
@@ -33,12 +29,14 @@ public class WorkbenchPartTestable implements IWorkbenchPartTestable {
 	 * @param partSite the part to test
 	 */
 	public WorkbenchPartTestable(PartSite partSite) {
-		Composite paneComposite = (Composite) partSite.getModel().getWidget();
+		Composite paneComposite = (Composite)partSite.getPane().getControl();
 		Control [] paneChildren = paneComposite.getChildren();
 		this.composite = ((Composite) paneChildren[0]);
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.testing.IWorkbenchPartTestable#getControl()
+	 */
 	public Composite getControl() {
 		return composite;
 	}

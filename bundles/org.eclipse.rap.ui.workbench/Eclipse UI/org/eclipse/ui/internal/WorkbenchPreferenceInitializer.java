@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corporation and others.
+ * Copyright (c) 2000, 2020 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -18,12 +18,12 @@
  *     Axel Richard <axel.richard@obeo.fr> - Bug 486644
  *     Lars Vogel <Lars.Vogel@vogella.com> - Bug 146205
  *     Patrik Suzzi <psuzzi@itemis.com> - Bug 529885
+ *     Christian Georgi (SAP SE) - Bug 540440
  *******************************************************************************/
 package org.eclipse.ui.internal;
 
-import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -45,23 +45,19 @@ import org.osgi.service.prefs.BackingStoreException;
  */
 public class WorkbenchPreferenceInitializer extends AbstractPreferenceInitializer {
 
-
-
 	@Override
 	public void initializeDefaultPreferences() {
 		IScopeContext context = DefaultScope.INSTANCE;
-		IEclipsePreferences node = context.getNode(WorkbenchPlugin
-				.getDefault().getBundle().getSymbolicName());
+		IEclipsePreferences node = context.getNode(WorkbenchPlugin.getDefault().getBundle().getSymbolicName());
 
 		node.putBoolean(IPreferenceConstants.RUN_IN_BACKGROUND, true);
 		node.putBoolean(IPreferenceConstants.SHOULD_PROMPT_FOR_ENABLEMENT, true);
 
 		node.putBoolean(IPreferenceConstants.EDITORLIST_PULLDOWN_ACTIVE, false);
-		node.putBoolean(IPreferenceConstants.EDITORLIST_DISPLAY_FULL_NAME,
-				false);
+		node.putBoolean(IPreferenceConstants.EDITORLIST_DISPLAY_FULL_NAME, false);
 		node.putBoolean(IPreferenceConstants.STICKY_CYCLE, false);
-		node.putBoolean(IPreferenceConstants.REUSE_EDITORS_BOOLEAN, false);
-		node.putInt(IPreferenceConstants.REUSE_EDITORS, 8);
+		node.putBoolean(IPreferenceConstants.REUSE_EDITORS_BOOLEAN, true);
+		node.putInt(IPreferenceConstants.REUSE_EDITORS, 99);
 		node.putBoolean(IPreferenceConstants.OPEN_ON_SINGLE_CLICK, false);
 		node.putBoolean(IPreferenceConstants.SELECT_ON_HOVER, false);
 		node.putBoolean(IPreferenceConstants.OPEN_AFTER_DELAY, false);
@@ -80,14 +76,12 @@ public class WorkbenchPreferenceInitializer extends AbstractPreferenceInitialize
 		node.putBoolean(IPreferenceConstants.PERSPECTIVEBAR_VISIBLE, true);
 
 		node.putInt(IPreferenceConstants.EDITOR_TAB_WIDTH, 3); // high
-		node.putInt(IPreferenceConstants.OPEN_PERSP_MODE,
-				IPreferenceConstants.OPM_ACTIVE_PAGE);
+		node.putInt(IPreferenceConstants.OPEN_PERSP_MODE, IPreferenceConstants.OPM_ACTIVE_PAGE);
 		node.put(IPreferenceConstants.ENABLED_DECORATORS, ""); //$NON-NLS-1$
-		node.putInt(IPreferenceConstants.EDITORLIST_SELECTION_SCOPE,
-				IPreferenceConstants.EDITORLIST_SET_PAGE_SCOPE); // Current
+		node.putInt(IPreferenceConstants.EDITORLIST_SELECTION_SCOPE, IPreferenceConstants.EDITORLIST_SET_PAGE_SCOPE); // Current
 																 // Window
-		node.putInt(IPreferenceConstants.EDITORLIST_SORT_CRITERIA,
-				IPreferenceConstants.EDITORLIST_NAME_SORT); // Name Sort
+		node.putInt(IPreferenceConstants.EDITORLIST_SORT_CRITERIA, IPreferenceConstants.EDITORLIST_NAME_SORT); // Name
+																												// Sort
 		node.putBoolean(IPreferenceConstants.COLOR_ICONS, true);
 		node.putInt(IPreferenceConstants.KEYS_PREFERENCE_SELECTED_TAB, 0);
 		node.putBoolean(IPreferenceConstants.MULTI_KEY_ASSIST, true);
@@ -104,10 +98,10 @@ public class WorkbenchPreferenceInitializer extends AbstractPreferenceInitialize
 		//Temporary option to turn off the dialog font
 		node.putBoolean("DISABLE_DIALOG_FONT", false); //$NON-NLS-1$
 
-		// Heap status preferences
-		// FIXME this does not actually set the default since it is the wrong
-		// node. It works because the default-default is false.
-		node.putBoolean(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, false);
+		// Heap status preferences is stored in different node
+		IEclipsePreferences heapNode = context.getNode("org.eclipse.ui"); //$NON-NLS-1$
+		heapNode.putBoolean(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, false);
+		heapNode.putInt(IWorkbenchPreferenceConstants.ALIGN_MULTI_PAGE_EDITOR_TABS, SWT.BOTTOM);
 		node.putInt(IHeapStatusConstants.PREF_UPDATE_INTERVAL, 500);
 		node.putBoolean(IHeapStatusConstants.PREF_SHOW_MAX, false);
 		node.putBoolean(IPreferenceConstants.OVERRIDE_PRESENTATION, false);
@@ -125,23 +119,30 @@ public class WorkbenchPreferenceInitializer extends AbstractPreferenceInitialize
 		// Progress view
 		node.putInt(IPreferenceConstants.MAX_PROGRESS_ENTRIES, 20);
 
-		IEclipsePreferences rootNode = (IEclipsePreferences) Platform
-				.getPreferencesService().getRootNode()
+		// Visualized command keys
+		node.putBoolean(IPreferenceConstants.SHOW_KEYS_ENABLED_FOR_KEYBOARD, false);
+		node.putBoolean(IPreferenceConstants.SHOW_KEYS_ENABLED_FOR_MOUSE_EVENTS, false);
+		node.putInt(IPreferenceConstants.SHOW_KEYS_TIME_TO_CLOSE, 3000);
+
+		node.putInt(IWorkbenchPreferenceConstants.DISPOSE_CLOSED_BROWSER_HOVER_TIMEOUT, -1);
+
+		// Don't show more than 1000 child elements per parent by default
+		node.putInt(IWorkbenchPreferenceConstants.LARGE_VIEW_LIMIT, 1000);
+
+		node.put(IWorkbenchPreferenceConstants.RESOURCE_RENAME_MODE,
+				IWorkbenchPreferenceConstants.RESOURCE_RENAME_MODE_INLINE);
+
+		IEclipsePreferences rootNode = (IEclipsePreferences) Platform.getPreferencesService().getRootNode()
 				.node(InstanceScope.SCOPE);
 
-		final String workbenchName = WorkbenchPlugin.getDefault().getBundle()
-				.getSymbolicName();
+		final String workbenchName = WorkbenchPlugin.getDefault().getBundle().getSymbolicName();
 		try {
 			if (rootNode.nodeExists(workbenchName)) {
 				((IEclipsePreferences) rootNode.node(workbenchName))
-						.addPreferenceChangeListener(PlatformUIPreferenceListener
-								.getSingleton());
+						.addPreferenceChangeListener(PlatformUIPreferenceListener.getSingleton());
 			}
 		} catch (BackingStoreException e) {
-			IStatus status = new Status(IStatus.ERROR, WorkbenchPlugin
-					.getDefault().getBundle().getSymbolicName(), IStatus.ERROR,
-					e.getLocalizedMessage(), e);
-			WorkbenchPlugin.getDefault().getLog().log(status);
+			ILog.of(WorkbenchPreferenceInitializer.class).error(e.getLocalizedMessage(), e);
 		}
 
 	}

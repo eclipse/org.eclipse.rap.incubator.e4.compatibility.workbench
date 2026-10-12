@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2018 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -18,6 +15,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.eclipse.jface.resource.ColorDescriptor;
 import org.eclipse.jface.resource.DeviceResourceDescriptor;
 import org.eclipse.jface.resource.DeviceResourceException;
@@ -25,6 +23,7 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.ResourceManager;
+import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -39,12 +38,11 @@ import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 
 /**
- * Contains a bunch of helper methods that allow JFace resource descriptors to
- * be passed directly to SWT widgets without worrying about resource allocation.
- * This class is internal, but it should be moved into JFace if the pattern is
- * found generally useful. The current implementation uses a lot of reflection
- * to save repeated code, but this could all be inlined (without reflection) if
- * performance turns out to be a problem.
+ * Contains a bunch of helper methods that allow JFace resource descriptors to be passed
+ * directly to SWT widgets without worrying about resource allocation. This class is internal,
+ * but it should be moved into JFace if the pattern is found generally useful. The current
+ * implementation uses a lot of reflection to save repeated code, but this could all be inlined
+ * (without reflection) if performance turns out to be a problem.
  *
  * <p>
  * For example, an Image might be passed to a TableItem as follows:
@@ -80,15 +78,13 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
  * </code>
  *
  * <p>
- * This class tries to behave as if the table item itself had a set method that
- * took a descriptor. Resource allocation and deallocation happens for free. All
- * the methods are leakproof. That is, if any images, colors, etc. need to be
- * allocated and passed to the SWT widget, they will be deallocated
- * automatically when the widget goes away (the implementation hooks a dispose
- * listener on the widget which cleans up as soon as the widget is disposed).
+ * This class tries to behave as if the table item itself had a set method that took a descriptor.
+ * Resource allocation and deallocation happens for free. All the methods are leakproof. That is, 
+ * if any images, colors, etc. need to be allocated and passed to the SWT widget, they will be 
+ * deallocated automatically when the widget goes away (the implementation hooks a dispose listener 
+ * on the widget which cleans up as soon as the widget is disposed). 
  * </p>
  *
- * @since 3.1
  */
 public final class Descriptors {
 	private static final String DISPOSE_LIST = "Descriptors.disposeList"; //$NON-NLS-1$
@@ -122,7 +118,7 @@ public final class Descriptors {
 			}
 
 			try {
-				method.invoke(toCall, newResource);
+                method.invoke(toCall, new Object[] {newResource});
 			} catch (IllegalArgumentException e) {
 				throw e;
 			} catch (IllegalAccessException e) {
@@ -159,14 +155,17 @@ public final class Descriptors {
 		}
 	}
 
-	private static DisposeListener disposeListener = e -> doDispose(e.widget);
+    private static DisposeListener disposeListener = new DisposeListener() {
+        public void widgetDisposed(DisposeEvent e) {
+            doDispose(e.widget);
+        }
+    };
 
-	// Item
-	// //////////////////////////////////////////////////////////////////////////////////
+    // Item //////////////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Sets the image on the given ToolItem. The image will be automatically
-	 * allocated and disposed as needed.
+     * Sets the image on the given ToolItem. The image will be automatically allocated and
+     * disposed as needed.
 	 *
 	 * @since 3.1
 	 *
@@ -177,8 +176,7 @@ public final class Descriptors {
 		callMethod(item, "setImage", descriptor, Image.class); //$NON-NLS-1$
 	}
 
-	// ToolItem
-	// //////////////////////////////////////////////////////////////////////////////
+    // ToolItem //////////////////////////////////////////////////////////////////////////////
 
 	public static void setHotImage(ToolItem item, ImageDescriptor descriptor) {
 		callMethod(item, "setHotImage", descriptor, Image.class); //$NON-NLS-1$
@@ -188,8 +186,7 @@ public final class Descriptors {
 		callMethod(item, "setDisabledImage", descriptor, Image.class); //$NON-NLS-1$
 	}
 
-	// TableItem
-	// //////////////////////////////////////////////////////////////////////////////
+    // TableItem //////////////////////////////////////////////////////////////////////////////
 
 	public static void setFont(TableItem item, FontDescriptor descriptor) {
 		callMethod(item, "setFont", descriptor, Font.class); //$NON-NLS-1$
@@ -203,8 +200,7 @@ public final class Descriptors {
 		callMethod(item, "setForeground", descriptor, Color.class); //$NON-NLS-1$
 	}
 
-	// Control
-	// ///////////////////////////////////////////////////////////////////////////////
+    // Control ///////////////////////////////////////////////////////////////////////////////
 
 	public static void setBackground(Control control, ColorDescriptor descriptor) {
 		callMethod(control, "setBackground", descriptor, Color.class); //$NON-NLS-1$
@@ -214,8 +210,7 @@ public final class Descriptors {
 		callMethod(control, "setForeground", descriptor, Color.class); //$NON-NLS-1$
 	}
 
-	// Button
-	// ///////////////////////////////////////////////////////////////////////////////
+    // Button ///////////////////////////////////////////////////////////////////////////////
 
 	public static void setImage(Button button, ImageDescriptor descriptor) {
 		callMethod(button, "setImage", descriptor, Image.class); //$NON-NLS-1$
@@ -225,8 +220,7 @@ public final class Descriptors {
 		callMethod(label, "setImage", descriptor, Image.class); //$NON-NLS-1$
 	}
 
-	private static ResourceMethod getResourceMethod(Widget toCall, String methodName, Class resourceType)
-			throws NoSuchMethodException {
+    private static ResourceMethod getResourceMethod(Widget toCall, String methodName, Class resourceType) throws NoSuchMethodException {
 		Object oldData = toCall.getData(DISPOSE_LIST);
 
 		if (oldData instanceof List) {
@@ -238,8 +232,7 @@ public final class Descriptors {
 					return method;
 				}
 			}
-		}
-		if (oldData instanceof ResourceMethod) {
+        } if (oldData instanceof ResourceMethod) {
 			if (((ResourceMethod) oldData).id == methodName) {
 				return ((ResourceMethod) oldData);
 			}
@@ -256,7 +249,7 @@ public final class Descriptors {
 
 		Method method;
 		try {
-			method = clazz.getMethod(methodName, resourceType);
+            method = clazz.getMethod(methodName, new Class[] {resourceType});
 		} catch (SecurityException e) {
 			throw e;
 		}
@@ -273,8 +266,7 @@ public final class Descriptors {
 		return result;
 	}
 
-	private static void callMethod(Widget toCall, String methodName, DeviceResourceDescriptor descriptor,
-			Class resourceType) {
+    private static void callMethod(Widget toCall, String methodName, DeviceResourceDescriptor descriptor, Class resourceType) {
 		ResourceMethod method;
 		try {
 			method = getResourceMethod(toCall, methodName, resourceType);
@@ -294,7 +286,9 @@ public final class Descriptors {
 			ResourceMethod[] data = (ResourceMethod[]) list.toArray(new ResourceMethod[list.size()]);
 
 			// Clear out the images
-			for (ResourceMethod method : data) {
+            for (int i = 0; i < data.length; i++) {
+                ResourceMethod method = data[i];
+
 				method.dispose();
 			}
 		}

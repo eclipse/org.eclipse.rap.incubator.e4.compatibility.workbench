@@ -78,8 +78,8 @@ public class EditorHistoryItem {
     }
 
     /**
-     * Returns the name of this item, either from the input if restored,
-     * otherwise from the memento.
+	 * Returns the name of this item, either from the input if restored, otherwise
+	 * from the memento.
      */
     public String getName() {
         if (isRestored() && getInput() != null) {
@@ -125,16 +125,15 @@ public class EditorHistoryItem {
 			return false;
 		}
         IPersistableElement persistable = input.getPersistable();
-        String inputId = persistable == null ? null : persistable
-                .getFactoryId();
+		String inputId = persistable == null ? null : persistable.getFactoryId();
         String myId = getFactoryId();
         return myId == null ? inputId == null : myId.equals(inputId);
     }
 
     /**
      * Returns the factory id of this item, either from the input if restored,
-     * otherwise from the memento.
-     * Returns <code>null</code> if there is no factory id.
+	 * otherwise from the memento. Returns <code>null</code> if there is no factory
+	 * id.
      */
     public String getFactoryId() {
         if (isRestored()) {
@@ -160,35 +159,29 @@ public class EditorHistoryItem {
         IMemento memento = this.memento;
         this.memento = null;
 
-        String factoryId = memento
-                .getString(IWorkbenchConstants.TAG_FACTORY_ID);
+		String factoryId = memento.getString(IWorkbenchConstants.TAG_FACTORY_ID);
         if (factoryId == null) {
-            WorkbenchPlugin
-                    .log("Unable to restore mru list - no input factory ID.");//$NON-NLS-1$
+			WorkbenchPlugin.log("Unable to restore mru list - no input factory ID.");//$NON-NLS-1$
             return result;
         }
-        IElementFactory factory = PlatformUI.getWorkbench().getElementFactory(
-                factoryId);
+		IElementFactory factory = PlatformUI.getWorkbench().getElementFactory(factoryId);
         if (factory == null) {
             return result;
         }
-        IMemento persistableMemento = memento
-                .getChild(IWorkbenchConstants.TAG_PERSISTABLE);
+		IMemento persistableMemento = memento.getChild(IWorkbenchConstants.TAG_PERSISTABLE);
         if (persistableMemento == null) {
-            WorkbenchPlugin
-                    .log("Unable to restore mru list - no input element state: " + factoryId);//$NON-NLS-1$
+			WorkbenchPlugin.log("Unable to restore mru list - no input element state: " + factoryId);//$NON-NLS-1$
             return result;
         }
         IAdaptable adaptable = factory.createElement(persistableMemento);
-        if (adaptable == null || (adaptable instanceof IEditorInput) == false) {
+		if (adaptable == null || !(adaptable instanceof IEditorInput)) {
             return result;
         }
         input = (IEditorInput) adaptable;
         // Get the editor descriptor.
         String editorId = memento.getString(IWorkbenchConstants.TAG_ID);
         if (editorId != null) {
-            IEditorRegistry registry = WorkbenchPlugin.getDefault()
-                    .getEditorRegistry();
+			IEditorRegistry registry = WorkbenchPlugin.getDefault().getEditorRegistry();
             descriptor = registry.findEditor(editorId);
         }
         return result;
@@ -198,8 +191,7 @@ public class EditorHistoryItem {
      * Returns whether this history item can be saved.
      */
     public boolean canSave() {
-        return !isRestored()
-                || (getInput() != null && getInput().getPersistable() != null);
+		return !isRestored() || (getInput() != null && getInput().getPersistable() != null);
     }
 
     /**
@@ -215,26 +207,20 @@ public class EditorHistoryItem {
             IPersistableElement persistable = input.getPersistable();
             if (persistable != null) {
                 /*
-                 * Store IPersistable of the IEditorInput in a separate section
-                 * since it could potentially use a tag already used in the parent
-                 * memento and thus overwrite data.
+				 * Store IPersistable of the IEditorInput in a separate section since it could
+				 * potentially use a tag already used in the parent memento and thus overwrite
+				 * data.
                  */
-                IMemento persistableMemento = memento
-                        .createChild(IWorkbenchConstants.TAG_PERSISTABLE);
+				IMemento persistableMemento = memento.createChild(IWorkbenchConstants.TAG_PERSISTABLE);
                 persistable.saveState(persistableMemento);
-                memento.putString(IWorkbenchConstants.TAG_FACTORY_ID,
-                        persistable.getFactoryId());
+				memento.putString(IWorkbenchConstants.TAG_FACTORY_ID, persistable.getFactoryId());
                 if (descriptor != null && descriptor.getId() != null) {
-                    memento.putString(IWorkbenchConstants.TAG_ID, descriptor
-                            .getId());
+					memento.putString(IWorkbenchConstants.TAG_ID, descriptor.getId());
                 }
                 // save the name and tooltip separately so they can be restored
                 // without having to instantiate the input, which can activate plugins
-                memento
-                        .putString(IWorkbenchConstants.TAG_NAME, input
-                                .getName());
-                memento.putString(IWorkbenchConstants.TAG_TOOLTIP, input
-                        .getToolTipText());
+				memento.putString(IWorkbenchConstants.TAG_NAME, input.getName());
+				memento.putString(IWorkbenchConstants.TAG_TOOLTIP, input.getToolTipText());
             }
         }
         return Status.OK_STATUS;

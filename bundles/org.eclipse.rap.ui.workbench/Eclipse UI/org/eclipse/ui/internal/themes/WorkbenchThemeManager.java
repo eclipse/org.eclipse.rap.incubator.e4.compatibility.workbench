@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2017 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -16,11 +13,8 @@ package org.eclipse.ui.internal.themes;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.eclipse.core.commands.common.EventManager;
-import org.eclipse.e4.core.contexts.IEclipseContext;
-import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.JFaceResources;
@@ -40,30 +34,15 @@ import org.eclipse.ui.themes.IThemeManager;
 
 /**
  * Theme manager for the Workbench.
- *
- * @since 3.0
  */
-public class WorkbenchThemeManager extends EventManager implements
-		IThemeManager {
-	public static RGB EMPTY_COLOR_VALUE = new RGB(0, 1, 2);
+public class WorkbenchThemeManager extends EventManager implements IThemeManager {
 
 	private static final String SYSTEM_DEFAULT_THEME = "org.eclipse.ui.ide.systemDefault";//$NON-NLS-1$
+
 
 	// RAP [bm]:
 //  private static WorkbenchThemeManager instance;
     private boolean initialized;
-
-	private IEclipseContext context;
-
-	private IEventBroker eventBroker;
-
-	public interface Events {
-		String TOPIC = "org/eclipse/ui/internal/themes/WorkbenchThemeManager"; //$NON-NLS-1$
-
-		String THEME_REGISTRY_RESTYLED = TOPIC + "/themeRegistryRestyled"; //$NON-NLS-1$
-
-		String THEME_REGISTRY_MODIFIED = TOPIC + "/themeRegistryModified"; //$NON-NLS-1$
-	}
 
 	/**
 	 * Returns the singelton instance of the WorkbenchThemeManager
@@ -74,6 +53,7 @@ public class WorkbenchThemeManager extends EventManager implements
 //	public static synchronized WorkbenchThemeManager getInstance() {
 //		if (instance == null) {
 //			instance = new WorkbenchThemeManager();
+//			instance.getCurrentTheme(); // initialize the current theme
 //		}
 //		return instance;
 //	}
@@ -83,16 +63,17 @@ public class WorkbenchThemeManager extends EventManager implements
         synchronized( result ) {
             if( !result.initialized ) {
                 result.initialized = true;
-//                result.getCurrentTheme(); // [dm]: not necessary anymore??
+				result.getCurrentTheme();
             }
         }
         return result;
     }
 
-
 	private ITheme currentTheme;
 
-	private IPropertyChangeListener currentThemeListener = event -> {
+	private IPropertyChangeListener currentThemeListener = new IPropertyChangeListener() {
+
+		public void propertyChange(PropertyChangeEvent event) {
 		firePropertyChange(event);
 		if (event.getSource() instanceof FontRegistry) {
 			JFaceResources.getFontRegistry().put(event.getProperty(),
@@ -100,6 +81,7 @@ public class WorkbenchThemeManager extends EventManager implements
 		} else if (event.getSource() instanceof ColorRegistry) {
 			JFaceResources.getColorRegistry().put(event.getProperty(),
 					(RGB) event.getNewValue());
+		}
 		}
 	};
 
@@ -128,8 +110,8 @@ public class WorkbenchThemeManager extends EventManager implements
 
 		// copy the font values from preferences.
 		FontRegistry jfaceFonts = JFaceResources.getFontRegistry();
-		for (Object fontRegistryKey : jfaceFonts.getKeySet()) {
-			String key = (String) fontRegistryKey;
+		for (Iterator i = jfaceFonts.getKeySet().iterator(); i.hasNext();) {
+			String key = (String) i.next();
 			defaultThemeFontRegistry.put(key, jfaceFonts.getFontData(key));
 		}
 
@@ -173,6 +155,7 @@ public class WorkbenchThemeManager extends EventManager implements
 		if (highContrast[0])
 			themeId = SYSTEM_DEFAULT_THEME;
         }
+
 		PrefUtil.getAPIPreferenceStore().setDefault(
 				IWorkbenchPreferenceConstants.CURRENT_THEME_ID, themeId);
 	}
@@ -192,7 +175,8 @@ public class WorkbenchThemeManager extends EventManager implements
 //
 //        IThemeDescriptor[] themeDescriptors = getThemeRegistry().getThemes();
 //
-//       	for (IThemeDescriptor themeDescriptor : themeDescriptors) {
+//       	for (int i=0; i < themeDescriptors.length; i++) {
+//        	IThemeDescriptor themeDescriptor = themeDescriptors[i];
 //        	ITheme theme = (ITheme) themes.get(themeDescriptor);
 //    		//If theme is in our themes table then its already been populated
 //    		if (theme != null) {
@@ -205,7 +189,12 @@ public class WorkbenchThemeManager extends EventManager implements
 //		}
 //	}
 	// RAPEND: [bm]
-	@Override
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.themes.IThemeManager#addPropertyChangeListener(org.eclipse.jface.util.IPropertyChangeListener)
+	 */
 	public void addPropertyChangeListener(IPropertyChangeListener listener) {
 		addListenerObject(listener);
 	}
@@ -234,8 +223,10 @@ public class WorkbenchThemeManager extends EventManager implements
 	}
 
 	protected void firePropertyChange(PropertyChangeEvent event) {
-		for (Object listener : getListeners()) {
-			((IPropertyChangeListener) listener).propertyChange(event);
+		Object[] listeners = getListeners();
+
+		for (int i = 0; i < listeners.length; i++) {
+			((IPropertyChangeListener) listeners[i]).propertyChange(event);
 		}
 	}
 
@@ -247,7 +238,11 @@ public class WorkbenchThemeManager extends EventManager implements
 		firePropertyChange(event);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.themes.IThemeManager#getCurrentTheme()
+	 */
 	public ITheme getCurrentTheme() {
 		if (currentTheme == null) {
 			String themeId = PrefUtil.getAPIPreferenceStore().getString(
@@ -300,7 +295,11 @@ public class WorkbenchThemeManager extends EventManager implements
 		return theme;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.themes.IThemeManager#getTheme(java.lang.String)
+	 */
 	public ITheme getTheme(String id) {
 		if (id.equals(IThemeManager.DEFAULT_THEME)) {
 			return getTheme((IThemeDescriptor) null);
@@ -323,12 +322,20 @@ public class WorkbenchThemeManager extends EventManager implements
 		return themeRegistry;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.themes.IThemeManager#removePropertyChangeListener(org.eclipse.jface.util.IPropertyChangeListener)
+	 */
 	public void removePropertyChangeListener(IPropertyChangeListener listener) {
 		removeListenerObject(listener);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.themes.IThemeManager#setCurrentTheme(java.lang.String)
+	 */
 	public void setCurrentTheme(String id) {
 		ITheme oldTheme = currentTheme;
 		if (WorkbenchThemeManager.getInstance().doSetCurrentTheme(id)) {
@@ -351,253 +358,21 @@ public class WorkbenchThemeManager extends EventManager implements
 			{
 				ColorRegistry jfaceColors = JFaceResources.getColorRegistry();
 				ColorRegistry themeColors = currentTheme.getColorRegistry();
-				for (Object themeColorKey : themeColors.getKeySet()) {
-					String key = (String) themeColorKey;
+				for (Iterator i = themeColors.getKeySet().iterator(); i
+						.hasNext();) {
+					String key = (String) i.next();
 					jfaceColors.put(key, themeColors.getRGB(key));
 				}
 			}
 			{
 				FontRegistry jfaceFonts = JFaceResources.getFontRegistry();
 				FontRegistry themeFonts = currentTheme.getFontRegistry();
-				for (Object themeFontKey : themeFonts.getKeySet()) {
-					String key = (String) themeFontKey;
+				for (Iterator i = themeFonts.getKeySet().iterator(); i
+						.hasNext();) {
+					String key = (String) i.next();
 					jfaceFonts.put(key, themeFonts.getFontData(key));
-				}
-			}
-			{
-				if (oldTheme != null && eventBroker != null) {
-					eventBroker.send(UIEvents.UILifeCycle.THEME_CHANGED, null);
-					eventBroker.send(UIEvents.UILifeCycle.THEME_DEFINITION_CHANGED,
-							context.get(MApplication.class));
 				}
 			}
 		}
 	}
-
-//	public static class WorkbenchThemeChangedHandler implements EventHandler {
-//		@Override
-//		public void handleEvent(org.osgi.service.event.Event event) {
-//			IStylingEngine engine = getStylingEngine();
-//			ThemeRegistry themeRegistry = getThemeRegistry();
-//			FontRegistry fontRegistry = getFontRegistry();
-//			ColorRegistry colorRegistry = getColorRegistry();
-//
-//			resetThemeRegistries(themeRegistry, fontRegistry, colorRegistry);
-//			overrideAlreadyExistingDefinitions(event, engine, themeRegistry, fontRegistry,
-//					colorRegistry);
-//			addNewDefinitions(event, engine, themeRegistry, fontRegistry, colorRegistry);
-//
-//			sendThemeRegistryRestyledEvent();
-//		}
-//
-//		protected IStylingEngine getStylingEngine() {
-//			return getContext().get(IStylingEngine.class);
-//		}
-//
-//		protected ThemeRegistry getThemeRegistry() {
-//			return (ThemeRegistry) getContext().get(IThemeRegistry.class);
-//		}
-//
-//		protected FontRegistry getFontRegistry() {
-//			return getColorsAndFontsTheme().getFontRegistry();
-//		}
-//
-//		protected ColorRegistry getColorRegistry() {
-//			return getColorsAndFontsTheme().getColorRegistry();
-//		}
-//
-//		protected void sendThemeRegistryRestyledEvent() {
-//			IEventBroker eventBroker = getContext().get(IEventBroker.class);
-//			eventBroker.send(Events.THEME_REGISTRY_RESTYLED, null);
-//		}
-//
-//		protected ITheme getColorsAndFontsTheme() {
-//			return WorkbenchThemeManager.getInstance().getCurrentTheme();
-//		}
-//
-//		private IEclipseContext getContext() {
-//			return WorkbenchThemeManager.getInstance().context;
-//		}
-//
-//		protected org.eclipse.e4.ui.css.swt.theme.ITheme getTheme(org.osgi.service.event.Event event) {
-//			org.eclipse.e4.ui.css.swt.theme.ITheme theme = (org.eclipse.e4.ui.css.swt.theme.ITheme) event
-//					.getProperty(IThemeEngine.Events.THEME);
-//			if (theme == null) {
-//				IThemeEngine themeEngine = getContext().get(IThemeEngine.class);
-//				theme = themeEngine != null ? themeEngine.getActiveTheme() : null;
-//			}
-//			return theme;
-//		}
-//
-//		// At this moment we don't remove the definitions added by CSS since we
-//		// don't want to modify the 3.x theme registries api
-//		protected void resetThemeRegistries(ThemeRegistry themeRegistry, FontRegistry fontRegistry,
-//				ColorRegistry colorRegistry) {
-//			for (FontDefinition def : themeRegistry.getFonts()) {
-//				if (def.isOverridden()) {
-//					def.resetToDefaultValue();
-//					fontRegistry.put(def.getId(), def.getValue() != null ? def.getValue()
-//							: PreferenceConverter.getFontDataArrayDefaultDefault());
-//				}
-//			}
-//			for (ColorDefinition def : themeRegistry.getColors()) {
-//				if (def.isOverridden()) {
-//					def.resetToDefaultValue();
-//					colorRegistry.put(def.getId(), def.getValue() != null ? def.getValue()
-//							: EMPTY_COLOR_VALUE);
-//				}
-//			}
-//		}
-//
-//		protected void overrideAlreadyExistingDefinitions(org.osgi.service.event.Event event,
-//				IStylingEngine engine, ThemeRegistry themeRegistry, FontRegistry fontRegistry,
-//				ColorRegistry colorRegistry) {
-//			IPreferenceStore store = PrefUtil.getInternalPreferenceStore();
-//			org.eclipse.e4.ui.css.swt.theme.ITheme cssTheme = getTheme(event);
-//			ITheme theme = getColorsAndFontsTheme();
-//
-//			for (FontDefinition fontDefinition : themeRegistry.getFonts()) {
-//				engine.style(fontDefinition);
-//				if (fontDefinition.isOverridden()) {
-//					populateDefinition(cssTheme, theme, fontRegistry, fontDefinition, store);
-//					if (!fontDefinition.isModifiedByUser()) {
-//						fontRegistry.put(fontDefinition.getId(), fontDefinition.getValue());
-//					}
-//				}
-//			}
-//			for (ColorDefinition colorDefinition : themeRegistry.getColors()) {
-//				engine.style(colorDefinition);
-//				if (colorDefinition.isOverridden()) {
-//					populateDefinition(cssTheme, theme, colorRegistry, colorDefinition, store);
-//					if (!colorDefinition.isModifiedByUser()) {
-//						colorRegistry.put(colorDefinition.getId(), colorDefinition.getValue());
-//					}
-//				}
-//			}
-//		}
-//
-//		private void addNewDefinitions(org.osgi.service.event.Event event, IStylingEngine engine,
-//				ThemeRegistry themeRegistry, FontRegistry fontRegistry, ColorRegistry colorRegistry) {
-//			IPreferenceStore store = PrefUtil.getInternalPreferenceStore();
-//			org.eclipse.e4.ui.css.swt.theme.ITheme cssTheme = getTheme(event);
-//			ITheme theme = getColorsAndFontsTheme();
-//			ThemesExtension themesExtension = createThemesExtension();
-//			engine.style(themesExtension);
-//
-//			for (IThemeElementDefinitionOverridable<?> definition : themesExtension
-//					.getDefinitions()) {
-//				engine.style(definition);
-//				if (definition.isOverridden() && definition instanceof FontDefinition) {
-//					addFontDefinition((FontDefinition) definition, themeRegistry, fontRegistry);
-//					populateDefinition(cssTheme, theme, fontRegistry, (FontDefinition) definition,
-//							store);
-//				} else if (definition.isOverridden() && definition instanceof ColorDefinition) {
-//					addColorDefinition((ColorDefinition) definition, themeRegistry, colorRegistry);
-//					populateDefinition(cssTheme, theme, colorRegistry,
-//							(ColorDefinition) definition, store);
-//				}
-//			}
-//		}
-//
-//		private void addFontDefinition(FontDefinition definition, ThemeRegistry themeRegistry,
-//				FontRegistry fontRegistry) {
-//			if (themeRegistry.findFont(definition.getId()) == null) {
-//				themeRegistry.add(definition);
-//				fontRegistry.put(definition.getId(), definition.getValue());
-//			}
-//		}
-//
-//		private void addColorDefinition(ColorDefinition definition, ThemeRegistry themeRegistry,
-//				ColorRegistry colorRegistry) {
-//			if (themeRegistry.findColor(definition.getId()) == null) {
-//				themeRegistry.add(definition);
-//				colorRegistry.put(definition.getId(), definition.getValue());
-//			}
-//		}
-//
-//		protected ThemesExtension createThemesExtension() {
-//			return new ThemesExtension();
-//		}
-//
-//		protected void populateDefinition(org.eclipse.e4.ui.css.swt.theme.ITheme cssTheme,
-//				ITheme theme, ColorRegistry registry, ColorDefinition definition,
-//				IPreferenceStore store) {
-//			ThemeElementHelper.populateDefinition(cssTheme, theme, registry, definition, store);
-//		}
-//
-//		protected void populateDefinition(org.eclipse.e4.ui.css.swt.theme.ITheme cssTheme,
-//				ITheme theme, FontRegistry registry, FontDefinition definition,
-//				IPreferenceStore store) {
-//			ThemeElementHelper.populateDefinition(cssTheme, theme, registry, definition, store);
-//		}
-//	}
-//
-//	public static class ThemeRegistryModifiedHandler implements EventHandler {
-//		@Override
-//		public void handleEvent(org.osgi.service.event.Event event) {
-//			populateThemeRegistries(getThemeRegistry(), getFontRegistry(), getColorRegistry(),
-//					getTheme(), getColorsAndFontsTheme());
-//			sendThemeDefinitionChangedEvent();
-//		}
-//
-//		protected org.eclipse.e4.ui.css.swt.theme.ITheme getTheme() {
-//			IThemeEngine themeEngine = getContext().get(IThemeEngine.class);
-//			return themeEngine != null ? themeEngine.getActiveTheme() : null;
-//		}
-//
-//		protected ThemeRegistry getThemeRegistry() {
-//			return (ThemeRegistry) getContext().get(IThemeRegistry.class);
-//		}
-//
-//		protected FontRegistry getFontRegistry() {
-//			return getColorsAndFontsTheme().getFontRegistry();
-//		}
-//
-//		protected ColorRegistry getColorRegistry() {
-//			return getColorsAndFontsTheme().getColorRegistry();
-//		}
-//
-//		protected ITheme getColorsAndFontsTheme() {
-//			return WorkbenchThemeManager.getInstance().getCurrentTheme();
-//		}
-//
-//		private IEclipseContext getContext() {
-//			return WorkbenchThemeManager.getInstance().context;
-//		}
-//
-//		protected void sendThemeDefinitionChangedEvent() {
-//			MApplication application = getContext().get(MApplication.class);
-//			getInstance().eventBroker.send(UIEvents.UILifeCycle.THEME_DEFINITION_CHANGED,
-//					application);
-//		}
-//
-//		protected void populateThemeRegistries(ThemeRegistry themeRegistry,
-//				FontRegistry fontRegistry, ColorRegistry colorRegistry,
-//				org.eclipse.e4.ui.css.swt.theme.ITheme cssTheme, ITheme theme) {
-//			IPreferenceStore store = PrefUtil.getInternalPreferenceStore();
-//			for (FontDefinition definition : themeRegistry.getFonts()) {
-//				if (definition.isOverridden() || definition.isAddedByCss()) {
-//					populateDefinition(cssTheme, theme, fontRegistry, definition, store);
-//				}
-//			}
-//			for (ColorDefinition definition : themeRegistry.getColors()) {
-//				if (definition.isOverridden() || definition.isAddedByCss()) {
-//					populateDefinition(cssTheme, theme, colorRegistry, definition, store);
-//				}
-//			}
-//		}
-//
-//		protected void populateDefinition(org.eclipse.e4.ui.css.swt.theme.ITheme cssTheme,
-//				ITheme theme, ColorRegistry registry, ColorDefinition definition,
-//				IPreferenceStore store) {
-//			ThemeElementHelper.populateDefinition(cssTheme, theme, registry, definition, store);
-//		}
-//
-//		protected void populateDefinition(org.eclipse.e4.ui.css.swt.theme.ITheme cssTheme,
-//				ITheme theme, FontRegistry registry, FontDefinition definition,
-//				IPreferenceStore store) {
-//			ThemeElementHelper.populateDefinition(cssTheme, theme, registry, definition, store);
-//		}
-//	}
-
 }

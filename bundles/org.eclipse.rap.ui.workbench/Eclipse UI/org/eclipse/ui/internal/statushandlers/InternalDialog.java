@@ -1,25 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2009, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Patrik Suzzi <psuzzi@gmail.com> - Bug 473973
- *     Friederike Schertel <friederike@schertel.org> - Bug 478336
  ******************************************************************************/
 package org.eclipse.ui.internal.statushandlers;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
@@ -31,8 +24,11 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -50,8 +46,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchMessages;
@@ -155,13 +153,15 @@ public class InternalDialog extends TrayDialog {
 	public InternalDialog(final Map dialogState, boolean modal) {
 		super(ProgressManagerUtil.getDefaultParent());
 		this.dialogState = dialogState;
-		supportTray = new SupportTray(dialogState, event -> {
+		supportTray = new SupportTray(dialogState, new Listener() {
+			public void handleEvent(Event event) {
 			dialogState.put(IStatusDialogConstants.TRAY_OPENED,
 					Boolean.FALSE);
 			// close the tray
 			closeTray();
 			// set focus back to shell
 			getShell().setFocus();
+			}
 		});
 		detailsManager = new DetailsAreaManager(dialogState);
 		setShellStyle(SWT.RESIZE | SWT.MAX | SWT.MIN | getShellStyle());
@@ -172,7 +172,6 @@ public class InternalDialog extends TrayDialog {
 		}
 	}
 
-	@Override
 	protected void buttonPressed(int id) {
 		if (id == GOTO_ACTION_ID) {
 			IAction gotoAction = getGotoAction();
@@ -185,14 +184,16 @@ public class InternalDialog extends TrayDialog {
 		}
 		if (id == IDialogConstants.DETAILS_ID) {
 			// was the details button pressed?
-			dialogState.put(IStatusDialogConstants.DETAILS_OPENED, Boolean.valueOf(
+			dialogState.put(IStatusDialogConstants.DETAILS_OPENED, new Boolean(
 					toggleDetailsArea()));
 		} else {
 			super.buttonPressed(id);
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc) Method declared in Window.
+	 */
 	final protected void configureShell(Shell shell) {
 		super.configureShell(shell);
 		shell.setText(getString(IStatusDialogConstants.TITLE));
@@ -201,7 +202,6 @@ public class InternalDialog extends TrayDialog {
 	/**
 	 * Status dialog button should be aligned SWT.END.
 	 */
-	@Override
 	protected void setButtonLayoutData(Button button) {
 		GridData data = new GridData(SWT.END, SWT.CENTER, false, false);
 		int widthHint = convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
@@ -210,7 +210,11 @@ public class InternalDialog extends TrayDialog {
 		button.setLayoutData(data);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+	 */
 	protected Control createDialogArea(Composite parent) {
 		createTitleArea(parent);
 		createListArea(parent);
@@ -219,7 +223,11 @@ public class InternalDialog extends TrayDialog {
 		return parent;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#isResizable()
+	 */
 	protected boolean isResizable() {
 		return true;
 	}
@@ -309,7 +317,11 @@ public class InternalDialog extends TrayDialog {
 		this.supportTray = supportTray;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.window.Window#open()
+	 */
 	public int open() {
 		boolean modalitySwitch = getBooleanValue(IStatusDialogConstants.MODALITY_SWITCH);
 		int result = super.open();
@@ -329,7 +341,9 @@ public class InternalDialog extends TrayDialog {
 		return result;
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.TrayDialog#closeTray()
+	 */
 	public void closeTray() throws IllegalStateException {
 		if (getTray() != null) {
 			super.closeTray();
@@ -367,9 +381,6 @@ public class InternalDialog extends TrayDialog {
 	}
 
 	void refreshDialogSize() {
-		if (dialogArea == null || dialogArea.isDisposed()) {
-			return;
-		}
 		Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
 		getShell().setSize(newSize);
 	}
@@ -453,7 +464,6 @@ public class InternalDialog extends TrayDialog {
 	/**
 	 * This method should initialize the dialog bounds.
 	 */
-	@Override
 	protected void initializeBounds() {
 		super.initializeBounds();
 		refreshDialogSize();
@@ -463,8 +473,15 @@ public class InternalDialog extends TrayDialog {
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.dialogs.Dialog#getInitialLocation(org.eclipse.swt.graphics
+	 * .Point)
+	 */
 	public Point getInitialLocation(Point initialSize) {
+		// TODO Auto-generated method stub
 		return super.getInitialLocation(initialSize);
 	}
 
@@ -509,7 +526,8 @@ public class InternalDialog extends TrayDialog {
 		control.setLayoutData(data);
 		initContentProvider();
 		initLabelProvider();
-		statusListViewer.addPostSelectionChangedListener(event -> {
+		statusListViewer.addPostSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
 			handleSelectionChange();
 			if ((getTray() == null) && getBooleanValue(IStatusDialogConstants.TRAY_OPENED)
 					&& providesSupport()) {
@@ -521,6 +539,7 @@ public class InternalDialog extends TrayDialog {
 				return;
 			}
 			supportTray.selectionChanged(event);
+			}
 		});
 		Dialog.applyDialogFont(parent);
 	}
@@ -585,7 +604,6 @@ public class InternalDialog extends TrayDialog {
 	 * This method creates button bar that is available on the bottom of the
 	 * dialog.
 	 */
-	@Override
 	protected Control createButtonBar(Composite parent) {
 		Composite composite = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout();
@@ -607,7 +625,6 @@ public class InternalDialog extends TrayDialog {
 	/**
 	 * This method creates buttons that are placed on button bar.
 	 */
-	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
 		IAction gotoAction = getGotoAction();
 		String text = null;
@@ -660,16 +677,13 @@ public class InternalDialog extends TrayDialog {
 				.getColumnText(getCurrentStatusAdapter(), 0));
 
 		singleStatusLabel.addMouseListener(new MouseListener() {
-			@Override
 			public void mouseDoubleClick(MouseEvent e) {
 			}
 
-			@Override
 			public void mouseDown(MouseEvent e) {
 				showDetailsArea();
 			}
 
-			@Override
 			public void mouseUp(MouseEvent e) {
 			}
 		});
@@ -679,7 +693,6 @@ public class InternalDialog extends TrayDialog {
 	/**
 	 * This method closes the dialog.
 	 */
-	@Override
 	public boolean close() {
 		boolean modalitySwitch = getBooleanValue(IStatusDialogConstants.MODALITY_SWITCH);
 		if (detailsManager.isOpen()) {
@@ -790,7 +803,6 @@ public class InternalDialog extends TrayDialog {
 	/**
 	 * Opens the dialog tray (support area at the right side of the dialog)
 	 */
-	@Override
 	public void openTray(DialogTray tray) throws IllegalStateException,
 			UnsupportedOperationException {
 		if (launchTrayLink != null && !launchTrayLink.isDisposed()) {
@@ -839,18 +851,35 @@ public class InternalDialog extends TrayDialog {
 	 */
 	private void initContentProvider() {
 		IContentProvider provider = new IStructuredContentProvider() {
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
+			 */
 			public void dispose() {
 				// Nothing of interest here
 			}
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * org.eclipse.jface.viewers.IStructuredContentProvider#getElements
+			 * (java.lang.Object)
+			 */
 			public Object[] getElements(Object inputElement) {
 				return ((Collection) dialogState
 						.get(IStatusDialogConstants.STATUS_ADAPTERS)).toArray();
 			}
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * org.eclipse.jface.viewers.IContentProvider#inputChanged(org
+			 * .eclipse.jface.viewers.Viewer, java.lang.Object,
+			 * java.lang.Object)
+			 */
 			public void inputChanged(Viewer viewer, Object oldInput,
 					Object newInput) {
 				if (newInput != null) {
@@ -884,7 +913,6 @@ public class InternalDialog extends TrayDialog {
 
 			// the composite should be as small as possible when there is no
 			// additional controls on it
-			@Override
 			public Point computeSize(int wHint, int hHint, boolean changed) {
 				Point newSize = super.computeSize(wHint, hHint, changed);
 				if (getChildren().length == 0) {
@@ -924,12 +952,8 @@ public class InternalDialog extends TrayDialog {
 				.setText(WorkbenchMessages.get().WorkbenchStatusDialog_SupportHyperlink);
 		link
 				.setToolTipText(WorkbenchMessages.get().WorkbenchStatusDialog_SupportTooltip);
-		link.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+		link.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
                 openTray();
             }
         });
@@ -939,16 +963,14 @@ public class InternalDialog extends TrayDialog {
 
 	private Link createShowErrorLogLink() {
 		Link link = new Link(linkComposite, SWT.NONE);
-		link.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+		link.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
     			try {
-    				Workbench.getInstance().getActiveWorkbenchWindow().getActivePage().showView(LOG_VIEW_ID);
+					Workbench.getInstance().getActiveWorkbenchWindow()
+							.getActivePage().showView(LOG_VIEW_ID);
     			} catch (CoreException ce) {
-    				StatusManager.getManager().handle(ce, WorkbenchPlugin.PI_WORKBENCH);
+					StatusManager.getManager().handle(ce,
+							WorkbenchPlugin.PI_WORKBENCH);
     			}
             }
 		});
@@ -975,7 +997,7 @@ public class InternalDialog extends TrayDialog {
 	private IAction getGotoAction() {
 		Object property = null;
 
-		Job job = Adapters.adapt(getCurrentStatusAdapter(), Job.class);
+		Job job = (Job) (getCurrentStatusAdapter().getAdapter(Job.class));
 		if (job != null) {
 			property = job.getProperty(IProgressConstants.ACTION_PROPERTY);
 		}
@@ -993,9 +1015,13 @@ public class InternalDialog extends TrayDialog {
 	 * @return StatusAdapter or <code>null</code>.
 	 */
 	private StatusAdapter getSingleSelection() {
-		IStructuredSelection selection = statusListViewer.getStructuredSelection();
+		ISelection rawSelection = statusListViewer.getSelection();
+		if (rawSelection != null
+				&& rawSelection instanceof IStructuredSelection) {
+			IStructuredSelection selection = (IStructuredSelection) rawSelection;
 		if (selection.size() == 1) {
 			return (StatusAdapter) selection.getFirstElement();
+		}
 		}
 		return null;
 	}

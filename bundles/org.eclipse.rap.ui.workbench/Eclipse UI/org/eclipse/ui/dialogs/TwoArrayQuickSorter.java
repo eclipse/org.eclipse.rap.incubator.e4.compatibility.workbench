@@ -14,40 +14,39 @@
 package org.eclipse.ui.dialogs;
 
 import java.util.Comparator;
-
 import org.eclipse.core.runtime.Assert;
 
 /**
- * Quick sort to sort key-value pairs. The keys and arrays are specified
- * in separate arrays.
+ * Quick sort to sort key-value pairs. The keys and arrays are specified in
+ * separate arrays.
  *
  * @since 2.0
  */
 /* package */class TwoArrayQuickSorter {
 
-    private Comparator fComparator;
+	private final Comparator fComparator;
 
     /**
      * Default comparator.
      */
-    public static final class StringComparator implements Comparator {
-        private boolean fIgnoreCase;
+	public static final class StringComparator implements Comparator<String> {
+		private final boolean fIgnoreCase;
 
         StringComparator(boolean ignoreCase) {
             fIgnoreCase = ignoreCase;
         }
 
         @Override
-		public int compare(Object left, Object right) {
-            return fIgnoreCase ? ((String) left)
-                    .compareToIgnoreCase((String) right) : ((String) left)
-                    .compareTo((String) right);
+		public int compare(String left, String right) {
+			return fIgnoreCase ? left.compareToIgnoreCase(right)
+					: left.compareTo(right);
         }
     }
 
     /**
-     * Creates a sorter with default string comparator.
-     * The keys are assumed to be strings.
+	 * Creates a sorter with default string comparator. The keys are assumed to be
+	 * strings.
+	 *
      * @param ignoreCase specifies whether sorting is case sensitive or not.
      */
     public TwoArrayQuickSorter(boolean ignoreCase) {
@@ -56,7 +55,9 @@ import org.eclipse.core.runtime.Assert;
 
     /**
      * Creates a sorter with a comparator.
-     * @param comparator the comparator to order the elements. The comparator must not be <code>null</code>.
+	 *
+	 * @param comparator the comparator to order the elements. The comparator must
+	 *                   not be <code>null</code>.
      */
     public TwoArrayQuickSorter(Comparator comparator) {
         fComparator = comparator;
@@ -64,6 +65,7 @@ import org.eclipse.core.runtime.Assert;
 
     /**
      * Sorts keys and values in parallel.
+	 *
      * @param keys   the keys to use for sorting.
      * @param values the values associated with the keys.
      */
@@ -80,8 +82,7 @@ import org.eclipse.core.runtime.Assert;
         internalSort(keys, values, 0, keys.length - 1);
     }
 
-    private void internalSort(Object[] keys, Object[] values, int left,
-            int right) {
+	private void internalSort(Object[] keys, Object[] values, int left, int right) {
         int original_left = left;
         int original_right = right;
 

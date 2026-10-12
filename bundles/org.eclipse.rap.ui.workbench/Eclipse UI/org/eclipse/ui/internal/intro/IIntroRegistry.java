@@ -34,25 +34,14 @@ public interface IIntroRegistry {
      */
     IIntroDescriptor[] getIntros();
 
-    // RAP [bm]: no product support - using branding instead
-//  /**
-//   * Return the introduction extension that is bound to the given product.
-//   * 
-//   * @param productId the product identifier
-//   * @return the introduction extension that is bound to the given product, 
-//   * or <code>null</code> if there is no such binding
-//   */
-//  IIntroDescriptor getIntroForProduct(String productId);
     /**
-     * Return the introduction extension that is bound to the given branding.
+	 * Return the introduction extension that is bound to the given product.
      * 
-     * @param brandingId the product identifier
-     * @return the introduction extension that is bound to the given branding, 
-     * or <code>null</code> if there is no such binding
+	 * @param productId the product identifier
+	 * @return the introduction extension that is bound to the given product, or
+	 *         <code>null</code> if there is no such binding
      */
-    IIntroDescriptor getIntroForBranding(String brandingId);
-
-    // ENDRAP
+	IIntroDescriptor getIntroForProduct(String productId);
 
     /**
      * Find an intro descriptor with the given identifier.

@@ -20,15 +20,16 @@ import org.w3c.dom.DOMException;
  * form that can be persisted in the file system.
  * <p>
  * Mementos were designed with the following requirements in mind:
+ * </p>
  * <ol>
- * <li>Certain objects need to be saved and restored across platform sessions.</li>
+ * <li>Certain objects need to be saved and restored across platform
+ * sessions.</li>
  * <li>When an object is restored, an appropriate class for an object might not
  * be available. It must be possible to skip an object in this case.</li>
  * <li>When an object is restored, the appropriate class for the object may be
  * different from the one when the object was originally saved. If so, the new
  * class should still be able to read the old form of the data.</li>
  * </ol>
- * </p>
  * <p>
  * Mementos meet these requirements by providing support for storing a mapping
  * of arbitrary string keys to primitive values, and by allowing mementos to
@@ -55,8 +56,8 @@ import org.w3c.dom.DOMException;
  */
 public interface IMemento {
     /**
-     * Special reserved key used to store the memento id
-     * (value <code>"IMemento.internal.id"</code>).
+	 * Special reserved key used to store the memento id (value
+	 * <code>"IMemento.internal.id"</code>).
      *
      * @see #getID()
      */
@@ -65,8 +66,8 @@ public interface IMemento {
     /**
      * Creates a new child of this memento with the given type.
      * <p>
-     * The <code>getChild</code> and <code>getChildren</code> methods
-     * are used to retrieve children of a given type.
+	 * The <code>getChild</code> and <code>getChildren</code> methods are used to
+	 * retrieve children of a given type.
      * </p>
      *
      * @param type the type
@@ -77,12 +78,12 @@ public interface IMemento {
     IMemento createChild(String type);
 
     /**
-     * Creates a new child of this memento with the given type and id.
-     * The id is stored in the child memento (using a special reserved
-     * key, <code>TAG_ID</code>) and can be retrieved using <code>getId</code>.
+	 * Creates a new child of this memento with the given type and id. The id is
+	 * stored in the child memento (using a special reserved key,
+	 * <code>TAG_ID</code>) and can be retrieved using <code>getId</code>.
      * <p>
-     * The <code>getChild</code> and <code>getChildren</code> methods
-     * are used to retrieve children of a given type.
+	 * The <code>getChild</code> and <code>getChildren</code> methods are used to
+	 * retrieve children of a given type.
      * </p>
      *
      * @param type the type
@@ -95,10 +96,8 @@ public interface IMemento {
     /**
 	 * Returns the first child with the given type id.
 	 *
-	 * @param type
-	 *            the type id
-	 * @return the first child with the given type. May return <code>null</code>
-	 *         .
+	 * @param type the type id
+	 * @return the first child with the given type. May return <code>null</code> .
 	 */
     IMemento getChild(String type);
 
@@ -106,8 +105,8 @@ public interface IMemento {
 	 * Returns all children of this node.
 	 *
 	 * @return an array of children of this node. This will not be
-	 *         <code>null</code>. If there are no children, an array of length
-	 *         zero will be returned.
+	 *         <code>null</code>. If there are no children, an array of length zero
+	 *         will be returned.
 	 * @since 3.8
 	 */
 	IMemento[] getChildren();
@@ -115,11 +114,10 @@ public interface IMemento {
     /**
 	 * Returns all children with the given type id.
 	 *
-	 * @param type
-	 *            the type id
+	 * @param type the type id
 	 * @return an array of children with the given type. This will not be
-	 *         <code>null</code>. If there are no keys, an array of length zero
-	 *         will be returned.
+	 *         <code>null</code>. If there are no keys, an array of length zero will
+	 *         be returned.
 	 */
     IMemento[] getChildren(String type);
 
@@ -180,16 +178,17 @@ public interface IMemento {
      * Returns the data of the Text node of the memento. Each memento is allowed
      * only one Text node.
      *
-     * @return the data of the Text node of the memento, or <code>null</code>
-     * if the memento has no Text node.
+	 * @return the data of the Text node of the memento, or <code>null</code> if the
+	 *         memento has no Text node.
      * @since 2.0
      */
     String getTextData();
 
     /**
-     * Returns an array of all the attribute keys of the memento. This will not
-     * be <code>null</code>. If there are no keys, an array of length zero will
-     * be returned.
+	 * Returns an array of all the attribute keys of the memento. This will not be
+	 * <code>null</code>. If there are no keys, an array of length zero will be
+	 * returned.
+	 *
      * @return an array with all the attribute keys of the memento
      * @since 3.4
      */
@@ -212,8 +211,7 @@ public interface IMemento {
     void putInteger(String key, int value);
 
     /**
-     * Copy the attributes and children from  <code>memento</code>
-     * to the receiver.
+	 * Copy the attributes and children from <code>memento</code> to the receiver.
      *
      * @param memento the IMemento to be copied.
      */
@@ -237,9 +235,9 @@ public interface IMemento {
 	void putBoolean(String key, boolean value);
 
     /**
-     * Sets the memento's Text node to contain the given data. Creates the Text node if
-     * none exists. If a Text node does exist, it's current contents are replaced.
-     * Each memento is allowed only one text node.
+	 * Sets the memento's Text node to contain the given data. Creates the Text node
+	 * if none exists. If a Text node does exist, it's current contents are
+	 * replaced. Each memento is allowed only one text node.
      *
      * @param data the data to be placed on the Text node
      * @since 2.0

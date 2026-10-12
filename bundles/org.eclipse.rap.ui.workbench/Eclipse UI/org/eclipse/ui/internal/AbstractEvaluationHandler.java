@@ -35,30 +35,24 @@ public abstract class AbstractEvaluationHandler extends AbstractEnabledHandler {
 
 	protected IEvaluationService getEvaluationService() {
 		if (evaluationService == null) {
-			evaluationService = PlatformUI.getWorkbench()
-					.getService(IEvaluationService.class);
+			evaluationService = PlatformUI.getWorkbench().getService(IEvaluationService.class);
 		}
 		return evaluationService;
 	}
 
 	protected void registerEnablement() {
-		enablementRef = getEvaluationService().addEvaluationListener(
-				getEnabledWhenExpression(), getEnablementListener(),
-				PROP_ENABLED);
+		enablementRef = getEvaluationService().addEvaluationListener(getEnabledWhenExpression(),
+				getEnablementListener(), PROP_ENABLED);
 	}
 
 	protected abstract Expression getEnabledWhenExpression();
 
-	/**
-	 * @return
-	 */
 	private IPropertyChangeListener getEnablementListener() {
 		if (enablementListener == null) {
 			enablementListener = event -> {
 				if (event.getProperty() == PROP_ENABLED) {
 					if (event.getNewValue() instanceof Boolean) {
-						setEnabled(((Boolean) event.getNewValue())
-								.booleanValue());
+						setEnabled(((Boolean) event.getNewValue()).booleanValue());
 					} else {
 						setEnabled(false);
 					}

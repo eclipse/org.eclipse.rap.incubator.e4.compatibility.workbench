@@ -26,33 +26,28 @@ import java.util.Set;
 public interface IThemeRegistry {
 
     /**
-     * A comparator that will sort IHierarchalThemeElementDefinition elements
-     * by defaultsTo depth.
+	 * A comparator that will sort IHierarchalThemeElementDefinition elements by
+	 * defaultsTo depth.
      *
      * @since 3.0
      */
-    public static class HierarchyComparator implements Comparator {
+	public static class HierarchyComparator implements Comparator<IHierarchalThemeElementDefinition> {
 
-        private IHierarchalThemeElementDefinition[] definitions;
+		private final IHierarchalThemeElementDefinition[] definitions;
 
         /**
          * Create a new comparator.
          *
          * @param definitions the elements to be sorted by depth, in ID order.
          */
-        public HierarchyComparator(
-                IHierarchalThemeElementDefinition[] definitions) {
+		public HierarchyComparator(IHierarchalThemeElementDefinition[] definitions) {
             this.definitions = definitions;
         }
 
         @Override
-		public int compare(Object arg0, Object arg1) {
-            String def0 = arg0 == null ? null
-                    : ((IHierarchalThemeElementDefinition) arg0)
-                            .getDefaultsTo();
-            String def1 = arg1 == null ? null
-                    : ((IHierarchalThemeElementDefinition) arg1)
-                            .getDefaultsTo();
+		public int compare(IHierarchalThemeElementDefinition arg0, IHierarchalThemeElementDefinition arg1) {
+			String def0 = arg0 == null ? null : arg0.getDefaultsTo();
+			String def1 = arg1 == null ? null : arg1.getDefaultsTo();
 
             if (def0 == null && def1 == null) {
 				return 0;
@@ -71,8 +66,8 @@ public interface IThemeRegistry {
 
         /**
          * @param id the identifier to search for.
-         * @return the <code>IHierarchalThemeElementDefinition</code> that
-         * matches the id.
+		 * @return the <code>IHierarchalThemeElementDefinition</code> that matches the
+		 *         id.
          */
         private IHierarchalThemeElementDefinition getDefaultsTo(String id) {
             int idx = Arrays.binarySearch(definitions, id, ID_COMPARATOR);
@@ -84,14 +79,13 @@ public interface IThemeRegistry {
     }
 
     /**
-     * A comparator that will sort <code>IThemeElementDefinition</code> elements
-     * by id depth.  You may use this on both <code>String</code> and
-     * <code>IThemeElementDefinition</code> objects in order to perform
-     * searching.
+	 * A comparator that will sort <code>IThemeElementDefinition</code> elements by
+	 * id depth. You may use this on both <code>String</code> and
+	 * <code>IThemeElementDefinition</code> objects in order to perform searching.
      *
      * @since 3.0
      */
-    Comparator ID_COMPARATOR = new Comparator() {
+	Comparator<Object> ID_COMPARATOR = new Comparator<>() {
 
 		@Override
 		public int compare(Object arg0, Object arg1) {
@@ -101,7 +95,6 @@ public interface IThemeRegistry {
         }
 
         /**
-         * @param object
          * @return <code>String</code> representation of the object.
          */
         private String getCompareString(Object object) {
@@ -118,8 +111,8 @@ public interface IThemeRegistry {
      * Returns the category matching the provided id.
      *
      * @param id the id to search for
-     * @return the element matching the provided id, or <code>null</code> if
-     * not found
+	 * @return the element matching the provided id, or <code>null</code> if not
+	 *         found
      */
     ThemeElementCategory findCategory(String id);
 
@@ -127,8 +120,8 @@ public interface IThemeRegistry {
      * Returns the color matching the provided id.
      *
      * @param id the id to search for
-     * @return the element matching the provided id, or <code>null</code> if
-     * not found
+	 * @return the element matching the provided id, or <code>null</code> if not
+	 *         found
      */
     ColorDefinition findColor(String id);
 
@@ -136,8 +129,8 @@ public interface IThemeRegistry {
      * Returns the font matching the provided id.
      *
      * @param id the id to search for
-     * @return the element matching the provided id, or <code>null</code> if
-     * not found
+	 * @return the element matching the provided id, or <code>null</code> if not
+	 *         found
      */
     FontDefinition findFont(String id);
 
@@ -145,8 +138,8 @@ public interface IThemeRegistry {
      *  Returns the theme matching the provided id.
      *
      * @param id the id to search for
-     * @return the element matching the provided id, or <code>null</code> if
-     * not found
+	 * @return the element matching the provided id, or <code>null</code> if not
+	 *         found
      */
     IThemeDescriptor findTheme(String id);
 
@@ -165,8 +158,8 @@ public interface IThemeRegistry {
     ColorDefinition[] getColors();
 
     /**
-     * Returns a list of colors defined for the given theme.  This is the
-     * set of base colours overlayed with any theme specific overrides.
+	 * Returns a list of colors defined for the given theme. This is the set of base
+	 * colours overlayed with any theme specific overrides.
      *
      * @param themeId the theme id
      * @return the colors in this theme
@@ -174,8 +167,8 @@ public interface IThemeRegistry {
     ColorDefinition[] getColorsFor(String themeId);
 
     /**
-     * Returns a list of fonts defined for the given theme.  This is the
-     * set of base fonts overlayed with any theme specific overrides.
+	 * Returns a list of fonts defined for the given theme. This is the set of base
+	 * fonts overlayed with any theme specific overrides.
      *
      * @param themeId the theme id
      * @return the fonts in this theme
@@ -201,13 +194,14 @@ public interface IThemeRegistry {
      *
      * @return the data map
      */
-    Map getData();
+	Map<Object, Object> getData();
 
     /**
      * Return the set of category presentation bindings.
      *
      * @param category the category to test
-     * @return the set of bindings or <code>null</code> if this category has no bindings
+	 * @return the set of bindings or <code>null</code> if this category has no
+	 *         bindings
      */
-    Set getPresentationsBindingsFor(ThemeElementCategory category);
+	Set<?> getPresentationsBindingsFor(ThemeElementCategory category);
 }

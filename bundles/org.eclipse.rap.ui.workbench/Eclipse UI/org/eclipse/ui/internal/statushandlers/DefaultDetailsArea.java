@@ -1,26 +1,27 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2008, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
  ******************************************************************************/
 
 package org.eclipse.ui.internal.statushandlers;
 
+import java.awt.datatransfer.Clipboard;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
+import javax.swing.KeyStroke;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -30,6 +31,8 @@ import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -39,6 +42,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.internal.progress.ProgressMessages;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.statushandlers.AbstractStatusAreaProvider;
@@ -49,6 +53,8 @@ import com.ibm.icu.text.DateFormat;
 
 /**
  * The default details area displaying a tree of statuses.
+ * 
+ * 
  */
 public class DefaultDetailsArea extends AbstractStatusAreaProvider {
 
@@ -64,6 +70,9 @@ public class DefaultDetailsArea extends AbstractStatusAreaProvider {
 	 */
 	private static final int NESTING_INDENT = 15;
 
+	/*
+	 * Displays statuses.
+	 */
 	// RAP [bm] StyledText
 	private Text text;
 //	private StyledText text;
@@ -85,7 +94,14 @@ public class DefaultDetailsArea extends AbstractStatusAreaProvider {
 				.intValue();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.ui.statushandlers.AbstractStatusAreaProvider#createSupportArea
+	 * (org.eclipse.swt.widgets.Composite,
+	 * org.eclipse.ui.statushandlers.StatusAdapter)
+	 */
 	public Control createSupportArea(Composite parent,
 			StatusAdapter statusAdapter) {
 		Composite area = createArea(parent);
@@ -111,7 +127,7 @@ public class DefaultDetailsArea extends AbstractStatusAreaProvider {
 		text.setLayoutData(gd);
 		// There is no support for triggering commands in the dialogs. I am
 		// trying to emulate the workbench behavior as exactly as possible.
-		IBindingService binding = PlatformUI.getWorkbench()
+		IBindingService binding = (IBindingService) PlatformUI.getWorkbench()
 				.getService(IBindingService.class);
 		// find bindings for copy action
 		// RAP [bm] KeyListener
@@ -166,7 +182,6 @@ public class DefaultDetailsArea extends AbstractStatusAreaProvider {
 //      });
 		text.addSelectionListener(new SelectionListener() {
 
-			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (text.getSelectionText().length() == 0) {
 					if (copyAction != null && !copyAction.isDisposed()) {
@@ -179,7 +194,6 @@ public class DefaultDetailsArea extends AbstractStatusAreaProvider {
 				}
 			}
 
-			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				widgetSelected(e);
 			}
@@ -251,18 +265,15 @@ public class DefaultDetailsArea extends AbstractStatusAreaProvider {
 		DragSource ds = new DragSource(text, DND.DROP_COPY);
 		ds.setTransfer(new Transfer[] { TextTransfer.getInstance() });
 		ds.addDragListener(new DragSourceListener() {
-			@Override
 			public void dragFinished(DragSourceEvent event) {
 			}
 
-			@Override
 			public void dragSetData(DragSourceEvent event) {
 				if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
 					event.data = text.getSelectionText();
 				}
 			}
 
-			@Override
 			public void dragStart(DragSourceEvent event) {
 			}
 		});
@@ -292,6 +303,20 @@ public class DefaultDetailsArea extends AbstractStatusAreaProvider {
         // RAPEND: [bm] 
 	}
 
+	// RAP [bm]: 
+//	private String prepareCopyString() {
+//		if (list == null || list.isDisposed()) {
+//			return ""; //$NON-NLS-1$
+//		}
+//		StringBuffer sb = new StringBuffer();
+//		String newLine = System.getProperty("line.separator"); //$NON-NLS-1$
+//		for (int i = 0; i < list.getItemCount(); i++) {
+//			sb.append(list.getItem(i));
+//			sb.append(newLine);
+//		}
+//		return sb.toString();
+//	}
+
 	// RAP [bm] StyledText
 //	private void populateList(StyledText text, IStatus status, int nesting,
 	private void populateList(Text text, IStatus status, int nesting,
@@ -315,8 +340,9 @@ public class DefaultDetailsArea extends AbstractStatusAreaProvider {
 			appendNewLine(text, message, nesting, lineNumber[0]++);
 		}
 
-		for (IStatus child : status.getChildren()) {
-			populateList(text, child, nesting + 1, lineNumber);
+		IStatus[] children = status.getChildren();
+		for (int i = 0; i < children.length; i++) {
+			populateList(text, children[i], nesting + 1, lineNumber);
 		}
 	}
 

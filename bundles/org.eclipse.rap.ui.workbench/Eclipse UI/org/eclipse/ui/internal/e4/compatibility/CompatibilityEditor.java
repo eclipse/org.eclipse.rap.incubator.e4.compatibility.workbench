@@ -14,12 +14,11 @@
 
 package org.eclipse.ui.internal.e4.compatibility;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -46,7 +45,7 @@ public class CompatibilityEditor extends CompatibilityPart {
 
 	public static final String MODEL_ELEMENT_ID = "org.eclipse.e4.ui.compatibility.editor"; //$NON-NLS-1$
 
-	private EditorReference reference;
+	private final EditorReference reference;
 
 	@Inject
 	private EModelService modelService;
@@ -55,24 +54,21 @@ public class CompatibilityEditor extends CompatibilityPart {
 	CompatibilityEditor(MPart part, EditorReference ref) {
 		super(part);
 		reference = ref;
-
-		if (!part.getTags().contains(EPartService.REMOVE_ON_HIDE_TAG)) {
-			part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
-		}
 	}
 
 	@Override
 	IWorkbenchPart createPart(WorkbenchPartReference reference) throws PartInitException {
 		IWorkbenchPart part = super.createPart(reference);
+		if (part instanceof MultiEditor) {
 		IEditorInput input = ((EditorReference) reference).getEditorInput();
-		if (input instanceof MultiEditorInput && part instanceof MultiEditor) {
+			if (input instanceof MultiEditorInput) {
 			createMultiEditorChildren(part, input);
+		}
 		}
 		return part;
 	}
 
-	private void createMultiEditorChildren(IWorkbenchPart part, IEditorInput input)
-			throws PartInitException {
+	private void createMultiEditorChildren(IWorkbenchPart part, IEditorInput input) throws PartInitException {
 		IWorkbenchPage page = reference.getPage();
 		MPart model = getModel();
 		MWindow window = modelService.getTopLevelWindowFor(model);
@@ -84,12 +80,12 @@ public class CompatibilityEditor extends CompatibilityPart {
 		for (int i = 0; i < editorIds.length; i++) {
 			EditorDescriptor innerDesc = (EditorDescriptor) registry.findEditor(editorIds[i]);
 			if (innerDesc == null) {
-				throw new PartInitException(NLS.bind(
-						WorkbenchMessages.get().EditorManager_unknownEditorIDMessage, editorIds[i]));
+				throw new PartInitException(
+						NLS.bind(WorkbenchMessages.get().EditorManager_unknownEditorIDMessage, editorIds[i]));
 			}
 
-			EditorReference innerReference = new EditorReference(window.getContext(), page, model,
-					inputs[i], innerDesc, null);
+			EditorReference innerReference = new EditorReference(window.getContext(), page, model, inputs[i], innerDesc,
+					null);
 			editors[i] = (IEditorPart) innerReference.createPart();
 			innerReference.initialize(editors[i]);
 		}
@@ -109,8 +105,7 @@ public class CompatibilityEditor extends CompatibilityPart {
 		if (descriptor != null) {
 			IConfigurationElement element = descriptor.getConfigurationElement();
 			if (element != null) {
-				String iconURI = MenuHelper.getIconURI(element,
-						IWorkbenchRegistryConstants.ATT_ICON);
+				String iconURI = MenuHelper.getIconURI(element, IWorkbenchRegistryConstants.ATT_ICON);
 				part.setIconURI(iconURI);
 			}
 			if (descriptor.getPluginId() != null) {

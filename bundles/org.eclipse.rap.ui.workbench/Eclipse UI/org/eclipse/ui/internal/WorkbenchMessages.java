@@ -1,29 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2018 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  * IBM - Initial API and implementation
  * Sebastian Davids - bug 128529
  * Semion Chichelnitsky (semion@il.ibm.com) - bug 278064
- * Tristan Hume - <trishume@gmail.com> -
- *      Fix for Bug 2369 [Workbench] Would like to be able to save workspace without exiting
- *      Implemented workbench auto-save to correctly restore state in case of crash.
- * Andrey Loskutov <loskutov@gmx.de> - Bug 388476, 445538, 463262
- * Alain Bernard <alain.bernard1224@gmail.com> - Bug 281490
- * Patrik Suzzi <psuzzi@itemis.com> - Bug 491785, 368977, 501811, 511198, 529885
- * Kaloyan Raev <kaloyan.r@zend.com> - Bug 322002
- * Lucas Bullen (Red Hat Inc.) - Bug 500051, 530654
  *******************************************************************************/
 package org.eclipse.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+//import org.eclipse.osgi.util.NLS;
 import org.eclipse.rap.rwt.RWT;
 import org.eclipse.swt.widgets.Display;
 
@@ -37,12 +26,6 @@ import org.eclipse.swt.widgets.Display;
 public class WorkbenchMessages {
     private static final String BUNDLE_NAME = "org.eclipse.ui.internal.messages";//$NON-NLS-1$
 
-
-    public String ThemingEnabled;
-
-    public String ThemeChangeWarningText;
-    
-    public String ThemeChangeWarningTitle;
 
     public String BundleSigningTray_Cant_Find_Service;
 
@@ -102,7 +85,6 @@ public class WorkbenchMessages {
     public String SaveAll_toolTip;
     public String Workbench_revert;
     public String Workbench_revertToolTip;
-    public String Workbench_missingPropertyMessage;
     public String Workbench_move;
 
     public String Workbench_moveToolTip;
@@ -121,9 +103,12 @@ public class WorkbenchMessages {
     public String ExportResourcesAction_toolTip;
     public String ImportResourcesAction_text;
     public String ImportResourcesAction_toolTip;
+	public String OpenBrowserHandler_NoInfoDialogMessage;
 
-	public String OpenRecentDocuments_text;
-	public String OpenRecentDocumentsClear_text;
+
+	public String OpenBrowserHandler_NoInfoDialogTitle;
+
+
     public String OpenRecent_errorTitle;
     public String OpenRecent_unableToOpen;
     public String Exit_text;
@@ -180,9 +165,6 @@ public class WorkbenchMessages {
     // --- Window Menu ---
     public String PerspectiveMenu_otherItem;
     public String SelectPerspective_shellTitle;
-    public String SelectPerspective_selectPerspectiveHelp;
-	public String SelectPerspective_noDesc;
-	public String SelectPerspective_open_button_label;
     public String Workbench_showPerspectiveError;
     public String ChangeToPerspectiveMenu_errorTitle;
     public String OpenPerspectiveDialogAction_text;
@@ -190,17 +172,17 @@ public class WorkbenchMessages {
 
     public String ShowView_title;
     public String ShowView_shellTitle;
+	public String ShowView_errorTitle;
     public String ShowView_selectViewHelp;
     public String ShowView_noDesc;
-    public String ShowView_open_button_label;
 
     public String ToggleEditor_hideEditors;
     public String ToggleEditor_showEditors;
     public String ToggleEditor_toolTip;
 
+	public String LockToolBarAction_text;
     public String LockToolBarAction_toolTip;
 
-	public String CustomizePerspectiveDialog_okButtonLabel;
     public String EditActionSetsAction_text;
     public String EditActionSetsAction_toolTip;
     public String ActionSetSelection_customize;
@@ -224,7 +206,6 @@ public class WorkbenchMessages {
 
     public String HideItems_itemInActionSet;
     public String HideItems_itemInUnavailableActionSet;
-    public String HideItems_itemInUnavailableCommand;
     public String HideItems_unavailableChildCommandGroup;
     public String HideItems_unavailableChildCommandGroups;
     public String HideItems_keyBindings;
@@ -240,7 +221,6 @@ public class WorkbenchMessages {
 
     public String HideItemsCannotMakeVisible_dialogTitle;
     public String HideItemsCannotMakeVisible_unavailableCommandGroupText;
-    public String HideItemsCannotMakeVisible_unavailableCommandItemText;
     public String HideItemsCannotMakeVisible_switchToCommandGroupTab;
     public String HideItemsCannotMakeVisible_unavailableChildrenText;
 
@@ -255,7 +235,6 @@ public class WorkbenchMessages {
     public String SavePerspective_text;
     public String SavePerspective_toolTip;
     public String SavePerspective_shellTitle;
-    public String SavePerspective_saveButtonLabel;
     public String SavePerspectiveDialog_description;
     public String SavePerspective_name;
     public String SavePerspective_existing;
@@ -268,13 +247,8 @@ public class WorkbenchMessages {
     public String ResetPerspective_text;
     public String ResetPerspective_toolTip;
     public String ResetPerspective_message;
-    public String ResetPerspective_buttonLabel;
     public String ResetPerspective_title;
     public String RevertPerspective_note;
-
-    public String RevertPerspective_title;
-    public String RevertPerspective_message;
-    public String RevertPerspective_option;
 
     public String ClosePerspectiveAction_text;
     public String ClosePerspectiveAction_toolTip;
@@ -302,11 +276,10 @@ public class WorkbenchMessages {
     public String CyclePerspectiveAction_header;
     public String ActivateEditorAction_text;
     public String ActivateEditorAction_toolTip;
+	public String MaximizePartAction_text;
     public String MaximizePartAction_toolTip;
+	public String MinimizePartAction_text;
     public String MinimizePartAction_toolTip;
-
-	// --- Filtered Table Base ---
-	public static String FilteredTableBase_Filter;
 
 
 
@@ -346,12 +319,11 @@ public class WorkbenchMessages {
     public String AboutPluginsDialog_columns;
     public String AboutPluginsDialog_errorTitle;
     public String AboutPluginsDialog_unableToOpenFile;
-    public String AboutPluginsDialog_filterTextMessage;
-    public String AboutPluginsPage_Load_Bundle_Data;
     public String AboutFeaturesDialog_shellTitle;
     public String AboutFeaturesDialog_featureName;
     public String AboutFeaturesDialog_featureId;
     public String AboutFeaturesDialog_version;
+	public String AboutFeaturesDialog_signed;
     public String AboutFeaturesDialog_provider;
     public String AboutFeaturesDialog_moreInfo;
     public String AboutFeaturesDialog_pluginsInfo;
@@ -380,15 +352,15 @@ public class WorkbenchMessages {
 
     //--- Coolbar ---
     public String WorkbenchWindow_FileToolbar;
-	public String WorkbenchWindow_EditToolbar;
     public String WorkbenchWindow_NavigateToolbar;
-    public String WorkbenchWindow_HelpToolbar;
     public String WorkbenchWindow_searchCombo_toolTip;
     public String WorkbenchWindow_searchCombo_text;
 
 
     public String WorkbenchWindow_close;
+	public String WorkbenchPage_PerspectiveFormat;
     public String WorkbenchPage_ErrorCreatingPerspective;
+	public String WorkbenchPage_UndefinedPerspective;
 
     public String SelectWorkingSetAction_text;
     public String SelectWorkingSetAction_toolTip;
@@ -415,7 +387,6 @@ public class WorkbenchMessages {
 
 
     public String ICategory_other;
-    public String ICategory_general;
 
     // ==============================================================================
     // Wizards
@@ -433,7 +404,6 @@ public class WorkbenchMessages {
     public String NewWizardsRegistryReader_otherCategory;
     public String NewWizardDropDown_text;
 
-    public String WizardHandler_menuLabel;
     public String WorkbenchWizard_errorMessage;
     public String WorkbenchWizard_errorTitle;
     public String WizardTransferPage_selectAll;
@@ -444,54 +414,62 @@ public class WorkbenchMessages {
     public String TypesFiltering_typeDelimiter;
 
     // --- Import/Export ---
-    public String ImportExportPage_chooseImportWizard;
-    public String ImportExportPage_chooseExportWizard;
+	public String ImportExportPage_chooseImportSource;
+	public String ImportExportPage_chooseExportDestination;
 
     // --- Import ---
     public String ImportWizard_title;
-    public String ImportWizard_selectWizard;
+	public String ImportWizard_selectSource;
 
     // --- Export ---
     public String ExportWizard_title;
-    public String ExportWizard_selectWizard;
+	public String ExportWizard_selectDestination;
     // --- New Project ---
     public String NewProject_title;
 
     // ==============================================================================
     // Preference Pages
     // ==============================================================================
+	public String PreferenceNode_errorTitle;
     public String PreferenceNode_errorMessage;
     public String PreferenceNode_NotFound;
     public String Preference_note;
-	public String Preference_import;
-	public String Preference_export;
-
-	public String PreferenceExportWarning_title;
-	public String PreferenceExportWarning_message;
-	public String PreferenceExportWarning_continue;
-	public String PreferenceExportWarning_applyAndContinue;
 
     // --- Workbench ---
     public String WorkbenchPreference_showMultipleEditorTabsButton;
     public String WorkbenchPreference_allowInplaceEditingButton;
     public String WorkbenchPreference_useIPersistableEditorButton;
     public String WorkbenchPreference_promptWhenStillOpenButton;
+	public String WorkbenchPreference_showTextOnPerspectiveBar;
     public String WorkbenchPreference_stickyCycleButton;
     public String WorkbenchPreference_RunInBackgroundButton;
     public String WorkbenchPreference_RunInBackgroundToolTip;
 
     // --- Appearance ---
-    public String ViewsPreferencePage_Theme;
+	public String ViewsPreference_currentPresentation;
+	public String ViewsPreference_currentPresentationFormat;
+	public String ViewsPreference_presentationConfirm_title;
+	public String ViewsPreference_presentationConfirm_message;
+	public String ViewsPreference_presentationConfirm_yes;
+	public String ViewsPreference_presentationConfirm_no;
+	public String ViewsPreference_editors;
+	public String ViewsPreference_editors_top;
+	public String ViewsPreference_editors_bottom;
+	public String ViewsPreference_views;
+	public String ViewsPreference_views_top;
+	public String ViewsPreference_views_bottom;
+	public String ViewsPreference_perspectiveBar;
+	public String ViewsPreference_perspectiveBar_topRight;
+	public String ViewsPreference_perspectiveBar_topLeft;
+	public String ViewsPreference_perspectiveBar_left;
+	public String ViewsPreference_traditionalTabs;
     public String ViewsPreference_currentTheme;
     public String ViewsPreference_currentThemeDescription;
     public String ViewsPreference_currentThemeFormat;
     public String ViewsPreference_enableAnimations;
-    public String ViewsPreference_visibleTabs_description;
-    public String ViewsPreference_enableMRU;
     public String ViewsPreference_useColoredLabels;
-    public String ToggleFullScreenMode_ActivationPopup_Description;
-    public String ToggleFullScreenMode_ActivationPopup_Description_NoKeybinding;
-    public String ToggleFullScreenMode_ActivationPopup_DoNotShowAgain;
+	public String ViewsPreference_override;
+	public String ViewsPreference_restartRequestJobName;
 
     // --- File Editors ---
     public String FileEditorPreference_fileTypes;
@@ -514,7 +492,6 @@ public class WorkbenchMessages {
 
     public String FilteredPreferenceDialog_PreferenceSaveFailed;
     public String FilteredPreferenceDialog_Resize;
-    public String FilteredPreferenceDialog_FilterToolTip;
 
     public String FileExtension_fileTypeMessage;
     public String FileExtension_fileTypeLabel;
@@ -525,8 +502,6 @@ public class WorkbenchMessages {
     public String EditorSelection_chooseAnEditor;
     public String EditorSelection_internal;
     public String EditorSelection_external;
-    public String EditorSelection_rememberEditor;
-    public String EditorSelection_rememberType;
     public String EditorSelection_browse;
     public String EditorSelection_title;
 
@@ -534,6 +509,13 @@ public class WorkbenchMessages {
     public String OpenPerspectiveMode_optionsTitle;
     public String OpenPerspectiveMode_sameWindow;
     public String OpenPerspectiveMode_newWindow;
+
+	public String FastViewsGroup_title;
+	public String OpenViewMode_title;
+	public String OpenViewMode_embed;
+	public String OpenViewMode_fast;
+
+	public String FastViewBar_hide;
 
     public String PerspectivesPreference_MakeDefault;
     public String PerspectivesPreference_MakeDefaultTip;
@@ -562,17 +544,6 @@ public class WorkbenchMessages {
     public String WorkbenchPreference_HeapStatusButton;
     public String WorkbenchPreference_HeapStatusButtonToolTip;
 
-    // --- Globalization -----
-    public String GlobalizationPreference_nlExtensions;
-    public String GlobalizationPreference_layoutDirection;
-    public String GlobalizationPreference_bidiSupport;
-    public String GlobalizationPreference_textDirection;
-    public String GlobalizationPreference_defaultDirection;
-    public String GlobalizationPreference_ltrDirection;
-    public String GlobalizationPreference_autoDirection;
-    public String GlobalizationPreference_rtlDirection;
-    public String GlobalizationPreference_restartWidget;
-
     // --- Fonts ---
     public String FontsPreference_useSystemFont;
 
@@ -594,6 +565,7 @@ public class WorkbenchMessages {
     public String PropertyDialog_messageTitle;
     public String PropertyDialog_noPropertyMessage;
     public String PropertyDialog_propertyMessage;
+	public String PropertyPageNode_errorTitle;
     public String PropertyPageNode_errorMessage;
 
     public String SystemInPlaceDescription_name;
@@ -631,36 +603,37 @@ public class WorkbenchMessages {
     public String EditorManager_saveResourcesMessage;
     public String EditorManager_saveResourcesOptionallyMessage;
     public String EditorManager_saveResourcesTitle;
+	public String EditorManager_exceptionRestoringEditor;
+	public String EditorManager_unableToCreateEditor;
     public String EditorManager_systemEditorError;
+	public String EditorManager_invalidDescriptor;
+	public String EditorManager_instantiationError;
+    public String EditorManager_errorInInit;
     public String EditorManager_siteIncorrect;
     public String EditorManager_unknownEditorIDMessage;
     public String EditorManager_errorOpeningExternalEditor;
+	public String EditorManager_unableToOpenExternalEditor;
     public String EditorManager_operationFailed;
     public String EditorManager_saveChangesQuestion;
     public String EditorManager_closeWithoutPromptingOption;
     public String EditorManager_saveChangesOptionallyQuestion;
     public String EditorManager_missing_editor_descriptor;
     public String EditorManager_no_in_place_support;
+    public String EditorManager_invalid_editor_descriptor;
     public String EditorManager_no_persisted_state;
     public String EditorManager_no_input_factory_ID;
     public String EditorManager_bad_element_factory;
     public String EditorManager_create_element_returned_null;
     public String EditorManager_wrong_createElement_result;
     public String EditorManager_backgroundSaveJobName;
-    public String EditorManager_largeDocumentWarning;
 
+	public String EditorPane_pinEditor;
 
     public String ExternalEditor_errorMessage;
     public String Save;
     public String Save_Resource;
     public String Saving_Modifications;
     public String Save_All;
-    public String Dont_Save;
-
-	public String SaveableHelper_Save;
-	public String SaveableHelper_Cancel;
-	public String SaveableHelper_Dont_Save;
-	public String SaveableHelper_Save_Selected;
 
 
     // ==============================================================================
@@ -675,19 +648,47 @@ public class WorkbenchMessages {
     public String OpenPerspectiveMenu_pageProblemsTitle;
     public String OpenPerspectiveMenu_errorUnknownInput;
 
+	public String Perspective_oneError;
+	public String Perspective_multipleErrors;
+
+	public String Perspective_problemRestoringTitle;
+	public String Perspective_errorReadingState;
     public String Perspective_localCopyLabel;
+	public String Perspective_problemLoadingTitle;
     public String WorkbenchPage_problemRestoringTitle;
+	public String WorkbenchPage_errorReadingState;
 
+	public String Perspective_problemSavingTitle;
+	public String Perspective_problemSavingMessage;
 
+	public String Perspective_unableToLoad;
+	public String Perspective_couldNotFind;
 
     // ==============================================================================
     // Views Framework
     // ==============================================================================
+	public String Menu;
+	public String ViewMenu;
+
+	public String StandardSystemToolbar_Minimize;
+	public String StandardSystemToolbar_Maximize;
+	public String StandardSystemToolbar_Restore;
+
+	public String EditorArea_Tooltip;
+	public String ViewPane_fastView;
+	public String ViewPane_minimizeView;
+	public String ViewPane_moveView;
+	public String ViewPane_moveFolder;
+
+	public String EditorPane_moveEditor;
+
     public String ViewLabel_unknown;
 
     public String ViewFactory_initException;
     public String ViewFactory_siteException;
     public String ViewFactory_couldNotCreate;
+	public String ViewFactory_noMultiple;
+	public String ViewFactory_couldNotSave;
     // ==============================================================================
     // Workbench
     // ==============================================================================
@@ -697,6 +698,7 @@ public class WorkbenchMessages {
 
     public String WorkbenchPage_UnknownLabel;
 
+	public String WorkbenchPage_editorAlreadyOpenedMsg;
 
     // These four keys are marked as unused by the NLS search, but they are indirectly used
     // and should be removed.
@@ -705,6 +707,15 @@ public class WorkbenchMessages {
     public String PartPane_sizeTop;
     public String PartPane_sizeBottom;
 
+	public String PartPane_detach;
+	public String PartPane_restore;
+	public String PartPane_move;
+	public String PartPane_size;
+	public String PartPane_maximize;
+	public String PartPane_close;
+	public String PartPane_closeOthers;
+	public String PartPane_closeAll;
+	public String PartPane_newEditor;
     public String PluginAction_operationNotAvailableMessage;
     public String PluginAction_disabledMessage;
     public String ActionDescriptor_invalidLabel;
@@ -720,9 +731,12 @@ public class WorkbenchMessages {
     public String WorkbenchPage_IllegalSecondaryId;
     public String WorkbenchPage_IllegalViewMode;
     public String WorkbenchPart_AutoTitleFormat;
+	public String EditorPart_AutoTitleFormat;
+	public String Abnormal_Workbench_Conditi;
 
 
     public String AbstractWorkingSetManager_updatersActivating;
+	public String WorkbenchPage_ErrorActivatingView;
     public String DecoratorManager_ErrorActivatingDecorator;
 
     public String EditorRegistry_errorTitle;
@@ -731,30 +745,59 @@ public class WorkbenchMessages {
     public String ErrorClosing;
     public String ErrorClosingNoArg;
     public String ErrorClosingOneArg;
+	public String ErrorReadingState;
 
+	public String Invalid_workbench_state_ve;
+	public String Workbench_incompatibleUIState;
+	public String Workbench_incompatibleSavedStateVersion;
+	public String ProblemSavingState;
     public String SavingProblem;
 
     public String Problems_Opening_Page;
+	public String Restoring_Problems;
 
+	public String Workspace_problemsTitle;
+
+	public String Workbench_problemsRestoringMsg;
     public String Workbench_problemsSavingMsg;
     public String Workbench_problemsRestoring;
     public String Workbench_problemsSaving;
+	public String WorkbenchWindow_problemsRestoringWindow;
+	public String WorkbenchWindow_problemsSavingWindow;
+	public String EditorManager_problemsRestoringEditors;
+	public String EditorManager_problemsSavingEditors;
+	public String RootLayoutContainer_problemsRestoringPerspective;
+	public String RootLayoutContainer_problemsSavingPerspective;
+	public String ViewFactory_problemsSavingViews;
 
+	public String EditorManager_unableToSaveEditor;
+	public String Perspective_problemsRestoringPerspective;
+	public String Perspective_problemsSavingPerspective;
+	public String Perspective_problemsRestoringViews;
+	public String WorkbenchWindow_unableToRestorePerspective;
+	public String WorkbenchPage_unableToRestorePerspective;
+	public String WorkbenchPage_unableToSavePerspective;
+	public String Perspective_unableToRestorePerspective;
     public String PageLayout_missingRefPart;
+	public String PageLayout_duplicateRefPart;
+	public String PartStack_incorrectPartInFolder;
+
 
     // ==============================================================================
     // Keys used in the reuse editor which is released as experimental.
     // ==============================================================================
     public String EditorManager_openNewEditorLabel;
     public String EditorManager_reuseEditorDialogTitle;
+	public String PinEditorAction_text;
     public String PinEditorAction_toolTip;
     public String WorkbenchPreference_reuseEditors;
+	public String WorkbenchPreference_reuseDirtyEditorGroupTitle;
+	public String WorkbenchPreference_promptToReuseEditor;
+	public String WorkbenchPreference_openNewEditor;
     public String WorkbenchPreference_reuseEditorsThreshold;
     public String WorkbenchPreference_reuseEditorsThresholdError;
     public String WorkbenchPreference_recentFiles;
     public String WorkbenchPreference_recentFilesError;
-    public String WorkbenchPreference_workbenchSaveInterval;
-    public String WorkbenchPreference_workbenchSaveIntervalError;
     public String WorkbenchEditorsAction_label;
     public String WorkbookEditorsAction_label;
 
@@ -782,8 +825,6 @@ public class WorkbenchMessages {
     public String ToggleCoolbarVisibilityAction_hide_text;
     public String ToggleCoolbarVisibilityAction_toolTip;
 
-	public String ToggleStatusBarVisibilityAction_show_text;
-	public String ToggleStatusBarVisibilityAction_hide_text;
 
     // ==============================================================================
     // Working Set Framework.
@@ -815,9 +856,9 @@ public class WorkbenchMessages {
     // =================================================================
     // System Summary
     // =================================================================
+	public String SystemSummary_title;
     public String SystemSummary_timeStamp;
     public String SystemSummary_systemProperties;
-    public String SystemSummary_systemVariables;
     public String SystemSummary_features;
     public String SystemSummary_pluginRegistry;
     public String SystemSummary_userPreferences;
@@ -826,12 +867,41 @@ public class WorkbenchMessages {
 
     // paramter 0 is the feature name, parameter 1 is the version and parameter 2 is the Id
     public String SystemSummary_featureVersion;
+	public String SystemMenuMovePane_PaneName;
 
     public String SystemSummary_descriptorIdVersionState;
 
     // =================================================================
     // Editor List
     // =================================================================
+	public String EditorList_saveSelected_text;
+	public String EditorList_saveSelected_toolTip;
+	public String EditorList_closeSelected_text;
+	public String EditorList_closeSelected_toolTip;
+
+	public String EditorList_selectClean_text;
+	public String EditorList_selectClean_toolTip;
+	public String EditorList_invertSelection_text;
+	public String EditorList_invertSelection_toolTip;
+	public String EditorList_selectAll_text;
+	public String EditorList_selectAll_toolTip;
+
+	public String EditorList_FullName_text;
+	public String EditorList_FullName_toolTip;
+
+	public String EditorList_SortBy_text;
+	public String EditorList_SortByName_text;
+	public String EditorList_SortByName_toolTip;
+	public String EditorList_SortByMostRecentlyUsed_text;
+	public String EditorList_SortByMostRecentlyUsed_toolTip;
+
+	public String EditorList_ApplyTo_text;
+	public String EditorList_DisplayAllWindows_text;
+	public String EditorList_DisplayAllWindows_toolTip;
+	public String EditorList_DisplayAllPage_text;
+	public String EditorList_DisplayAllPage_toolTip;
+	public String EditorList_DisplayTabGroup_text;
+	public String EditorList_DisplayTabGroup_toolTip;
     public String DecorationScheduler_UpdateJobName;
     public String DecorationScheduler_CalculationJobName;
     public String DecorationScheduler_UpdatingTask;
@@ -844,6 +914,20 @@ public class WorkbenchMessages {
     public String PerspectiveBar_saveAs;
     public String PerspectiveBar_reset;
 
+
+	public String Perspective_couldNotBeFound;
+
+	public String PerspectiveSwitcher_dockOn;
+	public String PerspectiveSwitcher_topRight;
+	public String PerspectiveSwitcher_topLeft;
+	public String PerspectiveSwitcher_left;
+
+
+	public String FastViewBar_view_orientation;
+	public String FastViewBar_horizontal;
+	public String FastViewBar_vertical;
+	public String FastViewBar_0;
+
     public String WorkbenchPlugin_extension;
 
     public String EventLoopProgressMonitor_OpenDialogJobName;
@@ -855,10 +939,16 @@ public class WorkbenchMessages {
     public String FilteredTree_FilteredDialogTitle;
     public String FilteredTree_AccessibleListenerClearButton;
     public String FilteredTree_AccessibleListenerFiltered;
+	public String Workbench_restoreDisabled;
+	public String Workbench_noStateToRestore;
+	public String Workbench_noWindowsRestored;
     public String Workbench_startingPlugins;
     public String ScopedPreferenceStore_DefaultAddedError;
 
     public String WorkbenchEncoding_invalidCharset;
+
+	public String Dynamic_resetPerspectiveMessage;
+	public String Dynamic_resetPerspectiveTitle;
 
     //==============================================================
     // Undo/Redo Support
@@ -903,11 +993,10 @@ public class WorkbenchMessages {
     public String SetMarkAction_text;
     public String ClearMarkAction_text;
     public String ShowMaxAction_text;
-
-    public String SplitValues_Horizontal;
-
-
-    public String SplitValues_Vertical;
+//	public String ShowKyrsoftViewAction_text;
+//	public String ShowKyrsoftViewAction_KyrsoftNotInstalled;
+//	public String ShowKyrsoftViewAction_OpenPerspectiveFirst;
+//	public String ShowKyrsoftViewAction_ErrorShowingKyrsoftView;
 
 
     // ==============================================================================
@@ -917,7 +1006,6 @@ public class WorkbenchMessages {
     public String ContentTypes_lockedFormat;
     public String ContentTypes_characterSetLabel;
     public String ContentTypes_characterSetUpdateLabel;
-    public String ContentTypes_unsupportedEncoding;
     public String ContentTypes_fileAssociationsLabel;
     public String ContentTypes_fileAssociationsAddLabel;
     public String ContentTypes_fileAssociationsEditLabel;
@@ -933,20 +1021,7 @@ public class WorkbenchMessages {
     public String ContentTypes_editDialog_messageHeader;
     public String ContentTypes_editDialog_message;
     public String ContentTypes_editDialog_label;
-   	public String ContentTypes_addRootContentTypeButton;
-	public String ContentTypes_addChildContentTypeButton;
-	public String ContentTypes_removeContentTypeButton;
-	public String ContentTypes_newContentTypeDialog_title;
-	public String ContentTypes_newContentTypeDialog_descritption;
-	public String ContentTypes_newContentTypeDialog_nameLabel;
-	public String ContentTypes_newContentTypeDialog_defaultNameNoParent;
-	public String ContentTypes_newContentTypeDialog_defaultNameWithParent;
-	public String ContentTypes_newContentTypeDialog_invalidContentTypeName;
-	public String ContentTypes_failedAtEditingContentTypes;
     public String Edit;
-	public String ContentTypes_editorAssociations;
-	public String ContentTypes_editorAssociationAddLabel;
-	public String ContentTypes_editorAssociationRemoveLabel;
 
     // =========================================================================
     // Deprecated actions support
@@ -968,7 +1043,13 @@ public class WorkbenchMessages {
     public String TrimCommon_Close;
 
     // Trim area Display Names
+    public String TrimCommon_Main_TrimName;
+    public String TrimCommon_PerspectiveSwitcher_TrimName;
+    public String TrimCommon_FastView_TrimName;
+    public String TrimCommon_HeapStatus_TrimName;
+    public String TrimCommon_IntroBar_TrimName;
     public String TrimCommon_Progress_TrimName;
+    public String TrimCommon_StatusLine_TrimName;
 
     // FilteredItemsSelectionDialog
     public String FilteredItemsSelectionDialog_cacheSearchJob_taskName;
@@ -991,16 +1072,20 @@ public class WorkbenchMessages {
     // AbstractSearcher
     public String FilteredItemsSelectionDialog_jobLabel;
     public String FilteredItemsSelectionDialog_jobError;
+    public String FilteredItemsSelectionDialog_jobCancel;
 
     // GranualProgressMonitor
     public String FilteredItemsSelectionDialog_taskProgressMessage;
     public String FilteredItemsSelectionDialog_subtaskProgressMessage;
 
-    static {
-        // load message values from bundle file
-        NLS.initializeMessages(BUNDLE_NAME, WorkbenchMessages.class);
-    }
+// RAP [if]: need session aware NLS
+//  static {
+//		// load message values from bundle file
+//		NLS.initializeMessages(BUNDLE_NAME, WorkbenchMessages.class);
+//	}
 
+
+    public String FastViewBar_show_view;
 
     // Content assist support
     public String ContentAssist_Cue_Description_Key;
@@ -1011,12 +1096,18 @@ public class WorkbenchMessages {
     public String WorkbenchSettings_CouldNotFindLocation;
     public String WorkingSets_Name;
     public String WorkingSets_CannotSave;
-    public String WorkbenchPreferences_Name;
 
     // StatusDialog
+	public String WorkbenchStatusDialog_ActionLabel;
+	public String WorkbenchStatusDialog_CopyThisReport;
+	public String WorkbenchStatusDialog_ExplanationLabel;
+	public String WorkbenchStatusDialog_NotAvailable;
     public String WorkbenchStatusDialog_SupportTooltip;
     public String WorkbenchStatusDialog_SupportHyperlink;
+	public String WorkbenchStatusDialog_StatusLabel;
+	public String WorkbenchStatusDialog_TimestampNotAvailable;
     public String WorkbenchStatusDialog_StatusWithChildren;
+	public String WorkbenchStatusDialog_NoMessageAvailable;
     public String WorkbenchStatusDialog_SeeDetails;
     public String WorkbenchStatusDialog_MultipleProblemsHaveOccured;
     public String WorkbenchStatusDialog_ProblemOccurred;
@@ -1031,7 +1122,6 @@ public class WorkbenchMessages {
 
     // WorkingSetConfigurationBlock
     public String WorkingSetConfigurationBlock_SelectWorkingSet_button;
-    public String WorkingSetConfigurationBlock_NewWorkingSet_button;
     public String WorkingSetConfigurationBlock_WorkingSetText_name;
 
     public String WorkingSetPropertyPage_ReadOnlyWorkingSet_description;
@@ -1041,21 +1131,165 @@ public class WorkbenchMessages {
     public String WorkingSetGroup_WorkingSetSelection_message;
     public String WorkingSetGroup_EnableWorkingSet_button;
 
-	public String FilteredTableBaseHandler_Close;
-
     // Util
     public String Util_List;
     public String Util_listNull;
     
-	// Zoom change messages
+	// Fields introduced by the Eclipse 4.7 workbench. They remain instance
+	// fields because RAP resolves this message bundle per UI session.
+	public String ThemingEnabled;
+	public String RescaleAtRuntimeDescription;
+	public String RescaleAtRuntimeDisabledDescription;
+	public String RescaleAtRuntimeIncompatibilityTitle;
+	public String RescaleAtRuntimeIncompatibilityDescription;
+	public String RescaleAtRuntimeEnabled;
+	public String RescaleAtRuntimeSettingChangeWarningTitle;
+	public String RescaleAtRuntimeSettingChangeWarningText;
+	public String ThemeChangeWarningText;
+	public String ThemeChange_useAsDefault;
+	public String ThemeChangeWarningTitle;
+	public String ThemeDefault_manageButton;
+	public String ThemeDefault_dialogTitle;
+	public String ThemeDefault_description;
+	public String ThemeDefault_currentDefault;
+	public String ThemeDefault_currentDefaultUnscoped;
+	public String ThemeDefault_noDefault;
+	public String ThemeDefault_noDefaultUnscoped;
+	public String ThemeDefault_setDefault;
+	public String ThemeDefault_removeDefault;
+	public String BundleSigningTray_SigningType;
+	public String BundleSigningTray_X509Certificate;
+	public String OpenRecentDocuments_text;
+	public String OpenRecentDocumentsClear_text;
+	public String SelectPerspective_selectPerspectiveHelp;
+	public String SelectPerspective_noDesc;
+	public String SelectPerspective_open_button_label;
+	public String ShowView_open_button_label;
+	public String CustomizePerspectiveDialog_okButtonLabel;
+	public String HideItems_itemInUnavailableCommand;
+	public String HideItemsCannotMakeVisible_unavailableCommandItemText;
+	public String SavePerspective_saveButtonLabel;
+	public String ResetPerspective_buttonLabel;
+	public String RevertPerspective_title;
+	public String RevertPerspective_message;
+	public String RevertPerspective_option;
+	public String FilteredTableBase_Filter;
+	public String AboutPluginsDialog_filterTextMessage;
+	public String AboutPluginsPage_Load_Bundle_Data;
+	public String WorkbenchWindow_EditToolbar;
+	public String WorkbenchWindow_HelpToolbar;
+	public String ICategory_general;
+	public String WizardHandler_menuLabel;
+	public String ImportExportPage_chooseImportWizard;
+	public String ImportExportPage_chooseExportWizard;
+	public String ImportWizard_selectWizard;
+	public String ExportWizard_selectWizard;
+	public String Preference_import;
+	public String Preference_export;
+	public String PreferenceExportWarning_title;
+	public String PreferenceExportWarning_message;
+	public String PreferenceExportWarning_continue;
+	public String PreferenceExportWarning_applyAndContinue;
+	public String WorkbenchPreference_AlignMultiPageEditorTabs;
+	public String WorkbenchPreference_AlignMultiPageEditorTabs_Top;
+	public String WorkbenchPreference_AlignMultiPageEditorTabs_Bottom;
+	public String ViewsPreferencePage_Theme;
+	public String ViewsPreference_visibleTabs_description;
+	public String ViewsPreference_enableMRU;
+	public String ViewsPreference_viewTabs_icons_and_titles_label;
+	public String ViewsPreference_showFullTextForViewTabs;
+	public String ViewsPreference_hideIconsForViewTabs;
+	public String ViewsPreference_viewTabs_dirty_indicator_label;
+	public String ViewsPreference_showDirtyIndicatorForTabs;
+	public String ToggleFullScreenMode_ActivationPopup_Description;
+	public String ToggleFullScreenMode_ActivationPopup_Description_NoKeybinding;
+	public String ToggleFullScreenMode_ActivationPopup_DoNotShowAgain;
+	public String FilteredPreferenceDialog_FilterToolTip;
+	public String EditorSelection_rememberEditor;
+	public String EditorSelection_rememberType;
+	public String WorkbenchPreference_inlineRename;
+	public String GlobalizationPreference_nlExtensions;
+	public String GlobalizationPreference_layoutDirection;
+	public String GlobalizationPreference_bidiSupport;
+	public String GlobalizationPreference_textDirection;
+	public String GlobalizationPreference_defaultDirection;
+	public String GlobalizationPreference_ltrDirection;
+	public String GlobalizationPreference_autoDirection;
+	public String GlobalizationPreference_rtlDirection;
+	public String GlobalizationPreference_restartWidget;
+	public String PropertyDialog_noPropertyMessageForUnknown;
+	public String Workbench_CantRestart_Title;
+	public String Workbench_CantRestart_Message;
+	public String WindowsDefenderConfigurator_statusCheck;
+	public String WindowsDefenderConfigurator_exclusionCheckMessage;
+	public String WindowsDefenderConfigurator_exclusionInformation;
+	public String WindowsDefenderConfigurator_scriptShowLabel;
+	public String WindowsDefenderConfigurator_scriptHideLabel;
+	public String WindowsDefenderConfigurator_scriptHint;
+	public String WindowsDefenderConfigurator_performExclusionChoice;
+	public String WindowsDefenderConfigurator_ignoreThisInstallationChoice;
+	public String WindowsDefenderConfigurator_ignoreAllChoice;
+	public String WindowsDefenderConfigurator_detailsAndOptionsLinkText;
+	public String WindowsDefenderConfigurator_runExclusionFromPreferenceButtonLabel;
+	public String WindowsDefenderConfigurator_statusInactive;
+	public String WindowsDefenderConfigurator_statusCheckFailed;
+	public String WindowsDefenderConfigurator_exclusionFailed;
+	public String WindowsDefenderConfigurator_exclusionFailed_Protected;
+	public String EditorManager_largeDocumentWarning;
+	public String LargeFileAssociation_Dialog_chooseEditorTitle;
+	public String LargeFileAssociation_Dialog_rememberSelectedEditor;
+	public String LargeFileAssociation_Dialog_configureFileAssociationsLink;
+	public String Dont_Save;
+	public String SaveableHelper_Save;
+	public String SaveableHelper_Cancel;
+	public String SaveableHelper_Dont_Save;
+	public String SaveableHelper_Save_Selected;
+	public String SaveableHelper_Save_n_of_m;
+	public String SaveableHelper_Save_0_of_m;
+	public String Workbench_problemsRestartErrorTitle;
+	public String Workbench_problemsRestartErrorMessage;
+	public String WorkbenchPreference_reuseEditors_closing;
+	public String WorkbenchPreference_workbenchSaveInterval;
+	public String WorkbenchPreference_workbenchSaveIntervalError;
+	public String WorkbenchPreference_largeViewLimit;
+	public String WorkbenchPreference_largeViewLimitTooltip;
+	public String WorkbenchPreference_largeViewLimitError;
+	public String ToggleStatusBarVisibilityAction_show_text;
+	public String ToggleStatusBarVisibilityAction_hide_text;
+	public String SystemSummary_systemVariables;
+	public String SplitValues_Horizontal;
+	public String SplitValues_Vertical;
+	public String ContentTypes_unsupportedEncoding;
+	public String ContentTypes_addRootContentTypeButton;
+	public String ContentTypes_addChildContentTypeButton;
+	public String ContentTypes_removeContentTypeButton;
+	public String ContentTypes_newContentTypeDialog_title;
+	public String ContentTypes_newContentTypeDialog_descritption;
+	public String ContentTypes_newContentTypeDialog_nameLabel;
+	public String ContentTypes_newContentTypeDialog_defaultNameNoParent;
+	public String ContentTypes_newContentTypeDialog_defaultNameWithParent;
+	public String ContentTypes_newContentTypeDialog_invalidContentTypeName;
+	public String ContentTypes_failedAtEditingContentTypes;
+	public String ContentTypes_editorAssociations;
+	public String ContentTypes_editorAssociationAddLabel;
+	public String ContentTypes_editorAssociationRemoveLabel;
+	public String WorkbenchPreferences_Name;
+	public String WorkingSetConfigurationBlock_NewWorkingSet_button;
+	public String FilteredTableBaseHandler_Close;
 	public String Workbench_zoomChangedTitle;
 	public String Workbench_zoomChangedMessage;
-	public String Workbench_zoomChangedRestart;
+	public String Workbench_RestartButton;
+	public String Workbench_DontRestartButton;
+	public String Workbench_missingPropertyMessage;
+	public String IDEApplication_workspaceLockOwner;
+	public String IDEApplication_workspaceLockHost;
+	public String IDEApplication_workspaceLockDisplay;
+	public String IDEApplication_workspaceLockPID;
+	public String IDEApplication_workspaceLockMessage;
+	public String IDEApplication_workspaceCannotLockMessage2;
+	public String IDEApplication_workspaceCannotLockTitle;
+	public String OpenWorkspaceAction_invalidWorkspacePath;
 
-    /**
-     * Load message values from bundle file
-     * @return localized message
-     */
     /**
      * Load message values from bundle file
      * @return localized message
@@ -1067,12 +1301,10 @@ public class WorkbenchMessages {
     public static WorkbenchMessages get( Display display ) {
       final WorkbenchMessages[] result = { null };
       RWT.getUISession( display ).exec( new Runnable() {
-        @Override
 		public void run() {
           result[ 0 ] = get();
         }
       } );
       return result[ 0 ];
     }
-
 }

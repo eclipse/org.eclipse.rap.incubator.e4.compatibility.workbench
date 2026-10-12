@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.activities.WorkbenchActivityHelper;
 import org.eclipse.ui.wizards.IWizardCategory;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 import org.eclipse.ui.wizards.IWizardRegistry;
@@ -24,8 +25,8 @@ import org.eclipse.ui.wizards.IWizardRegistry;
 /**
  * Provides the parameter values for a show wizard command.
  * <p>
- * This class is only intended to be extended by the three inner classes (<code>Export</code>,
- * <code>Import</code> and <code>New</code>) defined here.
+ * This class is only intended to be extended by the three inner classes
+ * (<code>Export</code>, <code>Import</code> and <code>New</code>) defined here.
  * </p>
  *
  * @since 3.2
@@ -65,7 +66,9 @@ public abstract class WizardParameterValues implements IParameterValues {
 	private void addParameterValues(Map values, IWizardCategory wizardCategory) {
 
 		for (final IWizardDescriptor wizardDescriptor : wizardCategory.getWizards()) {
-
+			if (WorkbenchActivityHelper.filterItem(wizardDescriptor)) {
+				continue;
+			}
 
 			// Note: using description instead of label for the name
 			// to reduce possibilities of key collision in the map

@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2009, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -16,7 +13,8 @@ package org.eclipse.ui.internal.statushandlers;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IStatus;
@@ -30,11 +28,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.progress.FinishedJobs;
-import org.eclipse.ui.internal.progress.FinishedJobs.KeptJobsListener;
-import org.eclipse.ui.internal.progress.JobInfo;
-import org.eclipse.ui.internal.progress.JobTreeElement;
-import org.eclipse.ui.internal.progress.StatusAdapterHelper;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.eclipse.ui.statushandlers.IStatusAdapterConstants;
 import org.eclipse.ui.statushandlers.StatusAdapter;
@@ -61,14 +54,13 @@ import org.eclipse.ui.statushandlers.StatusManager.INotificationTypes;
  * @noextend This class is not intended to be subclassed by clients.
  * @noinstantiate This class is not intended to be instantiated by clients.
  */
-public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
+public class WorkbenchStatusDialogManagerImpl {
 
 	static final QualifiedName HINT = new QualifiedName(
 			IStatusAdapterConstants.PROPERTY_PREFIX, "hint"); //$NON-NLS-1$
 
 	private final class StatusDialogDisposeListener implements DisposeListener {
 
-		@Override
 		public void widgetDisposed(org.eclipse.swt.events.DisposeEvent e) {
 			cleanUp();
 		}
@@ -105,8 +97,8 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 		if (children == null || children.length == 0) {
 			return status.matches(mask) || (handleOKStatuses && status.isOK());
 		}
-		for (IStatus child : children) {
-			if (child.matches(mask)) {
+		for (int i = 0; i < children.length; i++) {
+			if (children[i].matches(mask)) {
 				return true;
 			}
 		}
@@ -132,7 +124,6 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 						"WorkbenchStatusDialogManager must be instantiated in UI thread"); //$NON-NLS-1$
 
 		dialogState = initDialogState(dialogState, displayMask, dialogTitle);
-		FinishedJobs.getInstance().addListener(this);
 	}
 
 	/**
@@ -147,7 +138,7 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 	 * @return populated dialogState
 	 */
 	public Map initDialogState(Map dialogState, int displayMask, String dialogTitle) {
-		dialogState.put(IStatusDialogConstants.MASK, Integer.valueOf(displayMask));
+		dialogState.put(IStatusDialogConstants.MASK, new Integer(displayMask));
 		dialogState.put(IStatusDialogConstants.TITLE,
 				dialogTitle == null ? JFaceResources
 						.getString("Problem_Occurred") : //$NON-NLS-1$
@@ -163,7 +154,7 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 		dialogState.put(IStatusDialogConstants.HIDE_SUPPORT_BUTTON,
 				Boolean.FALSE);
 		dialogState.put(IStatusDialogConstants.STATUS_ADAPTERS, Collections
-				.synchronizedSet(new LinkedHashSet()));
+				.synchronizedSet(new HashSet()));
 		dialogState.put(IStatusDialogConstants.STATUS_MODALS, new HashMap());
 		dialogState.put(IStatusDialogConstants.LABEL_PROVIDER, new LabelProviderWrapper(
 				dialogState));
@@ -216,6 +207,7 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 			WorkbenchPlugin.log(statusAdapter.getStatus());
 			// log the problem with status handling
 			WorkbenchPlugin.log(e);
+			e.printStackTrace();
 		}
 	}
 
@@ -231,7 +223,6 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 		dialogState.put(IStatusDialogConstants.DETAILS_OPENED, Boolean.FALSE);
 		dialogState.put(IStatusDialogConstants.TRAY_OPENED, Boolean.FALSE);
 		dialogState.put(IStatusDialogConstants.MODALITY_SWITCH, Boolean.FALSE);
-		dialogState.remove(IStatusDialogConstants.CURRENT_STATUS_ADAPTER);
 	}
 
 	private void doAddStatusAdapter(final StatusAdapter statusAdapter,
@@ -253,14 +244,14 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 		if (isDialogClosed()) {
 
 			getErrors().add(statusAdapter);
-			getModals().put(statusAdapter, Boolean.valueOf(modal));
+			getModals().put(statusAdapter, new Boolean(modal));
 			// Delay prompting if the status adapter property is set
 			if (shouldPrompt(statusAdapter)) {
 				// notify all interested parties that status adapters will be
 				// handled
 				StatusManager.getManager().fireNotification(
 						INotificationTypes.HANDLED,
-						getErrors()
+						(StatusAdapter[]) getErrors()
 								.toArray(new StatusAdapter[] {}));
 
 				if (dialog == null) {
@@ -301,7 +292,7 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 	 *
 	 * @return collection of {@link StatusAdapter} objects
 	 */
-	public Collection<StatusAdapter> getStatusAdapters() {
+	public Collection getStatusAdapters() {
 		return Collections.unmodifiableCollection(getErrors());
 	}
 
@@ -316,7 +307,7 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 	private void openStatusDialog(final boolean modal,
 			final StatusAdapter statusAdapter) {
 		getErrors().add(statusAdapter);
-		getModals().put(statusAdapter, Boolean.valueOf(modal));
+		getModals().put(statusAdapter, new Boolean(modal));
 		boolean shouldBeModal = shouldBeModal();
 		if (shouldBeModal ^ dialog.isModal()) {
 			dialog.getShell().removeDisposeListener(disposeListener);
@@ -356,7 +347,6 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 	 * @param labelProvider
 	 *            a label provider to be used when displaying status adapters.
 	 */
-	@Deprecated
 	public void setStatusListLabelProvider(ITableLabelProvider labelProvider) {
 		Assert.isLegal(labelProvider != null, "Label Provider cannot be null"); //$NON-NLS-1$
 		dialogState.put(IStatusDialogConstants.CUSTOM_LABEL_PROVIDER,
@@ -371,9 +361,11 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 	 * @return true if any StatusHandler should be displayed in modal window
 	 */
 	public boolean shouldBeModal() {
-		Map<?, ?> modals = (Map<?, ?>) dialogState
+		Map modals = (Map) dialogState
 				.get(IStatusDialogConstants.STATUS_MODALS);
-		for (Object value : modals.values()) {
+		for (Iterator it = modals.keySet().iterator(); it.hasNext();) {
+			Object o = it.next();
+			Object value = modals.get(o);
 			if (value instanceof Boolean) {
 				Boolean b = (Boolean) value;
 				if (b.booleanValue()) {
@@ -531,9 +523,9 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 	 *
 	 * @return Collection of StatusAdapters
 	 */
-	@SuppressWarnings("unchecked")
-	private Collection<StatusAdapter> getErrors() {
-		return (Collection<StatusAdapter>) dialogState.get(IStatusDialogConstants.STATUS_ADAPTERS);
+	private Collection getErrors() {
+		return (Collection) dialogState
+				.get(IStatusDialogConstants.STATUS_ADAPTERS);
 	}
 
 	/**
@@ -544,25 +536,5 @@ public class WorkbenchStatusDialogManagerImpl implements KeptJobsListener {
 	private Map getModals() {
 		return (Map) dialogState
 				.get(IStatusDialogConstants.STATUS_MODALS);
-	}
-
-	@Override
-	public void finished(JobTreeElement jte) {
-		// no-op
-	}
-
-	@Override
-	public void removed(JobTreeElement jte) {
-		if (jte instanceof JobInfo) {
-			JobInfo jobInfo = (JobInfo) jte;
-			StatusAdapter statusAdapter = StatusAdapterHelper.getInstance().getStatusAdapter(jobInfo);
-			if (statusAdapter != null) {
-				getErrors().remove(statusAdapter);
-			}
-		} else if (jte == null) {
-			StatusAdapterHelper.getInstance().clear();
-			getErrors().clear();
-		}
-
 	}
 }

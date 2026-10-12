@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -26,8 +23,7 @@ import org.eclipse.ui.internal.util.PrefUtil;
 
 /**
  * Action to open the dynamic help.
- *
- * @since 3.1
+ * @since 1.3
  */
 public class DynamicHelpAction extends Action implements IWorkbenchAction {
 	/**
@@ -82,18 +78,26 @@ public class DynamicHelpAction extends Action implements IWorkbenchAction {
 		return text;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc) Method declared on IAction.
+	 */
 	public void run() {
 		if (workbenchWindow == null) {
 			// action has been disposed
 			return;
 		}
 		// This may take a while, so use the busy indicator
-		BusyIndicator.showWhile(null, () -> workbenchWindow.getWorkbench().getHelpSystem()
-				.displayDynamicHelp());
+		BusyIndicator.showWhile(null, new Runnable() {
+			public void run() {
+				workbenchWindow.getWorkbench().getHelpSystem()
+						.displayDynamicHelp();
+			}
+		});
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc) Method declared on ActionFactory.IWorkbenchAction.
+	 */
 	public void dispose() {
 		workbenchWindow = null;
 	}

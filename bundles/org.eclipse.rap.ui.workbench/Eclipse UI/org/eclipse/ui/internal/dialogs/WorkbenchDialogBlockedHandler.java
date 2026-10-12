@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2014 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -35,7 +32,11 @@ public class WorkbenchDialogBlockedHandler implements IDialogBlockedHandler {
         //No default behavior
     }
 
-    @Override
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.eclipse.jface.dialogs.IDialogBlockedHandler#clearBlocked()
+     */
 	public void clearBlocked() {
         if (nestingDepth == 0) {
 			return;
@@ -51,7 +52,13 @@ public class WorkbenchDialogBlockedHandler implements IDialogBlockedHandler {
 
     }
 
-    @Override
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.eclipse.jface.dialogs.IDialogBlockedHandler#showBlocked(org.eclipse.swt.widgets.Shell,
+     *      org.eclipse.core.runtime.IProgressMonitor,
+     *      org.eclipse.core.runtime.IStatus, java.lang.String)
+     */
 	public void showBlocked(Shell parentShell,
             IProgressMonitor blockingMonitor, IStatus blockingStatus,
             String blockedName) {
@@ -69,7 +76,12 @@ public class WorkbenchDialogBlockedHandler implements IDialogBlockedHandler {
 
     }
 
-    @Override
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.eclipse.jface.dialogs.IDialogBlockedHandler#showBlocked(org.eclipse.core.runtime.IProgressMonitor,
+     *      org.eclipse.core.runtime.IStatus, java.lang.String)
+     */
 	public void showBlocked(IProgressMonitor blocking, IStatus blockingStatus,
             String blockedName) {
         showBlocked(null, blocking, blockingStatus, blockedName);

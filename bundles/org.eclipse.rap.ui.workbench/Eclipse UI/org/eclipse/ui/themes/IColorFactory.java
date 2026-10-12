@@ -17,11 +17,10 @@ import org.eclipse.swt.graphics.RGB;
 
 /**
  * A factory interface that may be used to specify a color value.  This is
- * (optionally) used by the themes extension point for color value
- * definitions.
+ * (optionally) used by the themes extension point for color value definitions.
  * <p>
  * Example usage:
- * <br/>
+ * </p>
  * <code>
  * &lt;colorDefinition
  *     label="Custom Color"
@@ -29,7 +28,6 @@ import org.eclipse.swt.graphics.RGB;
  * 	   colorFactory="some.implementor.of.IColorFactory"&gt;
  * &lt;/colorDefinition&gt;
  * </code>
- * </p>
  *
  * @since 3.0
  */

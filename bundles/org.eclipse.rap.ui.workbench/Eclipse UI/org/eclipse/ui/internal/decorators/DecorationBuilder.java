@@ -17,7 +17,6 @@ package org.eclipse.ui.internal.decorators;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DecorationContext;
 import org.eclipse.jface.viewers.IDecoration;
@@ -33,9 +32,9 @@ public class DecorationBuilder implements IDecoration {
 
 	private static int DECORATOR_ARRAY_SIZE = 6;
 
-	private List prefixes = new ArrayList();
+	private final List<String> prefixes = new ArrayList<>();
 
-	private List suffixes = new ArrayList();
+	private final List<String> suffixes = new ArrayList<>();
 
 	private ImageDescriptor[] descriptors = new ImageDescriptor[DECORATOR_ARRAY_SIZE];
 
@@ -62,8 +61,7 @@ public class DecorationBuilder implements IDecoration {
 	/**
 	 * Create a decoration builder for the given context
 	 *
-	 * @param context
-	 *            a decoration context
+	 * @param context a decoration context
 	 */
 	public DecorationBuilder(IDecorationContext context) {
 		this.context = context;
@@ -71,8 +69,6 @@ public class DecorationBuilder implements IDecoration {
 
 	/**
 	 * Set the value of the definition we are currently working on.
-	 *
-	 * @param definition
 	 */
 	void setCurrentDefinition(LightweightDecoratorDefinition definition) {
 		this.currentDefinition = definition;
@@ -101,8 +97,8 @@ public class DecorationBuilder implements IDecoration {
 			}
 			valueSet = true;
 		} else {
-			WorkbenchPlugin
-					.log("Unable to apply decoration for " + currentDefinition.getId() + " invalid quadrant: " + quadrant); //$NON-NLS-1$ //$NON-NLS-2$
+			WorkbenchPlugin.log(
+					"Unable to apply decoration for " + currentDefinition.getId() + " invalid quadrant: " + quadrant); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
@@ -143,11 +139,8 @@ public class DecorationBuilder implements IDecoration {
 		if (clearReplacementImage) {
 			descriptors[IDecoration.REPLACE] = null;
 		}
-		DecorationResult newResult = new DecorationResult(new ArrayList(
-				prefixes), new ArrayList(suffixes), descriptors,
+		return new DecorationResult(new ArrayList<>(prefixes), new ArrayList<>(suffixes), descriptors,
 				foregroundColor, backgroundColor, font);
-
-		return newResult;
 	}
 
 	/**
@@ -171,8 +164,6 @@ public class DecorationBuilder implements IDecoration {
 
 	/**
 	 * Apply the previously calculates result to the receiver.
-	 *
-	 * @param result
 	 */
 	void applyResult(DecorationResult result) {
 		prefixes.addAll(result.getPrefixes());
@@ -191,7 +182,6 @@ public class DecorationBuilder implements IDecoration {
 		setFont(result.getFont());
 		valueSet = true;
 	}
-
 
 	@Override
 	public void setBackgroundColor(Color bgColor) {

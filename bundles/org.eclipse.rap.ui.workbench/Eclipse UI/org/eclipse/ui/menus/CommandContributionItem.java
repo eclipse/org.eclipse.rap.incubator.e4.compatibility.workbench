@@ -1,16 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2006, 2014 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
  *******************************************************************************/
 package org.eclipse.ui.menus;
 
@@ -28,9 +24,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.IMenuListener2;
+import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.bindings.BindingManagerEvent;
 import org.eclipse.jface.bindings.IBindingManagerListener;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.resource.DeviceResourceException;
@@ -80,7 +77,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
  * </p>
  *
  * @noextend This class is not intended to be subclassed by clients.
- * @since 3.3
+ * @since 1.0
  */
 public class CommandContributionItem extends ContributionItem {
 	/**
@@ -108,7 +105,7 @@ public class CommandContributionItem extends ContributionItem {
 	 * present. If this mode bit is not set, text is only shown on tool items if
 	 * there is no image present.
 	 *
-	 * @since 3.4
+	 * @since 1.1
 	 */
 	public static int MODE_FORCE_TEXT = 1;
 
@@ -172,8 +169,6 @@ public class CommandContributionItem extends ContributionItem {
 	// items contributed
 	private String contributedLabel;
 
-	private String contributedTooltip;
-
 	private ImageDescriptor contributedIcon;
 
 	private ImageDescriptor contributedDisabledIcon;
@@ -187,19 +182,16 @@ public class CommandContributionItem extends ContributionItem {
 	 *
 	 * @param contributionParameters
 	 * 		parameters necessary to render this contribution item.
-	 * @since 3.4
+	 * @since 1.1
 	 */
 	public CommandContributionItem(
 			CommandContributionItemParameter contributionParameters) {
 		super(contributionParameters.id);
 
 		contributedLabel = contributionParameters.label;
-		contributedTooltip = contributionParameters.tooltip;
 		contributedIcon = contributionParameters.icon;
 		contributedDisabledIcon = contributionParameters.disabledIcon;
 		contributedHoverIcon = contributionParameters.hoverIcon;
-		this.serviceLocator = contributionParameters.serviceLocator;
-
 
 		this.icon = contributionParameters.icon;
 		this.disabledIcon = contributionParameters.disabledIcon;
@@ -211,22 +203,58 @@ public class CommandContributionItem extends ContributionItem {
 		this.helpContextId = contributionParameters.helpContextId;
 		this.visibleEnabled = contributionParameters.visibleEnabled;
 		this.mode = contributionParameters.mode;
+		this.serviceLocator = contributionParameters.serviceLocator;
 
-		menuService = contributionParameters.serviceLocator
+		menuService = (IMenuService) serviceLocator
 				.getService(IMenuService.class);
-		commandService = contributionParameters.serviceLocator
+		commandService = (ICommandService) serviceLocator
 				.getService(ICommandService.class);
-		handlerService = contributionParameters.serviceLocator
+		handlerService = (IHandlerService) serviceLocator
 				.getService(IHandlerService.class);
-		bindingService = contributionParameters.serviceLocator
+		bindingService = (IBindingService) contributionParameters.serviceLocator
 				.getService(IBindingService.class);
-		IWorkbenchLocationService workbenchLocationService = contributionParameters.serviceLocator.getService(IWorkbenchLocationService.class);
+		IWorkbenchLocationService workbenchLocationService = (IWorkbenchLocationService) contributionParameters.serviceLocator.getService(IWorkbenchLocationService.class);
 		display = workbenchLocationService.getWorkbench().getDisplay();
 
 		createCommand(contributionParameters.commandId,
 				contributionParameters.parameters);
 
 		if (command != null) {
+			try {
+				UIElement callback = new UIElement(
+						contributionParameters.serviceLocator) {
+
+					public void setChecked(boolean checked) {
+						CommandContributionItem.this.setChecked(checked);
+					}
+
+					public void setDisabledIcon(ImageDescriptor desc) {
+						CommandContributionItem.this.setDisabledIcon(desc);
+					}
+
+					public void setHoverIcon(ImageDescriptor desc) {
+						CommandContributionItem.this.setHoverIcon(desc);
+					}
+
+					public void setIcon(ImageDescriptor desc) {
+						CommandContributionItem.this.setIcon(desc);
+					}
+
+					public void setText(String text) {
+						CommandContributionItem.this.setText(text);
+					}
+
+					public void setTooltip(String text) {
+						CommandContributionItem.this.setTooltip(text);
+					}
+
+					public void setDropDownId(String id) {
+						dropDownMenuOverride = id;
+					}
+				};
+				elementRef = commandService.registerElementForCommand(command,
+						callback);
+				command.getCommand().addCommandListener(getCommandListener());
 				setImages(contributionParameters.serviceLocator,
 						contributionParameters.iconStyle);
 
@@ -238,12 +266,23 @@ public class CommandContributionItem extends ContributionItem {
 						// it's OK to not have a helpContextId
 					}
 				}
-				IWorkbenchLocationService wls = contributionParameters.serviceLocator
+				IWorkbenchLocationService wls = (IWorkbenchLocationService) serviceLocator
 						.getService(IWorkbenchLocationService.class);
 				final IWorkbench workbench = wls.getWorkbench();
 				if (workbench != null && helpContextId != null) {
 					this.workbenchHelpSystem = workbench.getHelpSystem();
 				}
+			} catch (NotDefinedException e) {
+				StatusManager
+						.getManager()
+						.handle(
+								StatusUtil
+										.newStatus(
+												IStatus.ERROR,
+												"Unable to register menu item \"" + getId() //$NON-NLS-1$
+														+ "\", command \"" + contributionParameters.commandId + "\" not defined", //$NON-NLS-1$ //$NON-NLS-2$
+												null));
+			}
 		}
 
 	}
@@ -282,7 +321,6 @@ public class CommandContributionItem extends ContributionItem {
 	 * 		The style of this menu contribution. See the STYLE_* contants.
 	 * @deprecated create the {@link CommandContributionItemParameter}
 	 */
-	@Deprecated
 	public CommandContributionItem(IServiceLocator serviceLocator, String id,
 			String commandId, Map parameters, ImageDescriptor icon,
 			ImageDescriptor disabledIcon, ImageDescriptor hoverIcon,
@@ -294,7 +332,7 @@ public class CommandContributionItem extends ContributionItem {
 
 	private void setImages(IServiceLocator locator, String iconStyle) {
 		if (icon == null) {
-			ICommandImageService service = locator
+			ICommandImageService service = (ICommandImageService) locator
 					.getService(ICommandImageService.class);
 			icon = service.getImageDescriptor(command.getId(),
 					ICommandImageService.TYPE_DEFAULT, iconStyle);
@@ -314,11 +352,13 @@ public class CommandContributionItem extends ContributionItem {
 
 	private ICommandListener getCommandListener() {
 		if (commandListener == null) {
-			commandListener = commandEvent -> {
+			commandListener = new ICommandListener() {
+				public void commandChanged(CommandEvent commandEvent) {
 				if (commandEvent.isHandledChanged()
 						|| commandEvent.isEnabledChanged()
 						|| commandEvent.isDefinedChanged()) {
 					updateCommandProperties(commandEvent);
+				}
 				}
 			};
 		}
@@ -329,7 +369,8 @@ public class CommandContributionItem extends ContributionItem {
 		if (commandEvent.isHandledChanged()) {
 			dropDownMenuOverride = null;
 		}
-		Runnable update = () -> {
+		Runnable update = new Runnable() {
+			public void run() {
 			if (commandEvent.isEnabledChanged()
 					|| commandEvent.isHandledChanged()) {
 				if (visibleEnabled) {
@@ -341,7 +382,6 @@ public class CommandContributionItem extends ContributionItem {
 				IHandler handler = commandEvent.getCommand().getHandler();
 				if (shouldRestoreAppearance(handler)) {
 					label = contributedLabel;
-					tooltip = contributedTooltip;
 					icon = contributedIcon;
 					disabledIcon = contributedDisabledIcon;
 					hoverIcon = contributedHoverIcon;
@@ -349,6 +389,7 @@ public class CommandContributionItem extends ContributionItem {
 			}
 			if (commandEvent.getCommand().isDefined()) {
 				update(null);
+			}
 			}
 		};
 		if (display.getThread() == Thread.currentThread()) {
@@ -385,7 +426,8 @@ public class CommandContributionItem extends ContributionItem {
 	 * state.
 	 * </p>
 	 *
-	 * @return The parameterized command for this contribution.
+	 * @return The parameterized command for this contribution. May be
+	 *         <code>null</code>.
 	 *
 	 * @since 3.5
 	 */
@@ -416,7 +458,13 @@ public class CommandContributionItem extends ContributionItem {
 		command = ParameterizedCommand.generateCommand(cmd, parameters);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.action.ContributionItem#fill(org.eclipse.swt.widgets
+	 * .Menu, int)
+	 */
 	public void fill(Menu parent, int index) {
 		if (command == null) {
 			return;
@@ -447,10 +495,13 @@ public class CommandContributionItem extends ContributionItem {
 		update(null);
 		updateIcons();
 
-		establishReferences();
+		bindingService.addBindingManagerListener(bindingManagerListener);
+
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.action.ContributionItem#fill(org.eclipse.swt.widgets.Composite)
+	 */
 	public void fill(Composite parent) {
 		if (command == null) {
 			return;
@@ -476,10 +527,17 @@ public class CommandContributionItem extends ContributionItem {
 		update(null);
 		updateIcons();
 
-		establishReferences();
+		bindingService.addBindingManagerListener(bindingManagerListener);
+
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.action.ContributionItem#fill(org.eclipse.swt.widgets
+	 * .ToolBar, int)
+	 */
 	public void fill(ToolBar parent, int index) {
 		if (command == null) {
 			return;
@@ -504,15 +562,23 @@ public class CommandContributionItem extends ContributionItem {
 		update(null);
 		updateIcons();
 
-		establishReferences();
+		bindingService.addBindingManagerListener(bindingManagerListener);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.action.ContributionItem#update()
+	 */
 	public void update() {
 		update(null);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.action.ContributionItem#update(java.lang.String)
+	 */
 	public void update(String id) {
 		if (widget != null) {
 			if (widget instanceof MenuItem) {
@@ -576,7 +642,6 @@ public class CommandContributionItem extends ContributionItem {
 
 		String text = label;
 		String tooltip = label;
-
 		if (text == null) {
 			if (command != null) {
 				try {
@@ -686,7 +751,6 @@ public class CommandContributionItem extends ContributionItem {
 
 	private void handleWidgetDispose(Event event) {
 		if (event.widget == widget) {
-			disconnectReferences();
 			widget.removeListener(SWT.Selection, getItemListener());
 			widget.removeListener(SWT.Dispose, getItemListener());
 			widget = null;
@@ -694,66 +758,16 @@ public class CommandContributionItem extends ContributionItem {
 		}
 	}
 
-	@Override
-	public void setParent(IContributionManager parent) {
-		super.setParent(parent);
-		if (parent == null)
-			disconnectReferences();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.action.ContributionItem#dispose()
+	 */
+	public void dispose() {
+		if (widget != null) {
+			widget.dispose();
+			widget = null;
 	}
-
-	private void establishReferences() {
-		if (command != null) {
-			UIElement callback = new UIElement(serviceLocator) {
-
-				@Override
-				public void setChecked(boolean checked) {
-					CommandContributionItem.this.setChecked(checked);
-				}
-
-				@Override
-				public void setDisabledIcon(ImageDescriptor desc) {
-					CommandContributionItem.this.setDisabledIcon(desc);
-				}
-
-				@Override
-				public void setHoverIcon(ImageDescriptor desc) {
-					CommandContributionItem.this.setHoverIcon(desc);
-				}
-
-				@Override
-				public void setIcon(ImageDescriptor desc) {
-					CommandContributionItem.this.setIcon(desc);
-				}
-
-				@Override
-				public void setText(String text) {
-					CommandContributionItem.this.setText(text);
-				}
-
-				@Override
-				public void setTooltip(String text) {
-					CommandContributionItem.this.setTooltip(text);
-				}
-
-				@Override
-				public void setDropDownId(String id) {
-					dropDownMenuOverride = id;
-				}
-			};
-			try {
-				elementRef = commandService.registerElementForCommand(command, callback);
-			} catch (NotDefinedException e) {
-				StatusManager.getManager().handle(
-						StatusUtil.newStatus(IStatus.ERROR, "Unable to register menu item \"" + getId() //$NON-NLS-1$
-								+ "\", command \"" + command.getId() + "\" not defined", //$NON-NLS-1$ //$NON-NLS-2$
-								null));
-			}
-			command.getCommand().addCommandListener(getCommandListener());
-		}
-		bindingService.addBindingManagerListener(bindingManagerListener);
-	}
-
-	private void disconnectReferences() {
 		if (elementRef != null) {
 			commandService.unregisterElement(elementRef);
 			elementRef = null;
@@ -766,23 +780,12 @@ public class CommandContributionItem extends ContributionItem {
 		if (bindingService != null) {
 			bindingService.removeBindingManagerListener(bindingManagerListener);
 		}
-	}
-
-	@Override
-	public void dispose() {
-		if (widget != null) {
-			widget.dispose();
-			widget = null;
-		}
-
-		disconnectReferences();
 
 		command = null;
 		commandService = null;
 		bindingService = null;
 		menuService = null;
 		handlerService = null;
-		serviceLocator = null;
 		disposeOldImages();
 		super.dispose();
 	}
@@ -796,7 +799,8 @@ public class CommandContributionItem extends ContributionItem {
 
 	private Listener getItemListener() {
 		if (menuItemListener == null) {
-			menuItemListener = event -> {
+			menuItemListener = new Listener() {
+				public void handleEvent(Event event) {
 				switch (event.type) {
 				case SWT.Dispose:
 					handleWidgetDispose(event);
@@ -806,6 +810,7 @@ public class CommandContributionItem extends ContributionItem {
 						handleWidgetSelection(event);
 					}
 					break;
+				}
 				}
 			};
 		}
@@ -871,12 +876,13 @@ public class CommandContributionItem extends ContributionItem {
 					// save the manager in a field to access it within the
 					// getMenuManager method.
 					menuManager = new MenuManager();
+					
 					Menu menu = menuManager.createContextMenu(ti.getParent());
 					if (workbenchHelpSystem != null) {
 						workbenchHelpSystem.setHelp(menu, helpContextId);
 					}
-					menuManager.addMenuListener(new IMenuListener2() {
-						@Override
+
+					menuManager.addMenuListener(new IMenuListener() {
 						public void menuAboutToShow(IMenuManager manager) {
 							String id = getId();
 							if (dropDownMenuOverride != null) {
@@ -884,16 +890,6 @@ public class CommandContributionItem extends ContributionItem {
 							}
 							menuService.populateContributionManager(
 									menuManager, "menu:" + id); //$NON-NLS-1$
-						}
-						@Override
-						public void menuAboutToHide(IMenuManager manager) {
-							IMenuService menuService = CommandContributionItem.this.menuService;
-							display.asyncExec(() -> {
-								if (menuService != null) {
-									menuService.releaseContributions(menuManager);
-								}
-								menuManager.dispose();
-							});
 						}
 					});
 
@@ -981,7 +977,11 @@ public class CommandContributionItem extends ContributionItem {
 		updateIcons();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.action.ContributionItem#isEnabled()
+	 */
 	public boolean isEnabled() {
 		if (command != null) {
 			command.getCommand().setEnabled(menuService.getCurrentState());
@@ -991,9 +991,8 @@ public class CommandContributionItem extends ContributionItem {
 	}
 
 	/**
-	 * @since 3.4
+	 * @since 1.1
 	 */
-	@Override
 	public boolean isVisible() {
 		if (visibleEnabled) {
 			return super.isVisible() && isEnabled();
@@ -1001,10 +1000,14 @@ public class CommandContributionItem extends ContributionItem {
 		return super.isVisible();
 	}
 
-	private IBindingManagerListener bindingManagerListener = event -> {
+	private IBindingManagerListener bindingManagerListener = new IBindingManagerListener() {
+
+		public void bindingManagerChanged(BindingManagerEvent event) {
 		if (event.isActiveBindingsChanged()
 				&& event.isActiveBindingsChangedFor(getCommand())) {
 			update();
+		}
+
 		}
 
 	};
@@ -1017,7 +1020,7 @@ public class CommandContributionItem extends ContributionItem {
 	 *         helpContextId, mnemonic, tooltip. The Object will never be
 	 *         <code>null</code>, although any of the fields may be
 	 *         <code>null</code>.
-	 * @since 3.100
+     * @since 1.5
 	 */
 	public CommandContributionItemParameter getData() {
 		CommandContributionItemParameter data = new CommandContributionItemParameter(
@@ -1026,17 +1029,17 @@ public class CommandContributionItem extends ContributionItem {
 		data.disabledIcon = contributedDisabledIcon;
 		data.hoverIcon = contributedHoverIcon;
 		data.label = contributedLabel;
-		data.tooltip = contributedTooltip;
 		data.helpContextId = helpContextId;
 		data.mnemonic = mnemonic;
+        data.tooltip = tooltip;
 		return data;
 	}
 
 	/**
 	 * RAP [hs]: This mehtod is needed to access the menu for the styling. It is
-	 * marked public only so that it can be shared within the packages provided by
-	 * RAP. It should never be accessed from application code.
-	 *
+	 * marked public only so that it can be shared
+     * within the packages provided by RAP. It should never be accessed
+     * from application code.
 	 * @return the menuManager for this ContributionItem.
 	 * @since 1.3
 	 */
@@ -1045,10 +1048,10 @@ public class CommandContributionItem extends ContributionItem {
 	}
 
 	/**
-	 * RAP [hs]: Mehtod is needed to modify the mode to show the label within a
-	 * ToolBar. It is marked public only so that it can be shared within the
-	 * packages provided by RAP. It should never be accessed from application code.
-	 *
+     * RAP [hs]: Mehtod is needed to modify the mode to show the label 
+     * within a ToolBar. It is marked public only so that it can be shared
+     * within the packages provided by RAP. It should never be accessed
+     * from application code.
 	 * @param mode the new mode. Should be the constant MODE_FORCE_TEXT
 	 * @since 1.3
 	 */

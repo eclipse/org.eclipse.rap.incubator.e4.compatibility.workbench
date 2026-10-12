@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -28,7 +25,6 @@ import org.eclipse.ui.internal.registry.WorkingSetRegistry;
  * A new working set wizard allows the user to create a
  * new working set using a plugin specified working set page.
  *
- * @since 2.0
  * @see org.eclipse.ui.dialog.IWorkingSetPage
  */
 public class WorkingSetNewWizard extends Wizard implements IWorkingSetNewWizard {
@@ -62,7 +58,6 @@ public class WorkingSetNewWizard extends Wizard implements IWorkingSetNewWizard 
      *
      * @see org.eclipse.jface.wizard.Wizard#addPages()
      */
-    @Override
 	public void addPages() {
         super.addPages();
 
@@ -85,7 +80,6 @@ public class WorkingSetNewWizard extends Wizard implements IWorkingSetNewWizard 
      *
      * @see org.eclipse.jface.wizard.Wizard#canFinish()
      */
-    @Override
 	public boolean canFinish() {
         return (workingSetEditPage != null && workingSetEditPage
                 .isPageComplete());
@@ -99,7 +93,6 @@ public class WorkingSetNewWizard extends Wizard implements IWorkingSetNewWizard 
      *
      * @see org.eclipse.jface.wizard.Wizard#getNextPage(IWizardPage)
      */
-    @Override
 	public IWizardPage getNextPage(IWizardPage page) {
         if (workingSetTypePage != null && page == workingSetTypePage) {
             String pageId = workingSetTypePage.getSelection();
@@ -124,7 +117,6 @@ public class WorkingSetNewWizard extends Wizard implements IWorkingSetNewWizard 
      * @return the new working set or null if the wizard has been
      * 	cancelled.
      */
-    @Override
 	public IWorkingSet getSelection() {
         return workingSet;
     }
@@ -136,7 +128,6 @@ public class WorkingSetNewWizard extends Wizard implements IWorkingSetNewWizard 
      *
      * @see org.eclipse.jface.wizard.Wizard#performFinish()
      */
-    @Override
 	public boolean performFinish() {
         workingSetEditPage.finish();
         workingSet = workingSetEditPage.getSelection();

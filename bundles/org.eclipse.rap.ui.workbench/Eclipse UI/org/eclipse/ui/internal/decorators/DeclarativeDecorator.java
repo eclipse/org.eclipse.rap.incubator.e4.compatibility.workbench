@@ -27,9 +27,9 @@ import org.eclipse.ui.internal.util.BundleUtility;
  */
 public class DeclarativeDecorator implements ILightweightLabelDecorator {
 
-	private String iconLocation;
+	private final String iconLocation;
 
-    private IConfigurationElement configElement;
+	private final IConfigurationElement configElement;
 
     private ImageDescriptor descriptor;
 
@@ -76,8 +76,8 @@ public class DeclarativeDecorator implements ILightweightLabelDecorator {
     @Override
 	public void decorate(Object element, IDecoration decoration) {
         if (descriptor == null) {
-            URL url = BundleUtility.find(configElement.getDeclaringExtension()
-					.getContributor().getName(), iconLocation);
+			URL url = BundleUtility.find(configElement.getDeclaringExtension().getContributor().getName(),
+					iconLocation);
             if (url == null) {
 				return;
 			}

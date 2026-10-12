@@ -15,7 +15,6 @@ package org.eclipse.ui.internal.themes;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.graphics.Font;
@@ -28,17 +27,17 @@ import org.eclipse.ui.PlatformUI;
  */
 public class CascadingFontRegistry extends FontRegistry {
 
-    private FontRegistry parent;
+	private final FontRegistry parent;
 
-    private IPropertyChangeListener listener = event -> {
+	private final IPropertyChangeListener listener = event -> {
 		// check to see if we have an override for the given key. If so,
 		// then a change in our parent registry shouldn't cause a change in
 		// us. Without this check we will propagate a new value
 		// (event.getNewValue()) to our listeners despite the fact that this
 		// value is NOT our current value.
-		if (!hasOverrideFor(event.getProperty()))
-	    fireMappingChanged(event.getProperty(), event.getOldValue(), event
-	            .getNewValue());
+		if (!hasOverrideFor(event.getProperty())) {
+			fireMappingChanged(event.getProperty(), event.getOldValue(), event.getNewValue());
+		}
 
 	};
 
@@ -62,8 +61,8 @@ public class CascadingFontRegistry extends FontRegistry {
     }
 
     @Override
-	public Set getKeySet() {
-        Set keyUnion = new HashSet(super.getKeySet());
+	public Set<String> getKeySet() {
+		Set<String> keyUnion = new HashSet<>(super.getKeySet());
         keyUnion.addAll(parent.getKeySet());
         return keyUnion;
     }

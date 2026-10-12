@@ -1,22 +1,20 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2005 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package org.eclipse.ui.internal;
 
-
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -43,26 +41,32 @@ public class PerspectiveBarNewContributionItem extends ContributionItem {
                 .create(workbenchWindow));
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.action.ContributionItem#dispose()
+     */
 	public void dispose() {
         super.dispose();
-        if (image != null && !image.isDisposed()) {
-            image.dispose();
+// RAP [rh] Image#dispose() missing        
+        if (image != null /*&& !image.isDisposed()*/) {
+//            image.dispose();
             image = null;
         }
     }
 
-    @Override
 	public void fill(final ToolBar parent, int index) {
         if (toolItem == null && parent != null) {
-            parent.addDisposeListener(e -> {
+            parent.addDisposeListener(new DisposeListener() {
+                public void widgetDisposed(DisposeEvent e) {
+                	// RAP [bm]: Image#dispose
 			    //toolItem.getImage().dispose();
 			    toolItem.dispose();
 			    toolItem = null;
+                }
 			});
 
             toolItem = new ToolItem(parent, SWT.PUSH);
-            if (image == null || image.isDisposed()) {
+// RAP [rh] Image#isDisposed() missing
+            if (image == null /*|| image.isDisposed()*/) {
                 image = WorkbenchImages.getImageDescriptor(
                         IWorkbenchGraphicConstants.IMG_ETOOL_NEW_PAGE)
                         .createImage();
@@ -71,16 +75,16 @@ public class PerspectiveBarNewContributionItem extends ContributionItem {
 
             toolItem.setText(""); //$NON-NLS-1$
             toolItem.setToolTipText(WorkbenchMessages.get().PerspectiveBarNewContributionItem_toolTip);
-            toolItem.addSelectionListener(new SelectionAdapter()
-            {
-                public void widgetSelected(SelectionEvent event) {
+            toolItem.addSelectionListener(new SelectionAdapter() {
                     
+                public void widgetSelected(SelectionEvent event) {
                     menuManager.update(true);
                     Point point = new Point(event.x, event.y);
                     if (event.widget instanceof ToolItem) {
                         ToolItem toolItem = (ToolItem) event.widget;
                         Rectangle rectangle = toolItem.getBounds();
-                        point = new Point(rectangle.x, rectangle.y + rectangle.height);
+                        point = new Point(rectangle.x, rectangle.y
+                                + rectangle.height);
                     }
                     Menu menu = menuManager.createContextMenu(parent);
                     point = parent.toDisplay(point);

@@ -32,8 +32,8 @@ import org.eclipse.ui.dnd.IDragAndDropService;
  * An editor container manages the services for an editor.
  */
 public class EditorSite extends PartSite implements IEditorSite {
-    /* package */ //static final int PROP_REUSE_EDITOR = -0x101;
-
+	/* package */
+	// static final int PROP_REUSE_EDITOR = -0x101;
 
     //private ListenerList propChangeListeners = new ListenerList(1);
 
@@ -42,8 +42,7 @@ public class EditorSite extends PartSite implements IEditorSite {
     /**
      * Constructs an EditorSite for an editor.
      */
-	public EditorSite(MPart model, IWorkbenchPart part, IWorkbenchPartReference ref,
-			IConfigurationElement element) {
+	public EditorSite(MPart model, IWorkbenchPart part, IWorkbenchPartReference ref, IConfigurationElement element) {
 		super(model, part, ref, element);
 
 		// Initialize the services specific to this editor site.
@@ -91,10 +90,10 @@ public class EditorSite extends PartSite implements IEditorSite {
     /**
      * Returns the editor action bar contributor for this editor.
      * <p>
-     * An action contributor is responsable for the creation of actions.
-     * By design, this contributor is used for one or more editors of the same type.
-     * Thus, the contributor returned by this method is not owned completely
-     * by the editor.  It is shared.
+	 * An action contributor is responsable for the creation of actions. By design,
+	 * this contributor is used for one or more editors of the same type. Thus, the
+	 * contributor returned by this method is not owned completely by the editor. It
+	 * is shared.
      * </p>
      *
      * @return the editor action bar contributor
@@ -143,23 +142,20 @@ public class EditorSite extends PartSite implements IEditorSite {
     }
 
     @Override
-	public final void registerContextMenu(final MenuManager menuManager,
-            final ISelectionProvider selectionProvider,
+	public final void registerContextMenu(final MenuManager menuManager, final ISelectionProvider selectionProvider,
             final boolean includeEditorInput) {
-        registerContextMenu(getId(), menuManager, selectionProvider,
-                includeEditorInput);
+		registerContextMenu(getId(), menuManager, selectionProvider, includeEditorInput);
     }
 
     @Override
-	public final void registerContextMenu(final String menuId,
-            final MenuManager menuManager,
-            final ISelectionProvider selectionProvider,
-            final boolean includeEditorInput) {
+	public final void registerContextMenu(final String menuId, final MenuManager menuManager,
+			final ISelectionProvider selectionProvider, final boolean includeEditorInput) {
         if (menuExtenders == null) {
-            menuExtenders = new ArrayList(1);
+			menuExtenders = new ArrayList<>(1);
         }
 
-		PartSite.registerContextMenu(menuId, menuManager, selectionProvider, includeEditorInput,
-				getPart(), getModel().getContext(), menuExtenders);
+		PartSite.registerContextMenu(menuId, menuManager, selectionProvider, includeEditorInput, getPart(),
+				getModel().getContext(), menuExtenders);
     }
 }
+

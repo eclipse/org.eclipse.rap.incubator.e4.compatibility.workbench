@@ -20,11 +20,8 @@ import org.eclipse.ui.model.IContributionService;
 
 public class ContributionService implements IContributionService {
 
-	private WorkbenchAdvisor advisor;
+	private final WorkbenchAdvisor advisor;
 
-	/**
-	 * @param advisor
-	 */
 	public ContributionService(WorkbenchAdvisor advisor) {
 		this.advisor = advisor;
 	}

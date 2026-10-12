@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -16,10 +13,12 @@ package org.eclipse.ui.internal.dialogs;
 
 import java.util.Collection;
 import java.util.Iterator;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.IRegistryChangeEvent;
+import org.eclipse.core.runtime.IRegistryChangeListener;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.dynamichelpers.ExtensionTracker;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionChangeHandler;
@@ -28,7 +27,6 @@ import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.misc.StatusUtil;
 import org.eclipse.ui.internal.preferences.WorkbenchPreferenceExpressionNode;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.internal.registry.PreferencePageRegistryReader;
@@ -53,12 +51,23 @@ public class WorkbenchPreferenceManager extends PreferenceManager implements
 
 		// add a listener for keyword deltas. If any occur clear all page caches
 		Platform.getExtensionRegistry().addRegistryChangeListener(
-				event -> {
+				new IRegistryChangeListener() {
+
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see org.eclipse.core.runtime.IRegistryChangeListener#registryChanged(org.eclipse.core.runtime.IRegistryChangeEvent)
+					 */
+					public void registryChanged(IRegistryChangeEvent event) {
 					// RAP [bm]: replaced namespace
 					if (event.getExtensionDeltas(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 							IWorkbenchRegistryConstants.PL_KEYWORDS).length > 0) {
-						for (Object element : getElements(PreferenceManager.POST_ORDER)) {
-							((WorkbenchPreferenceNode) element).clearKeywords();
+							for (Iterator j = getElements(
+									PreferenceManager.POST_ORDER).iterator(); j
+									.hasNext();) {
+								((WorkbenchPreferenceNode) j.next())
+										.clearKeywords();
+							}
 						}
 					}
 				});
@@ -95,17 +104,21 @@ public class WorkbenchPreferenceManager extends PreferenceManager implements
 		PlatformUI.getWorkbench().getExtensionTracker().registerObject(
 				node.getConfigurationElement().getDeclaringExtension(), node,
 				IExtensionTracker.REF_WEAK);
-		for (IPreferenceNode subNode : node.getSubNodes()) {
-			registerNode((WorkbenchPreferenceNode) subNode);
+		IPreferenceNode[] subNodes = node.getSubNodes();
+		for (int i = 0; i < subNodes.length; i++) {
+			registerNode((WorkbenchPreferenceNode) subNodes[i]);
 		}
 
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.dynamicHelpers.IExtensionChangeHandler#addExtension(org.eclipse.core.runtime.dynamicHelpers.IExtensionTracker, org.eclipse.core.runtime.IExtension)
+	 */
 	public void addExtension(IExtensionTracker tracker, IExtension extension) {
-		for (IConfigurationElement configElement : extension.getConfigurationElements()) {
+		IConfigurationElement[] elements = extension.getConfigurationElements();
+		for (int i = 0; i < elements.length; i++) {
 			WorkbenchPreferenceNode node = PreferencePageRegistryReader
-					.createNode(configElement);
+					.createNode(elements[i]);
 			if (node == null) {
 				continue;
 			}
@@ -126,8 +139,8 @@ public class WorkbenchPreferenceManager extends PreferenceManager implements
 				}
 				if (parent == null) {
 					// Could not find the parent - log
-					String message = "Invalid preference category path: " + category + " (bundle: " + node.getPluginId() + ", page: " + node.getId() + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-					WorkbenchPlugin.log(StatusUtil.newStatus(IStatus.WARNING, message, null));
+					WorkbenchPlugin
+							.log("Invalid preference page path: " + category); //$NON-NLS-1$
 					addToRoot(node);
 				} else {
 					parent.add(node);
@@ -136,17 +149,24 @@ public class WorkbenchPreferenceManager extends PreferenceManager implements
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.dynamicHelpers.IExtensionAdditionHandler#getExtensionPointFilter()
+	 */
 	private IExtensionPoint getExtensionPointFilter() {
 	    // RAP [bm]: namespace
 		return Platform.getExtensionRegistry().getExtensionPoint(
 				PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_PREFERENCES);
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.runtime.dynamicHelpers.IExtensionChangeHandler#removeExtension(org.eclipse.core.runtime.IExtension, java.lang.Object[])
+	 */
 	public void removeExtension(IExtension extension, Object[] objects) {
-		for (Object object : objects) {
-			if (object instanceof IPreferenceNode) {
-				IPreferenceNode wNode = (IPreferenceNode) object;
+		for (int i = 0; i < objects.length; i++) {
+			if (objects[i] instanceof IPreferenceNode) {
+				IPreferenceNode wNode = (IPreferenceNode) objects[i];
 				wNode.disposeResources();
 				deepRemove(getRoot(), wNode);
 			}
@@ -175,8 +195,9 @@ public class WorkbenchPreferenceManager extends PreferenceManager implements
 			return true;
 		}
 
-		for (IPreferenceNode subNode : parent.getSubNodes()) {
-			if (deepRemove(subNode, nodeToRemove)) {
+		IPreferenceNode[] subNodes = parent.getSubNodes();
+		for (int i = 0; i < subNodes.length; i++) {
+			if (deepRemove(subNodes[i], nodeToRemove)) {
 				return true;
 			}
 		}

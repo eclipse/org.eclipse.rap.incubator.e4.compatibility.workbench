@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -16,6 +13,7 @@ package org.eclipse.ui.internal.registry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
@@ -32,8 +30,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 /**
  * A working set descriptor stores the plugin registry data for
  * a working set page extension.
- *
- * @since 2.0
  */
 public class WorkingSetDescriptor implements IPluginContribution {
     private String id;
@@ -93,7 +89,8 @@ public class WorkingSetDescriptor implements IPluginContribution {
 		if (containsChildren.length > 0) {
 			List byClassList = new ArrayList(containsChildren.length);
 			List byAdapterList = new ArrayList(containsChildren.length);
-			for (IConfigurationElement child : containsChildren) {
+			for (int i = 0; i < containsChildren.length; i++) {
+				IConfigurationElement child = containsChildren[i];
 				String className = child
 						.getAttribute(IWorkbenchRegistryConstants.ATT_CLASS);
 				if (className != null)
@@ -121,7 +118,7 @@ public class WorkingSetDescriptor implements IPluginContribution {
      * @return the name space declaring this working set
      */
     public String getDeclaringNamespace() {
-		return configElement.getContributor().getName();
+    	return configElement.getNamespace();
     }
 
     /**
@@ -130,7 +127,6 @@ public class WorkingSetDescriptor implements IPluginContribution {
 	 * bundle that contains the referenced class.
 	 *
 	 * @return the namespace
-	 * @since 3.3
 	 */
 	public String getUpdaterNamespace() {
 		return WorkbenchPlugin.getBundleForExecutableExtension(configElement,
@@ -143,7 +139,6 @@ public class WorkingSetDescriptor implements IPluginContribution {
 	 * another bundle that contains the referenced class.
 	 *
 	 * @return the namespace
-	 * @since 3.3
 	 */
 	public String getElementAdapterNamespace() {
 		return WorkbenchPlugin.getBundleForExecutableExtension(configElement,
@@ -181,7 +176,7 @@ public class WorkingSetDescriptor implements IPluginContribution {
 		}
 
         IExtension extension = configElement.getDeclaringExtension();
-		String extendingPluginId = extension.getContributor().getName();
+        String extendingPluginId = extension.getNamespace();
         return AbstractUIPlugin.imageDescriptorFromPlugin(extendingPluginId,
                 icon);
     }
@@ -278,19 +273,15 @@ public class WorkingSetDescriptor implements IPluginContribution {
      *
      * @return <code>true</code> if working sets based on this descriptor are editable; otherwise
      *  <code>false</code>
-     *
-     * @since 3.1
      */
     public boolean isEditable() {
         return getPageClassName() != null;
     }
 
-	@Override
 	public String getLocalId() {
 		return getId();
 	}
 
-	@Override
 	public String getPluginId() {
 		return getDeclaringNamespace();
 	}
@@ -299,7 +290,6 @@ public class WorkingSetDescriptor implements IPluginContribution {
 	 * Return the config element for this descriptor.
 	 *
 	 * @return the config element
-	 * @since 3.3
 	 */
 	public IConfigurationElement getConfigurationElement() {
 		return configElement;
@@ -309,7 +299,6 @@ public class WorkingSetDescriptor implements IPluginContribution {
 	 * Return the description for this working set type.
 	 *
 	 * @return the description for this type. May be an empty string.
-	 * @since 3.4
 	 */
 	public String getDescription() {
 		String description = configElement
@@ -317,18 +306,5 @@ public class WorkingSetDescriptor implements IPluginContribution {
 		if (description == null)
 			description = ""; //$NON-NLS-1$
 		return description;
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("WorkingSetDescriptor ["); //$NON-NLS-1$
-		builder.append("id="); //$NON-NLS-1$
-		builder.append(id);
-		builder.append(", "); //$NON-NLS-1$
-		builder.append("name="); //$NON-NLS-1$
-		builder.append(name);
-		builder.append("]"); //$NON-NLS-1$
-		return builder.toString();
 	}
 }

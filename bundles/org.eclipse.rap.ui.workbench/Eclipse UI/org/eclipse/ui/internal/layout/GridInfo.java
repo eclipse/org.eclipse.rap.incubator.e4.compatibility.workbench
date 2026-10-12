@@ -36,9 +36,6 @@ class GridInfo {
 
     /**
      * Initialize the grid
-     *
-     * @param newControls
-     * @param cols
      */
     public void initGrid(Control[] newControls, CellLayout layout) {
         cols = layout.getColumns();
@@ -122,8 +119,8 @@ class GridInfo {
     /**
      * Returns the number of rows or columns
      *
-     * @param isRow if true, returns the number of rows. If false, returns the number of columns
-     * @return
+	 * @param isRow if true, returns the number of rows. If false, returns the
+	 *              number of columns
      */
     public int getNumRows(boolean isRow) {
         if (isRow) {

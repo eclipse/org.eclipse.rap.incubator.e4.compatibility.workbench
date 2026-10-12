@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2017 IBM Corporation and others.
+ * Copyright (c) 2004, 2021 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -72,7 +72,8 @@ public class SaveableHelper {
 	/**
 	 * FOR USE BY THE AUTOMATED TEST HARNESS ONLY.
 	 *
-	 * Sets the response to use when <code>savePart</code> is called with <code>confirm=true</code>.
+	 * Sets the response to use when <code>savePart</code> is called with
+	 * <code>confirm=true</code>.
 	 *
 	 * @param response 0 for yes, 1 for no, 2 for cancel, -1 for default (prompt)
 	 */
@@ -83,7 +84,8 @@ public class SaveableHelper {
 	/**
 	 * FOR USE BY THE AUTOMATED TEST HARNESS ONLY.
 	 *
-	 * Sets the response to use when <code>savePart</code> is called with <code>confirm=true</code>.
+	 * Sets the response to use when <code>savePart</code> is called with
+	 * <code>confirm=true</code>.
 	 *
 	 * @return 0 for yes, 1 for no, 2 for cancel, -1 for default (prompt)
 	 */
@@ -101,8 +103,8 @@ public class SaveableHelper {
 	 * @return <code>true</code> for continue, <code>false</code> if the operation
 	 * was canceled.
 	 */
-	public static boolean savePart(final ISaveablePart saveable, IWorkbenchPart part,
-			IWorkbenchWindow window, boolean confirm) {
+	public static boolean savePart(final ISaveablePart saveable, IWorkbenchPart part, IWorkbenchWindow window,
+			boolean confirm) {
 		// Short circuit.
 		if (!saveable.isDirty()) {
 			return true;
@@ -119,11 +121,10 @@ public class SaveableHelper {
 					String message = NLS.bind(WorkbenchMessages.get().EditorManager_saveChangesQuestion,
 							LegacyActionTools.escapeMnemonics(part.getTitle()));
 					// Show a dialog.
-					MessageDialog d = new MessageDialog(window.getShell(),
-							WorkbenchMessages.get().Save_Resource, null, message,
-							MessageDialog.QUESTION,
-							new String[] {
-							WorkbenchMessages.get().SaveableHelper_Save, WorkbenchMessages.get().SaveableHelper_Dont_Save,
+					MessageDialog d = new MessageDialog(window.getShell(), WorkbenchMessages.get().Save_Resource, null,
+							message, MessageDialog.QUESTION,
+							new String[] { WorkbenchMessages.get().SaveableHelper_Save,
+									WorkbenchMessages.get().SaveableHelper_Dont_Save,
 							WorkbenchMessages.get().SaveableHelper_Cancel}, 0) {
 						@Override
 						protected int getShellStyle() {
@@ -166,11 +167,11 @@ public class SaveableHelper {
 	 *
 	 * @param modelSource the model source
 	 * @param window the workbench window
-	 * @param confirm
 	 * @return <code>true</code> for continue, <code>false</code> if the operation
 	 *   was canceled or an error occurred while saving.
 	 */
-	private static boolean saveModels(ISaveablesSource modelSource, final IWorkbenchWindow window, final boolean confirm) {
+	private static boolean saveModels(ISaveablesSource modelSource, final IWorkbenchWindow window,
+			final boolean confirm) {
 		final ArrayList<Saveable> dirtyModels = new ArrayList<>();
 		for (Saveable model : modelSource.getActiveSaveables()) {
 			if (model.isDirty()) {
@@ -194,9 +195,6 @@ public class SaveableHelper {
 						continue;
 					}
 					doSaveModel(model, subMonitor.split(1), window, confirm);
-					if (subMonitor.isCanceled()) {
-						break;
-					}
 				}
 			} finally {
 				monitorWrap.done();
@@ -210,17 +208,15 @@ public class SaveableHelper {
 	/**
 	 * Saves the workbench part ... this is similar to
 	 * {@link SaveableHelper#savePart(ISaveablePart, IWorkbenchPart, IWorkbenchWindow, boolean) }
-	 * except that the {@link ISaveablePart2#DEFAULT } case must cause the
-	 * calling function to allow this part to participate in the default saving
-	 * mechanism.
+	 * except that the {@link ISaveablePart2#DEFAULT } case must cause the calling
+	 * function to allow this part to participate in the default saving mechanism.
 	 *
 	 * @param saveable the part
 	 * @param window the workbench window
 	 * @param confirm request confirmation
 	 * @return the ISaveablePart2 constant
 	 */
-	static int savePart(final ISaveablePart2 saveable,
-			IWorkbenchWindow window, boolean confirm) {
+	static int savePart(final ISaveablePart2 saveable, IWorkbenchWindow window, boolean confirm) {
 		// Short circuit.
 		if (!saveable.isDirty()) {
 			return ISaveablePart2.YES;
@@ -254,27 +250,24 @@ public class SaveableHelper {
 	}
 
 	/**
-	 * Runs a progress monitor operation. Returns true if success, false if
-	 * canceled.
+	 * Runs a progress monitor operation. Returns true if success, false if canceled
+	 * or an error occurred.
 	 */
-	static boolean runProgressMonitorOperation(String opName,
-			IRunnableWithProgress progressOp, IWorkbenchWindow window) {
-		return runProgressMonitorOperation(opName, progressOp, window, window);
+	static boolean runProgressMonitorOperation(String opName, final IRunnableWithProgress progressOp,
+			final IRunnableContext runnableContext) {
+		IShellProvider shellProvider = runnableContext instanceof IShellProvider ? (IShellProvider) runnableContext : null;
+		return runProgressMonitorOperation(opName, progressOp, runnableContext, shellProvider);
 	}
 
-	/**
-	 * Runs a progress monitor operation.
-	 * Returns true if success, false if canceled or an error occurred.
-	 */
-	static boolean runProgressMonitorOperation(String opName,
-			final IRunnableWithProgress progressOp,
+	static boolean runProgressMonitorOperation(String opName, final IRunnableWithProgress progressOp,
 			final IRunnableContext runnableContext, final IShellProvider shellProvider) {
 		final boolean[] success = new boolean[] { false };
 		IRunnableWithProgress runnable = monitor -> {
 			progressOp.run(monitor);
 			// Only indicate success if the monitor wasn't canceled
-			if (!monitor.isCanceled())
+			if (!monitor.isCanceled()) {
 				success[0] = true;
+			}
 		};
 
 		try {
@@ -282,28 +275,22 @@ public class SaveableHelper {
 		} catch (InvocationTargetException e) {
 			String title = NLS.bind(WorkbenchMessages.get().EditorManager_operationFailed, opName );
 			Throwable targetExc = e.getTargetException();
-			WorkbenchPlugin.log(title, new Status(IStatus.WARNING,
-					PlatformUI.PLUGIN_ID, 0, title, targetExc));
-			StatusUtil.handleStatus(title, targetExc, StatusManager.SHOW,
-					shellProvider.getShell());
+			WorkbenchPlugin.log(title, new Status(IStatus.WARNING, PlatformUI.PLUGIN_ID, 0, title, targetExc));
+			StatusUtil.handleStatus(title, targetExc, StatusManager.SHOW);
 			// Fall through to return failure
-		} catch (InterruptedException e) {
-			// The user pressed cancel. Fall through to return failure
-		} catch (OperationCanceledException e) {
+		} catch (InterruptedException | OperationCanceledException e) {
 			// The user pressed cancel. Fall through to return failure
 		}
 		return success[0];
 	}
 
 	/**
-	 * Returns whether the model source needs saving. This is true if any of
-	 * the active models are dirty. This logic must correspond with
-	 * {@link #saveModels} above.
+	 * Returns whether the model source needs saving. This is true if any of the
+	 * active models are dirty. This logic must correspond with {@link #saveModels}
+	 * above.
 	 *
-	 * @param modelSource
-	 *            the model source
-	 * @return <code>true</code> if save is required, <code>false</code>
-	 *         otherwise
+	 * @param modelSource the model source
+	 * @return <code>true</code> if save is required, <code>false</code> otherwise
 	 * @since 3.2
 	 */
 	public static boolean needsSave(ISaveablesSource modelSource) {
@@ -315,14 +302,7 @@ public class SaveableHelper {
 		return false;
 	}
 
-	/**
-	 * @param model
-	 * @param progressMonitor
-	 * @param shellProvider
-	 * @param blockUntilSaved
-	 */
-	public static void doSaveModel(final Saveable model,
-			IProgressMonitor progressMonitor,
+	public static void doSaveModel(final Saveable model, IProgressMonitor progressMonitor,
 			final IShellProvider shellProvider, boolean blockUntilSaved) {
 		try {
 			Job backgroundSaveJob = ((InternalSaveable)model).getBackgroundSaveJob();
@@ -393,8 +373,7 @@ public class SaveableHelper {
 					@Override
 					public void done(final IJobChangeEvent event) {
 						((InternalSaveable) model).setBackgroundSaveJob(null);
-						shellProvider.getShell().getDisplay().asyncExec(
-								() -> {
+						shellProvider.getShell().getDisplay().asyncExec(() -> {
 									notifySaveAction(parts);
 									model.enableUI(parts);
 								});
@@ -430,7 +409,6 @@ public class SaveableHelper {
 	 * Waits for the background save job (if any) of the given saveable to complete.
 	 * This may open a progress dialog with the option to cancel.
 	 *
-	 * @param modelToSave
 	 * @return true if the user canceled.
 	 */
 	private static boolean waitForBackgroundSaveJob(final Saveable model) {
@@ -440,16 +418,16 @@ public class SaveableHelper {
 	}
 
 	/**
-	 * Waits for the background save jobs (if any) of the given saveables to complete.
-	 * This may open a progress dialog with the option to cancel.
+	 * Waits for the background save jobs (if any) of the given saveables to
+	 * complete. This may open a progress dialog with the option to cancel.
 	 *
-	 * @param modelsToSave
 	 * @return true if the user canceled.
 	 */
 	public static boolean waitForBackgroundSaveJobs(final List modelsToSave) {
 		// block if any of the saveables is still saving in the background
 		try {
-			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> Job.getJobManager().join(new DynamicFamily(modelsToSave), monitor));
+			PlatformUI.getWorkbench().getProgressService()
+					.busyCursorWhile(monitor -> Job.getJobManager().join(new DynamicFamily(modelsToSave), monitor));
 		} catch (InvocationTargetException e) {
 			StatusUtil.handleStatus(e, StatusManager.SHOW | StatusManager.LOG);
 		} catch (InterruptedException e) {

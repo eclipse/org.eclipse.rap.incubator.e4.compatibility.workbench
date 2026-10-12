@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2016 IBM Corporation and others.
+ * Copyright (c) 2007, 2022 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -31,13 +31,12 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 public class SelectionAdapterFactory implements IAdapterFactory {
 	private static final ICountable ICOUNT_0 = () -> 0;
 	private static final ICountable ICOUNT_1 = () -> 1;
-	private static final IIterable ITERATE_EMPTY = () -> Collections.EMPTY_LIST.iterator();
+	private static final IIterable ITERATE_EMPTY = Collections.emptyList()::iterator;
 
 	/**
 	 * The classes we can adapt to.
 	 */
-	private static final Class[] CLASSES = new Class[] { IIterable.class,
-			ICountable.class };
+	private static final Class<?>[] CLASSES = new Class[] { IIterable.class, ICountable.class };
 
 	@Override
 	public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
@@ -56,25 +55,24 @@ public class SelectionAdapterFactory implements IAdapterFactory {
 			return ITERATE_EMPTY;
 		}
 		if (sel instanceof IStructuredSelection) {
-			return (IIterable) () -> ((IStructuredSelection) sel).iterator();
+			return (IIterable) ((IStructuredSelection) sel)::iterator;
 		}
-		final List list = Arrays.asList(new Object[] { sel });
-		return (IIterable) () -> list.iterator();
+		final List list = Arrays.asList(sel);
+		return (IIterable) list::iterator;
 	}
 
 	private Object countable(final ISelection sel) {
 		if (sel.isEmpty()) {
 			return ICOUNT_0;
 		}
-		if (sel instanceof IStructuredSelection) {
-			final IStructuredSelection ss = (IStructuredSelection) sel;
-			return (ICountable) () -> ss.size();
+		if (sel instanceof final IStructuredSelection ss) {
+			return (ICountable) ss::size;
 		}
 		return ICOUNT_1;
 	}
 
 	@Override
-	public Class[] getAdapterList() {
+	public Class<?>[] getAdapterList() {
 		return CLASSES;
 	}
 }

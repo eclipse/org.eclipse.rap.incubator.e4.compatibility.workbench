@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -14,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.registry;
 
+//import java.io.File;
+import java.io.File;
 import java.io.Serializable;
 
 import org.eclipse.core.runtime.Assert;
@@ -44,7 +43,6 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
 
     /**
      * Generated serial version UID for this class.
-     * @since 3.1
      */
     private static final long serialVersionUID = 3905241225668998961L;
 
@@ -117,6 +115,7 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
 
 
 
+// RAP [rh] (external) program editors not supported
 //	/**
 //     * Creates a descriptor for an external program.
 //     *
@@ -154,15 +153,18 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
 //
 //        return editor;
 //    }
-//
+    
+    // RAP [bm]: 
 //    /**
 //     * Return the program called programName. Return null if it is not found.
 //     * @return org.eclipse.swt.program.Program
 //     */
 //    private static Program findProgram(String programName) {
-//		for (Program program : Program.getPrograms()) {
-//			if (program.getName().equals(programName)) {
-//				return program;
+//
+//        Program[] programs = Program.getPrograms();
+//        for (int i = 0; i < programs.length; i++) {
+//            if (programs[i].getName().equals(programName)) {
+//				return programs[i];
 //			}
 //        }
 //
@@ -256,7 +258,6 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
      *
      * @return the id
      */
-    @Override
 	public String getId() {
         // RAP [bm]: Program
 //      if (program == null) {
@@ -274,7 +275,6 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
      *
      * @return the image descriptor
      */
-    @Override
 	public ImageDescriptor getImageDescriptor() {
     	ImageDescriptor tempDescriptor = null;
 
@@ -351,7 +351,6 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
      *
      * @return the label
      */
-    @Override
 	public String getLabel() {
 // RAP [bm]: Program
 //      if (program == null) {
@@ -382,7 +381,7 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
      */
     public String getPluginID() {
     	if (configurationElement != null) {
-			return configurationElement.getContributor().getName();
+			return configurationElement.getNamespace();
 		}
     	return pluginIdentifier;
     }
@@ -396,17 +395,23 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
 //      return this.program;
 //  }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IEditorDescriptor#isInternal
+     */
 	public boolean isInternal() {
         return getOpenMode() == OPEN_INTERNAL;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IEditorDescriptor#isOpenInPlace
+     */
 	public boolean isOpenInPlace() {
         return getOpenMode() == OPEN_INPLACE;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IEditorDescriptor#isOpenExternal
+     */
 	public boolean isOpenExternal() {
         return getOpenMode() == OPEN_EXTERNAL;
     }
@@ -431,10 +436,12 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
             openMode = openModeInt.intValue();
         } else {
             // legacy: handle the older attribute names, needed to allow reading of pre-3.0-RCP workspaces
-            boolean internal = Boolean.parseBoolean(memento
-                    .getString(IWorkbenchConstants.TAG_INTERNAL));
-            boolean openInPlace = Boolean.parseBoolean(memento
-                    .getString(IWorkbenchConstants.TAG_OPEN_IN_PLACE));
+            boolean internal = new Boolean(memento
+                    .getString(IWorkbenchConstants.TAG_INTERNAL))
+                    .booleanValue();
+            boolean openInPlace = new Boolean(memento
+                    .getString(IWorkbenchConstants.TAG_OPEN_IN_PLACE))
+                    .booleanValue();
             if (internal) {
                 openMode = OPEN_INTERNAL;
             } else {
@@ -493,7 +500,6 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
      * Return the open mode of this editor.
      *
 	 * @return the open mode of this editor
-	 * @since 3.1
 	 */
 	private int getOpenMode() {
 		if (configurationElement == null) { // if we've been serialized, return our serialized value
@@ -603,22 +609,27 @@ public final class EditorDescriptor implements IEditorDescriptor, Serializable,
     /**
      * For debugging purposes only.
      */
-    @Override
 	public String toString() {
         return "EditorDescriptor(id=" + getId() + ", label=" + getLabel() + ")"; //$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-1$
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.activities.support.IPluginContribution#getLocalId()
+     */
 	public String getLocalId() {
         return getId();
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.activities.support.IPluginContribution#getPluginId()
+     */
 	public String getPluginId() {
         return getPluginID();
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IEditorDescriptor#getEditorManagementPolicy()
+     */
     public IEditorMatchingStrategy getEditorMatchingStrategy() {
         if (matchingStrategy == null && !matchingStrategyChecked) {
             matchingStrategyChecked = true;

@@ -20,8 +20,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.ui.IActionFilter;
 
 /**
- * An ObjectFilterTest is used to read an object filter from XML,
- * and evaluate the results for a given object.
+ * An ObjectFilterTest is used to read an object filter from XML, and evaluate
+ * the results for a given object.
  */
 public class ObjectFilterTest {
 	private HashMap<String, String> filterElements;
@@ -34,9 +34,9 @@ public class ObjectFilterTest {
     }
 
     /**
-     * Add a filter element to the test.  This element must contain
-     * a name value filter pair, as defined by the
-     * <code>org.eclipse.ui.actionFilters</code> extension point.
+	 * Add a filter element to the test. This element must contain a name value
+	 * filter pair, as defined by the <code>org.eclipse.ui.actionFilters</code>
+	 * extension point.
      */
     public boolean addFilterElement(IConfigurationElement element) {
         String name = element.getAttribute("name");//$NON-NLS-1$
@@ -60,16 +60,15 @@ public class ObjectFilterTest {
 	 * Returns whether the object filter correctly matches a given object. The
 	 * results will be <code>true</code> if there is a filter match.
 	 * <p>
-	 * If <code>adaptable is true</code>, the result will also be
-	 * <code>true</code> if the object is a wrapper for a resource, and the
-	 * resource produces a filter match.
+	 * If <code>adaptable is true</code>, the result will also be <code>true</code>
+	 * if the object is a wrapper for a resource, and the resource produces a filter
+	 * match.
 	 * </p>
 	 *
-	 * @param object
-	 *            the object to examine
-	 * @returns <code>true</code> if there is a filter match.
+	 * @param object the object to examine
+	 * @return <code>true</code> if there is a filter match.
 	 */
-    public boolean matches(Object object, boolean adaptable) {
+	boolean matches(Object object) {
         // Optimize it.
         if (filterElements == null) {
 			return true;
@@ -103,4 +102,3 @@ public class ObjectFilterTest {
         return true;
     }
 }
-

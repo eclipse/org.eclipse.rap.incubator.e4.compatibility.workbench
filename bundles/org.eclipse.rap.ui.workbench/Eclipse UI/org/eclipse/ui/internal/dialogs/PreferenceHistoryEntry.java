@@ -13,6 +13,7 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
+import java.util.Objects;
 import org.eclipse.core.runtime.Assert;
 
 /**
@@ -21,9 +22,9 @@ import org.eclipse.core.runtime.Assert;
  * @since 3.1
  */
 final class PreferenceHistoryEntry {
-	private String id;
-	private String label;
-	private Object argument;
+	private final String id;
+	private final String label;
+	private final Object argument;
 
 	/**
 	 * Creates a new entry.
@@ -40,6 +41,7 @@ final class PreferenceHistoryEntry {
 		this.label= label;
 		this.argument= argument;
 	}
+
 	/**
 	 * Returns the preference page id.
 	 *
@@ -48,6 +50,7 @@ final class PreferenceHistoryEntry {
 	public String getId() {
 		return id;
 	}
+
 	/**
 	 * Returns the preference page argument.
 	 *
@@ -56,6 +59,7 @@ final class PreferenceHistoryEntry {
 	public Object getArgument() {
 		return argument;
 	}
+
 	/**
 	 * Returns the preference page label.
 	 *
@@ -75,11 +79,9 @@ final class PreferenceHistoryEntry {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof PreferenceHistoryEntry) {
-			PreferenceHistoryEntry other= (PreferenceHistoryEntry) obj;
+		if (obj instanceof PreferenceHistoryEntry other) {
 			return id.equals(other.id)
-					&& (argument == null && other.argument == null
-							|| argument.equals(other.argument));
+					&& Objects.equals(argument, other.argument);
 		}
 		return super.equals(obj);
 	}

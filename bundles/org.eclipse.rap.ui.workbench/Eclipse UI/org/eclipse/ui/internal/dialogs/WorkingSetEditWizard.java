@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2005 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -23,7 +20,6 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * A working set edit wizard allows the user to edit a
  * working set using a plugin specified working set page.
  *
- * @since 2.0
  * @see org.eclipse.ui.dialog.IWorkingSetPage
  */
 public class WorkingSetEditWizard extends Wizard implements
@@ -50,7 +46,6 @@ public class WorkingSetEditWizard extends Wizard implements
      *
      * @see org.eclipse.jface.wizard.Wizard#addPages
      */
-    @Override
 	public void addPages() {
         super.addPages();
         addPage(workingSetEditPage);
@@ -61,7 +56,6 @@ public class WorkingSetEditWizard extends Wizard implements
      *
      * @see org.eclipse.jface.wizard.Wizard#canFinish()
      */
-    @Override
 	public boolean canFinish() {
         return workingSetEditPage.isPageComplete();
     }
@@ -71,7 +65,6 @@ public class WorkingSetEditWizard extends Wizard implements
      *
      * @return the working set that is being edited.
      */
-    @Override
 	public IWorkingSet getSelection() {
         return workingSet;
     }
@@ -82,7 +75,6 @@ public class WorkingSetEditWizard extends Wizard implements
      *
      * @see org.eclipse.jface.wizard.Wizard#performFinish
      */
-    @Override
 	public boolean performFinish() {
         workingSetEditPage.finish();
         return true;

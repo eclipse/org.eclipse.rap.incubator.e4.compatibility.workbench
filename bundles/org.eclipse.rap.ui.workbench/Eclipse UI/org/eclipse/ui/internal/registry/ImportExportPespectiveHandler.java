@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 IBM Corporation and others.
+ * Copyright (c) 2015, 2020 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -13,17 +13,18 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.registry;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
@@ -46,11 +47,8 @@ import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.internal.e4.compatibility.ModeledPageLayout;
 import org.eclipse.ui.internal.e4.migration.PerspectiveBuilder;
 import org.eclipse.ui.internal.e4.migration.PerspectiveReader;
-import org.eclipse.ui.internal.wizards.preferences.PreferencesExportWizard;
-import org.eclipse.ui.internal.wizards.preferences.PreferencesImportWizard;
 import org.osgi.service.event.EventHandler;
 
-@SuppressWarnings("restriction")
 public class ImportExportPespectiveHandler {
 
 	private static final String PERSPECTIVE_SUFFIX_4X = "_e4persp"; //$NON-NLS-1$
@@ -60,6 +58,9 @@ public class ImportExportPespectiveHandler {
 	private static final String ASCII_ENCODING = "ASCII"; //$NON-NLS-1$
 
 	private static final String TRIMS_KEY = "trims"; //$NON-NLS-1$
+	private static final String EVENT_EXPORT_BEGIN = "org/eclipse/ui/internal/wizards/preferences/export/begin"; //$NON-NLS-1$
+	private static final String EVENT_EXPORT_END = "org/eclipse/ui/internal/wizards/preferences/export/end"; //$NON-NLS-1$
+	private static final String EVENT_IMPORT_END = "org/eclipse/ui/internal/wizards/preferences/import/end"; //$NON-NLS-1$
 
 	@Inject
 	private EModelService modelService;
@@ -73,7 +74,8 @@ public class ImportExportPespectiveHandler {
 	@Inject
 	private Logger logger;
 
-	@Inject @Preference(nodePath="org.eclipse.ui.workbench")
+	@Inject
+	@Preference(nodePath = "org.eclipse.ui.workbench")
 	private IEclipsePreferences preferences;
 
 	@Inject
@@ -88,17 +90,17 @@ public class ImportExportPespectiveHandler {
 	private IPreferenceChangeListener preferenceListener;
 	private boolean ignoreEvents;
 
-	private List<MPerspective> exportedPersps = new ArrayList<>();
-	private List<String> importedPersps = new ArrayList<>();
+	private final List<MPerspective> exportedPersps = new ArrayList<>();
+	private final List<String> importedPersps = new ArrayList<>();
 	private Map<String, String> minMaxPersistedState;
 
 	@PostConstruct
 	private void init() {
 		initializeEventHandlers();
 		preferences.addPreferenceChangeListener(preferenceListener);
-		eventBroker.subscribe(PreferencesExportWizard.EVENT_EXPORT_BEGIN, exportPreferencesBegin);
-		eventBroker.subscribe(PreferencesExportWizard.EVENT_EXPORT_END, exportPreferencesEnd);
-		eventBroker.subscribe(PreferencesImportWizard.EVENT_IMPORT_END, importPreferencesEnd);
+		eventBroker.subscribe(EVENT_EXPORT_BEGIN, exportPreferencesBegin);
+		eventBroker.subscribe(EVENT_EXPORT_END, exportPreferencesEnd);
+		eventBroker.subscribe(EVENT_IMPORT_END, importPreferencesEnd);
 	}
 
 	@PreDestroy
@@ -137,8 +139,9 @@ public class ImportExportPespectiveHandler {
 
 	private String getOriginalId(String id) {
 		int index = id.lastIndexOf('.');
-		if (index == -1)
+		if (index == -1) {
 			return id;
+		}
 		return id.substring(0, index);
 	}
 
@@ -232,31 +235,17 @@ public class ImportExportPespectiveHandler {
 	private String perspToString(MPerspective persp) throws IOException {
 		Resource resource = new E4XMIResourceFactory().createResource(null);
 		resource.getContents().add((EObject) persp);
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		try {
-			resource.save(output, null);
-		} finally {
-			try {
-				output.close();
-			} catch (IOException e) {
-				logger.error(e, "Cannot close output stream"); //$NON-NLS-1$
-			}
-		}
+		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+			resource.save(output, new HashMap<>());
 		resource.getContents().clear();
 		return new String(output.toByteArray(), ASCII_ENCODING);
+	}
 	}
 
 	private MPerspective perspFromString(String perspAsString) throws IOException {
 		Resource resource = new E4XMIResourceFactory().createResource(null);
-		InputStream input = new ByteArrayInputStream(perspAsString.getBytes(ASCII_ENCODING));
-		try {
+		try (InputStream input = new ByteArrayInputStream(perspAsString.getBytes(ASCII_ENCODING))) {
 			resource.load(input, null);
-		} finally {
-			try {
-				input.close();
-			} catch (IOException e) {
-				logger.error(e, "Cannot close input stream"); //$NON-NLS-1$
-			}
 		}
 		MPerspective perspective = (MPerspective) resource.getContents().get(0);
 		resource.getContents().clear();
@@ -265,8 +254,7 @@ public class ImportExportPespectiveHandler {
 
 	private void copyPerspsToPreferences() {
 		for (MUIElement snippet : application.getSnippets()) {
-			if (snippet instanceof MPerspective) {
-				MPerspective persp = (MPerspective) snippet;
+			if (snippet instanceof MPerspective persp) {
 				exportedPersps.add(persp);
 			}
 		}
@@ -325,3 +313,4 @@ public class ImportExportPespectiveHandler {
 	}
 
 }
+

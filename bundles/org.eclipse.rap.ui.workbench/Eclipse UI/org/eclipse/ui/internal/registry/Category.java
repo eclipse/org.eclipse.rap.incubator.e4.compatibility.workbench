@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -15,6 +12,7 @@ package org.eclipse.ui.internal.registry;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -38,12 +36,12 @@ public class Category implements IWorkbenchAdapter, IPluginContribution, IAdapta
     /**
      * Name of the miscellaneous category
      */
-	public static final String MISC_NAME = WorkbenchMessages.get().ICategory_other;
+    public final static String MISC_NAME = WorkbenchMessages.get().ICategory_other;
 
     /**
      * Identifier of the miscellaneous category
      */
-    public static final String MISC_ID = "org.eclipse.ui.internal.otherCategory"; //$NON-NLS-1$
+    public final static String MISC_ID = "org.eclipse.ui.internal.otherCategory"; //$NON-NLS-1$
 
     private String id;
 
@@ -110,28 +108,36 @@ public class Category implements IWorkbenchAdapter, IPluginContribution, IAdapta
         elements.add(element);
     }
 
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
+    /* (non-Javadoc)
+     * Method declared on IAdaptable.
+     */
+    public Object getAdapter(Class adapter) {
         if (adapter == IWorkbenchAdapter.class) {
-			return adapter.cast(this);
+			return this;
 		} else if (adapter == IConfigurationElement.class) {
-			return adapter.cast(configurationElement);
+			return configurationElement;
 		} else {
 			return null;
 		}
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IWorkbenchAdapter.
+     */
 	public Object[] getChildren(Object o) {
         return getElements().toArray();
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IWorkbenchAdapter.
+     */
 	public ImageDescriptor getImageDescriptor(Object object) {
         return WorkbenchImages.getImageDescriptor(ISharedImages.IMG_OBJ_FOLDER);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IWorkbenchAdapter.
+     */
 	public String getLabel(Object o) {
         return getLabel();
     }
@@ -238,26 +244,30 @@ public class Category implements IWorkbenchAdapter, IPluginContribution, IAdapta
         return false;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.model.IWorkbenchAdapter#getParent(java.lang.Object)
+     */
 	public Object getParent(Object o) {
         return null;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.activities.support.IPluginContribution#getLocalId()
+     */
 	public String getLocalId() {
         return id;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.activities.support.IPluginContribution#getPluginId()
+     */
 	public String getPluginId() {
 		return configurationElement == null ? pluginId : configurationElement
-						.getContributor().getName();
+				.getNamespace();
     }
 
 	/**
 	 * Clear all elements from this category.
-	 *
-	 * @since 3.1
 	 */
 	public void clear() {
 		if (elements != null) {

@@ -1,20 +1,17 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Jan-Ove Weichel <janove.weichel@vogella.com> - Bug 481490
  ******************************************************************************/
 
 package org.eclipse.ui.internal.dialogs;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -22,6 +19,10 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
@@ -38,14 +39,11 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * Base implementation for a simple working set dialog that doesn't contain
  * references to non-editable/non-visible working sets.
  *
- * @since 3.4
- *
  */
 public class SimpleWorkingSetSelectionDialog extends AbstractWorkingSetDialog {
 
 	private class Filter extends ViewerFilter {
 
-		@Override
 		public boolean select(Viewer viewer, Object parentElement,
 				Object element) {
 			return isCompatible((IWorkingSet) element);
@@ -69,18 +67,23 @@ public class SimpleWorkingSetSelectionDialog extends AbstractWorkingSetDialog {
 			if (!set.isEditable())
 				return false;
 
-			Set<String> workingSetTypeIds = getSupportedWorkingSetIds();
+			Set workingSetTypeIds = getSupportedWorkingSetIds();
 			if (workingSetTypeIds == null)
 				return true;
-			for (String workingSetTypeId : workingSetTypeIds) {
-				if (workingSetTypeId.equals(set.getId())) {
+
+			for (Iterator i = workingSetTypeIds.iterator(); i.hasNext();) {
+				String workingSetTypeId = (String) i.next();
+				if (workingSetTypeId.equals(set.getId()))
 					return true;
-				}
 			}
 
 			return false;
 		}
 	}
+
+	private final static int SIZING_SELECTION_WIDGET_HEIGHT = 200;
+
+	private final static int SIZING_SELECTION_WIDGET_WIDTH = 50;
 
 	private CheckboxTableViewer viewer;
 
@@ -98,7 +101,8 @@ public class SimpleWorkingSetSelectionDialog extends AbstractWorkingSetDialog {
 	 * @param canEdit
 	 *            whether or not this dialog will display edit controls
 	 */
-	public SimpleWorkingSetSelectionDialog(Shell shell, String[] workingSetTypeIds, IWorkingSet[] selectedWorkingSets,
+	public SimpleWorkingSetSelectionDialog(Shell shell,
+			String[] workingSetTypeIds, IWorkingSet[] selectedWorkingSets,
 			boolean canEdit) {
 		super(shell, workingSetTypeIds, canEdit);
 		this.initialSelection = selectedWorkingSets;
@@ -106,7 +110,6 @@ public class SimpleWorkingSetSelectionDialog extends AbstractWorkingSetDialog {
 		setMessage(WorkbenchMessages.get().WorkingSetSelectionDialog_message_multiSelect);
 	}
 
-	@Override
 	protected Control createDialogArea(Composite parent) {
 		initializeDialogUnits(parent);
 
@@ -118,25 +121,34 @@ public class SimpleWorkingSetSelectionDialog extends AbstractWorkingSetDialog {
 		layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
 		layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
 		viewerComposite.setLayout(layout);
-		viewerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+		GridData data = new GridData(GridData.FILL_BOTH);
+		data.heightHint = SIZING_SELECTION_WIDGET_HEIGHT;
+		data.widthHint = SIZING_SELECTION_WIDGET_WIDTH + 300; // fudge? I like
+		// fudge.
+		viewerComposite.setLayoutData(data);
 
 		viewer = CheckboxTableViewer.newCheckList(viewerComposite, SWT.BORDER);
 		viewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 		viewer.setLabelProvider(new WorkingSetLabelProvider());
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.addFilter(new WorkingSetFilter(null));
-		IWorkingSet[] workingSets = PlatformUI.getWorkbench().getWorkingSetManager()
-				.getWorkingSets();
-		viewer.setInput(workingSets);
+		viewer.setInput(PlatformUI.getWorkbench().getWorkingSetManager()
+				.getWorkingSets());
 		viewer.setFilters(new ViewerFilter[] {new Filter()});
 
-		viewer.addSelectionChangedListener(event -> handleSelectionChanged());
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				handleSelectionChanged();
+			}
+		});
 		viewer.setCheckedElements(initialSelection);
 
-		GridData viewerData = new GridData(GridData.FILL_BOTH);
-		viewerData.widthHint = convertWidthInCharsToPixels(50);
-		viewer.getControl().setLayoutData(viewerData);
+		data = new GridData(GridData.FILL_BOTH);
+		data.heightHint = SIZING_SELECTION_WIDGET_HEIGHT;
+		data.widthHint = SIZING_SELECTION_WIDGET_WIDTH;
 
+		viewer.getControl().setLayoutData(data);
 		addModifyButtons(viewerComposite);
 
 		addSelectionButtons(composite);
@@ -145,13 +157,9 @@ public class SimpleWorkingSetSelectionDialog extends AbstractWorkingSetDialog {
 
 		Dialog.applyDialogFont(composite);
 
-		viewerData.heightHint = viewer.getTable().getItemHeight()
-				* Math.min(30, Math.max(10, workingSets.length));
-
 		return composite;
 	}
 
-	@Override
 	protected void okPressed() {
 		Object[] checked = viewer.getCheckedElements();
 		IWorkingSet[] workingSets = new IWorkingSet[checked.length];
@@ -160,22 +168,18 @@ public class SimpleWorkingSetSelectionDialog extends AbstractWorkingSetDialog {
 		super.okPressed();
 	}
 
-	@Override
 	protected List getSelectedWorkingSets() {
-		return viewer.getStructuredSelection().toList();
+		ISelection selection = viewer.getSelection();
+		if (selection instanceof IStructuredSelection) {
+			return ((IStructuredSelection) selection).toList();
+		}
+		return null;
 	}
 
-	@Override
 	protected void availableWorkingSetsChanged() {
 		viewer.setInput(PlatformUI.getWorkbench().getWorkingSetManager()
 				.getWorkingSets());
 		super.availableWorkingSetsChanged();
-	}
-
-	@Override
-	protected void workingSetAdded(IWorkingSet addedSet) {
-		viewer.setChecked(addedSet, true);
-		updateButtonAvailability();
 	}
 
 	/**
@@ -185,14 +189,12 @@ public class SimpleWorkingSetSelectionDialog extends AbstractWorkingSetDialog {
 		updateButtonAvailability();
 	}
 
-	@Override
 	protected void selectAllSets() {
 		viewer.setCheckedElements(PlatformUI.getWorkbench()
 				.getWorkingSetManager().getWorkingSets());
 		updateButtonAvailability();
 	}
 
-	@Override
 	protected void deselectAllSets() {
 		viewer.setCheckedElements(new Object[0]);
 		updateButtonAvailability();

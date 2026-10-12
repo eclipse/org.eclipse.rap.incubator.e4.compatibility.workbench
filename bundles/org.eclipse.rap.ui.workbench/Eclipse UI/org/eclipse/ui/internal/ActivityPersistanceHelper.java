@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.Set;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.activities.ActivityManagerEvent;
 import org.eclipse.ui.activities.IActivity;
@@ -49,11 +48,7 @@ final class ActivityPersistanceHelper {
     /**
      * The listener that responds to changes in the <code>IActivityManager</code>
      */
-    private final IActivityManagerListener activityManagerListener = new IActivityManagerListener() {
-
-        @Override
-		public void activityManagerChanged(
-                ActivityManagerEvent activityManagerEvent) {
+	private final IActivityManagerListener activityManagerListener = (ActivityManagerEvent activityManagerEvent) -> {
             //process newly defined activities.
 			if (activityManagerEvent.haveDefinedActivityIdsChanged()) {
 				Set<String> delta = new HashSet<>(activityManagerEvent.getActivityManager().getDefinedActivityIds());
@@ -62,38 +57,33 @@ final class ActivityPersistanceHelper {
 				// state
 				loadEnabledStates(activityManagerEvent.getActivityManager().getEnabledActivityIds(), delta);
 			}
-            if (activityManagerEvent.haveEnabledActivityIdsChanged()) {
+		if (activityManagerEvent.haveEnabledNonExpressionControlledActivityIdsChanged()) {
 				saveEnabledStates();
-			}
         }
     };
 
     /**
      * The listener that responds to preference changes
      */
-    private final IPropertyChangeListener propertyChangeListener = new IPropertyChangeListener() {
-
-        @Override
-		public void propertyChange(PropertyChangeEvent event) {
+	private final IPropertyChangeListener propertyChangeListener = event -> {
             // dont process property events if we're in the process of
             // serializing state.
-            if (!saving && event.getProperty().startsWith(PREFIX)) {
+		if (!this.saving && event.getProperty().startsWith(PREFIX)) {
                 String activityId = event.getProperty().substring(PREFIX.length());
                 IWorkbenchActivitySupport support = PlatformUI.getWorkbench().getActivitySupport();
                 IActivityManager activityManager = support.getActivityManager();
 
-                boolean enabled = Boolean.valueOf(event.getNewValue().toString()).booleanValue();
-                // if we're turning an activity off we'll need to create its dependency tree to ensuure that all dependencies are also disabled.
+			boolean enabled = Boolean.parseBoolean(event.getNewValue().toString());
+			// if we're turning an activity off we'll need to create its dependency tree to
+			// ensuure that all dependencies are also disabled.
 				Set<String> set = new HashSet<>(activityManager.getEnabledActivityIds());
-                if (enabled == false) {
+			if (enabled) {
+				set.add(activityId);
+			} else {
 					Set<String> dependencies = buildDependencies(activityManager, activityId);
                     set.removeAll(dependencies);
                 }
-                else {
-                    set.add(activityId);
-                }
                 support.setEnabledActivityIds(set);
-            }
         }
     };
 
@@ -116,7 +106,8 @@ final class ActivityPersistanceHelper {
     }
 
     /**
-     * Returns a set of activity IDs that depend on the provided ID in order to be enabled.
+	 * Returns a set of activity IDs that depend on the provided ID in order to be
+	 * enabled.
      *
      * @param activityManager the activity manager to query
      * @param activityId the activity whos dependencies should be added
@@ -124,11 +115,9 @@ final class ActivityPersistanceHelper {
      */
 	protected Set<String> buildDependencies(IActivityManager activityManager, String activityId) {
 		Set<String> set = new HashSet<>();
-		for (Iterator<String> i = activityManager.getDefinedActivityIds().iterator(); i.hasNext();) {
-            IActivity activity = activityManager.getActivity(i.next());
-			for (Iterator<IActivityRequirementBinding> j = activity.getActivityRequirementBindings().iterator(); j
-					.hasNext();) {
-                IActivityRequirementBinding binding = j.next();
+		for (String id : activityManager.getDefinedActivityIds()) {
+			IActivity activity = activityManager.getActivity(id);
+			for (IActivityRequirementBinding binding : activity.getActivityRequirementBindings()) {
                 if (activityId.equals(binding.getRequiredActivityId())) {
                     set.addAll(buildDependencies(activityManager, activity.getId()));
                 }
@@ -151,15 +140,13 @@ final class ActivityPersistanceHelper {
      * Hook the listener that will respond to any activity state changes.
      */
     private void hookListeners() {
-        IWorkbenchActivitySupport support = PlatformUI.getWorkbench()
-                .getActivitySupport();
+		IWorkbenchActivitySupport support = PlatformUI.getWorkbench().getActivitySupport();
 
         IActivityManager activityManager = support.getActivityManager();
 
         activityManager.addActivityManagerListener(activityManagerListener);
 
-        IPreferenceStore store = WorkbenchPlugin.getDefault()
-                .getPreferenceStore();
+		IPreferenceStore store = WorkbenchPlugin.getDefault().getPreferenceStore();
 
         store.addPropertyChangeListener(propertyChangeListener);
     }
@@ -168,15 +155,13 @@ final class ActivityPersistanceHelper {
      * Hook the listener that will respond to any activity state changes.
      */
     private void unhookListeners() {
-        IWorkbenchActivitySupport support = PlatformUI.getWorkbench()
-                .getActivitySupport();
+		IWorkbenchActivitySupport support = PlatformUI.getWorkbench().getActivitySupport();
 
         IActivityManager activityManager = support.getActivityManager();
 
         activityManager.removeActivityManagerListener(activityManagerListener);
 
-        IPreferenceStore store = WorkbenchPlugin.getDefault()
-                .getPreferenceStore();
+		IPreferenceStore store = WorkbenchPlugin.getDefault().getPreferenceStore();
 
         store.removePropertyChangeListener(propertyChangeListener);
     }
@@ -195,15 +180,15 @@ final class ActivityPersistanceHelper {
      * Loads the enabled states from the preference store.
      */
     void loadEnabledStates() {
-        loadEnabledStates(Collections.EMPTY_SET, PlatformUI.getWorkbench()
-                .getActivitySupport().getActivityManager()
-                .getDefinedActivityIds());
+		loadEnabledStates(Collections.EMPTY_SET,
+				PlatformUI.getWorkbench().getActivitySupport().getActivityManager().getDefinedActivityIds());
     }
 
     /**
      * Load the enabled states for the given activity IDs.
      *
-     * @param previouslyEnabledActivities the activity states to maintain.  This set must be writabe.
+	 * @param previouslyEnabledActivities the activity states to maintain. This set
+	 *                                    must be writabe.
      * @param activityIdsToProcess the activity ids to process
      */
 	protected void loadEnabledStates(Set<String> previouslyEnabledActivities, Set<String> activityIdsToProcess) {
@@ -212,11 +197,9 @@ final class ActivityPersistanceHelper {
 		}
 
 		Set<String> enabledActivities = new HashSet<>(previouslyEnabledActivities);
-        IPreferenceStore store = WorkbenchPlugin.getDefault()
-                .getPreferenceStore();
+		IPreferenceStore store = WorkbenchPlugin.getDefault().getPreferenceStore();
 
-        IWorkbenchActivitySupport support = PlatformUI.getWorkbench()
-                .getActivitySupport();
+		IWorkbenchActivitySupport support = PlatformUI.getWorkbench().getActivitySupport();
 
         IActivityManager activityManager = support.getActivityManager();
 
@@ -269,8 +252,7 @@ final class ActivityPersistanceHelper {
 				store.setValue(createPreferenceKey(activity.getId()), activity.isEnabled());
 			}
 	        WorkbenchPlugin.getDefault().savePluginPreferences();
-        }
-        finally {
+		} finally {
             saving = false;
         }
     }

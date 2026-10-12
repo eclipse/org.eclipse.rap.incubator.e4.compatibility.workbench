@@ -25,21 +25,17 @@ import org.eclipse.ui.services.IEvaluationService;
 
 /**
  * @since 3.4
- *
  */
 public class SlaveEvaluationService implements IEvaluationService {
 
-	private IEvaluationService parentService;
+	private final IEvaluationService parentService;
 
-	private Collection sourceProviders = new ArrayList();
+	private final Collection sourceProviders = new ArrayList();
 
-	private Collection serviceListeners = new ArrayList();
+	private final Collection serviceListeners = new ArrayList();
 
-	private Collection evaluationReferences = new ArrayList();
+	private final Collection evaluationReferences = new ArrayList();
 
-	/**
-	 * @param parent
-	 */
 	public SlaveEvaluationService(IEvaluationService parent) {
 		parentService = parent;
 	}
@@ -49,10 +45,9 @@ public class SlaveEvaluationService implements IEvaluationService {
 	 *      org.eclipse.jface.util.IPropertyChangeListener, java.lang.String)
 	 */
 	@Override
-	public IEvaluationReference addEvaluationListener(Expression expression,
-			IPropertyChangeListener listener, String property) {
-		IEvaluationReference ref = parentService.addEvaluationListener(
-				expression, listener, property);
+	public IEvaluationReference addEvaluationListener(Expression expression, IPropertyChangeListener listener,
+			String property) {
+		IEvaluationReference ref = parentService.addEvaluationListener(expression, listener, property);
 		if (!evaluationReferences.contains(ref)) {
 			evaluationReferences.add(ref);
 		}

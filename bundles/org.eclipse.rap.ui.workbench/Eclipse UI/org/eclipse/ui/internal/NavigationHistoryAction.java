@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -16,6 +13,7 @@ package org.eclipse.ui.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -46,11 +44,9 @@ public class NavigationHistoryAction extends PageEventAction {
     private int MAX_HISTORY_LENGTH = 9;
 
     private class MenuCreator implements IMenuCreator {
-        @Override
 		public void dispose() {
         }
 
-        @Override
 		public Menu getMenu(Menu parent) {
         	setMenu(new Menu(parent));
         	fillMenu(historyMenu);
@@ -58,7 +54,6 @@ public class NavigationHistoryAction extends PageEventAction {
             return historyMenu;
         }
 
-        @Override
 		public Menu getMenu(Control parent) {
         	setMenu(new Menu(parent));
         	fillMenu(historyMenu);
@@ -74,13 +69,12 @@ public class NavigationHistoryAction extends PageEventAction {
 
     private void initMenu() {
     	historyMenu.addMenuListener(new MenuAdapter() {
-    		@Override
 			public void menuShown(MenuEvent e) {
     			if (recreateMenu) {
 					Menu m = (Menu) e.widget;
 					MenuItem[] items = m.getItems();
-					for (MenuItem item : items) {
-						item.dispose();
+					for (int i = 0; i < items.length; i++) {
+						items[i].dispose();
 					}
 					fillMenu(m);
 				}
@@ -116,15 +110,15 @@ public class NavigationHistoryAction extends PageEventAction {
     			MenuItem item = new MenuItem(menu, SWT.NONE);
     			item.setData(entries[i]);
     			if (entriesCount[i] > 1) {
-					text = NLS.bind(WorkbenchMessages.get().NavigationHistoryAction_locations, text,
-							Integer.valueOf(entriesCount[i]));
+    				text = NLS.bind(WorkbenchMessages.get().NavigationHistoryAction_locations,text, new Integer(entriesCount[i]));
     			}
     			item.setText(text);
-				item.addSelectionListener(new SelectionAdapter()
-                {
-				    @Override
+    			item.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
-				        history.shiftCurrentEntry((NavigationHistoryEntry) e.widget.getData(), forward);
+    					history
+    					.shiftCurrentEntry(
+    							(NavigationHistoryEntry) e.widget
+    							.getData(), forward);
 				    }
                 });
     		}
@@ -132,7 +126,6 @@ public class NavigationHistoryAction extends PageEventAction {
     	recreateMenu = false;
     }
 
-    @Override
 	public void dispose() {
     	super.dispose();
     	if (historyMenu != null) {
@@ -159,24 +152,35 @@ public class NavigationHistoryAction extends PageEventAction {
         if (forward) {
 			setText(WorkbenchMessages.get().NavigationHistoryAction_forward_text);
 			setToolTipText(WorkbenchMessages.get().NavigationHistoryAction_forward_toolTip);
-            window.getWorkbench().getHelpSystem().setHelp(this, IWorkbenchHelpContextIds.NAVIGATION_HISTORY_FORWARD);
-            setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_FORWARD));
-            setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_FORWARD_DISABLED));
+            // @issue missing action id
+            window.getWorkbench().getHelpSystem().setHelp(this,
+					IWorkbenchHelpContextIds.NAVIGATION_HISTORY_FORWARD);
+            setImageDescriptor(sharedImages
+                    .getImageDescriptor(ISharedImages.IMG_TOOL_FORWARD));
+            setDisabledImageDescriptor(sharedImages
+                    .getImageDescriptor(ISharedImages.IMG_TOOL_FORWARD_DISABLED));
             setActionDefinitionId(IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY);
         } else {
 			setText(WorkbenchMessages.get().NavigationHistoryAction_backward_text);
 			setToolTipText(WorkbenchMessages.get().NavigationHistoryAction_backward_toolTip);
-            window.getWorkbench().getHelpSystem().setHelp(this, IWorkbenchHelpContextIds.NAVIGATION_HISTORY_BACKWARD);
-            setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_BACK));
-            setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_BACK_DISABLED));
+            // @issue missing action id
+            window.getWorkbench().getHelpSystem().setHelp(this,
+					IWorkbenchHelpContextIds.NAVIGATION_HISTORY_BACKWARD);
+            setImageDescriptor(sharedImages
+                    .getImageDescriptor(ISharedImages.IMG_TOOL_BACK));
+            setDisabledImageDescriptor(sharedImages
+                    .getImageDescriptor(ISharedImages.IMG_TOOL_BACK_DISABLED));
             setActionDefinitionId(IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY);
         }
+        // WorkbenchHelp.setHelp(this, IHelpContextIds.CLOSE_ALL_PAGES_ACTION);
         setEnabled(false);
         this.forward = forward;
         setMenuCreator(new MenuCreator());
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PageEventAction.
+     */
 	public void pageClosed(IWorkbenchPage page) {
         super.pageClosed(page);
         setEnabled(false);
@@ -184,11 +188,11 @@ public class NavigationHistoryAction extends PageEventAction {
 
     private NavigationHistoryEntry[] collapseEntries(
             NavigationHistoryEntry[] entries, int entriesCount[]) {
-		ArrayList<NavigationHistoryEntry> allEntries = new ArrayList<>(Arrays.asList(entries));
+        ArrayList allEntries = new ArrayList(Arrays.asList(entries));
         NavigationHistoryEntry previousEntry = null;
         int i = -1;
-        for (Iterator<NavigationHistoryEntry> iter = allEntries.iterator(); iter.hasNext();) {
-            NavigationHistoryEntry entry = iter.next();
+        for (Iterator iter = allEntries.iterator(); iter.hasNext();) {
+            NavigationHistoryEntry entry = (NavigationHistoryEntry) iter.next();
             if (previousEntry != null) {
                 String text = previousEntry.getHistoryText();
                 if (text != null) {
@@ -204,10 +208,12 @@ public class NavigationHistoryAction extends PageEventAction {
             i++;
         }
         entries = new NavigationHistoryEntry[allEntries.size()];
-        return allEntries.toArray(entries);
+        return (NavigationHistoryEntry[]) allEntries.toArray(entries);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PageEventAction.
+     */
 	public void pageActivated(IWorkbenchPage page) {
         super.pageActivated(page);
         NavigationHistory nh = (NavigationHistory) page.getNavigationHistory();
@@ -218,7 +224,9 @@ public class NavigationHistoryAction extends PageEventAction {
         }
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IAction.
+     */
 	public void run() {
         if (getWorkbenchWindow() == null) {
             // action has been disposed
@@ -226,7 +234,8 @@ public class NavigationHistoryAction extends PageEventAction {
         }
         IWorkbenchPage page = getActivePage();
         if (page != null) {
-            NavigationHistory nh = (NavigationHistory) page.getNavigationHistory();
+            NavigationHistory nh = (NavigationHistory) page
+                    .getNavigationHistory();
             if (forward) {
                 nh.forward();
             } else {

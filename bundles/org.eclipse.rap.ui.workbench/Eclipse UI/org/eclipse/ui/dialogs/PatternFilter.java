@@ -17,13 +17,13 @@ package org.eclipse.ui.dialogs;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.core.text.StringMatcher;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.ui.internal.misc.StringMatcher;
 
 /**
  * A filter used in conjunction with <code>FilteredTree</code>. In order to
@@ -39,18 +39,18 @@ public class PatternFilter extends ViewerFilter {
 	/*
 	 * Cache of filtered elements in the tree
 	 */
-    private Map cache = new HashMap();
+	private final Map cache = new HashMap();
 
     /*
      * Maps parent elements to TRUE or FALSE
      */
-    private Map foundAnyCache = new HashMap();
+	private final Map foundAnyCache = new HashMap();
 
     private boolean useCache = false;
 
 	/**
-	 * Whether to include a leading wildcard for all provided patterns.  A
-	 * trailing wildcard is always included.
+	 * Whether to include a leading wildcard for all provided patterns. A trailing
+	 * wildcard is always included.
 	 */
 	private boolean includeLeadingWildcard = false;
 
@@ -90,12 +90,9 @@ public class PatternFilter extends ViewerFilter {
     }
 
     /**
-     * Returns true if any of the elements makes it through the filter.
-     * This method uses caching if enabled; the computation is done in
-     * computeAnyVisible.
+	 * Returns true if any of the elements makes it through the filter. This method
+	 * uses caching if enabled; the computation is done in computeAnyVisible.
      *
-     * @param viewer
-     * @param parent
      * @param elements the elements (must not be an empty array)
      * @return true if any of the elements makes it through the filter.
      */
@@ -137,28 +134,24 @@ public class PatternFilter extends ViewerFilter {
 	}
 
     @Override
-	public final boolean select(Viewer viewer, Object parentElement,
-			Object element) {
+	public final boolean select(Viewer viewer, Object parentElement, Object element) {
         return isElementVisible(viewer, element);
     }
 
     /**
-	 * Sets whether a leading wildcard should be attached to each pattern
-	 * string.
+	 * Sets whether a leading wildcard should be attached to each pattern string.
 	 *
-	 * @param includeLeadingWildcard
-	 *            Whether a leading wildcard should be added.
+	 * @param includeLeadingWildcard Whether a leading wildcard should be added.
 	 */
-	public final void setIncludeLeadingWildcard(
-			final boolean includeLeadingWildcard) {
+	public final void setIncludeLeadingWildcard(final boolean includeLeadingWildcard) {
 		this.includeLeadingWildcard = includeLeadingWildcard;
 	}
 
     /**
-     * The pattern string for which this filter should select
-     * elements in the viewer.
+	 * The pattern string for which this filter should select elements in the
+	 * viewer.
      *
-     * @param patternString
+	 * @param patternString the pattern string.
      */
     public void setPattern(String patternString) {
     	// these 2 strings allow the PatternFilter to be extended in
@@ -171,22 +164,23 @@ public class PatternFilter extends ViewerFilter {
     		return;
     	}
         clearCaches();
-        if (patternString == null || patternString.equals("")) { //$NON-NLS-1$
+		if (patternString == null || patternString.isEmpty()) {
 			matcher = null;
 		} else {
 			String pattern = patternString;
-			if (!patternString.endsWith(" ")) //$NON-NLS-1$
+			if (!patternString.endsWith(" ")) { //$NON-NLS-1$
 				pattern += "*"; //$NON-NLS-1$
+			}
 			if (includeLeadingWildcard) {
 				pattern = "*" + pattern; //$NON-NLS-1$
 			}
-			matcher = new StringMatcher(pattern, true, false);
+			matcher = new StringMatcher(pattern.trim(), true, false);
 		}
     }
 
 	/**
-	 * Clears the caches used for optimizing this filter. Needs to be called whenever
-	 * the tree content changes.
+	 * Clears the caches used for optimizing this filter. Needs to be called
+	 * whenever the tree content changes.
 	 */
 	/* package */ void clearCaches() {
 		cache.clear();
@@ -204,16 +198,16 @@ public class PatternFilter extends ViewerFilter {
     	if (matcher == null) {
 			return true;
 		}
-        return matcher.match(string);
+		return matcher.matchWords(string);
     }
 
     /**
-     * Answers whether the given element is a valid selection in
-     * the filtered tree.  For example, if a tree has items that
-     * are categorized, the category itself may  not be a valid
-     * selection since it is used merely to organize the elements.
+	 * Answers whether the given element is a valid selection in the filtered tree.
+	 * For example, if a tree has items that are categorized, the category itself
+	 * may not be a valid selection since it is used merely to organize the
+	 * elements.
      *
-     * @param element
+	 * @param element the element to check
      * @return true if this element is eligible for automatic selection
      */
     public boolean isElementSelectable(Object element){
@@ -221,11 +215,10 @@ public class PatternFilter extends ViewerFilter {
     }
 
     /**
-     * Answers whether the given element in the given viewer matches
-     * the filter pattern.  This is a default implementation that will
-     * show a leaf element in the tree based on whether the provided
-     * filter text matches the text of the given element's text, or that
-     * of it's children (if the element has any).
+	 * Answers whether the given element in the given viewer matches the filter
+	 * pattern. This is a default implementation that will show a leaf element in
+	 * the tree based on whether the provided filter text matches the text of the
+	 * given element's text, or that of it's children (if the element has any).
      *
      * Subclasses may override this method.
      *
@@ -240,8 +233,8 @@ public class PatternFilter extends ViewerFilter {
 
     /**
      * Check if the parent (category) is a match to the filter text.  The default
-     * behavior returns true if the element has at least one child element that is
-     * a match with the filter text.
+	 * behavior returns true if the element has at least one child element that is a
+	 * match with the filter text.
      *
      * Subclasses may override this method.
      *
@@ -261,8 +254,8 @@ public class PatternFilter extends ViewerFilter {
     }
 
     /**
-     * Check if the current (leaf) element is a match with the filter text.
-     * The default behavior checks that the label of the element is a match.
+	 * Check if the current (leaf) element is a match with the filter text. The
+	 * default behavior checks that the label of the element is a match.
      *
      * Subclasses should override this method.
      *
@@ -271,8 +264,7 @@ public class PatternFilter extends ViewerFilter {
      * @return true if the given element's label matches the filter text
      */
     protected boolean isLeafMatch(Viewer viewer, Object element){
-		String labelText = ((ILabelProvider) ((ContentViewer) viewer)
-                .getLabelProvider()).getText(element);
+		String labelText = ((ILabelProvider) ((ContentViewer) viewer).getLabelProvider()).getText(element);
 
         if(labelText == null) {
 			return false;
@@ -281,12 +273,11 @@ public class PatternFilter extends ViewerFilter {
     }
 
 	/**
-	 * Return whether or not if any of the words in text satisfy the
-	 * match critera.
+	 * Return whether or not if any of the words in text satisfy the match critera.
 	 *
 	 * @param text the text to match
-	 * @return boolean <code>true</code> if one of the words in text
-	 * 					satisifes the match criteria.
+	 * @return boolean <code>true</code> if one of the words in text satisifes the
+	 *         match criteria.
 	 */
 	protected boolean wordMatches(String text) {
 		if (text == null) {

@@ -43,9 +43,9 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
@@ -2059,7 +2059,7 @@ public class WorkbenchPage implements IWorkbenchPage {
     private void firePropertyChange(String changeId, Object oldValue,
             Object newValue) {
 
-        UIListenerLogging.logPagePropertyChanged(this, changeId, oldValue, newValue);
+        UIListenerLogging.logPagePropertyChanged(this, changeId, newValue);
 
         PropertyChangeEvent event = new PropertyChangeEvent(this, changeId,
                 oldValue, newValue);
@@ -2465,11 +2465,11 @@ public class WorkbenchPage implements IWorkbenchPage {
 		}
 		// Perspective persp = getActivePerspective();
 		// if (persp != null) {
-		// label = NLS.bind(WorkbenchMessages.WorkbenchPage_PerspectiveFormat,
+		// label = NLS.bind(WorkbenchMessages.get().WorkbenchPage_PerspectiveFormat,
 		// label, persp.getDesc().getLabel());
 		// } else if (deferredActivePersp != null) {
 		// label =
-		// NLS.bind(WorkbenchMessages.WorkbenchPage_PerspectiveFormat,label,
+		// NLS.bind(WorkbenchMessages.get().WorkbenchPage_PerspectiveFormat,label,
 		// deferredActivePersp.getLabel());
 		// }
         return label;

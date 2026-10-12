@@ -19,17 +19,16 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.ui.internal.dialogs.cpd.TreeManager.TreeItem;
 
 /**
- * A check provider which calculates checked state based on leaf states in
- * the tree (as opposed to children in a model).
+ * A check provider which calculates checked state based on leaf states in the
+ * tree (as opposed to children in a model).
  *
  * @since 3.5
  */
 class FilteredTreeCheckProvider implements ICheckStateProvider {
-	private ITreeContentProvider contentProvider;
-	private ViewerFilter filter;
+	private final ITreeContentProvider contentProvider;
+	private final ViewerFilter filter;
 
-	public FilteredTreeCheckProvider(ITreeContentProvider contentProvider,
-			ViewerFilter filter) {
+	public FilteredTreeCheckProvider(ITreeContentProvider contentProvider, ViewerFilter filter) {
 		this.contentProvider = contentProvider;
 		this.filter = filter;
 	}
@@ -47,17 +46,13 @@ class FilteredTreeCheckProvider implements ICheckStateProvider {
 	}
 
 	/**
-	 * Determines the state <code>item</code> should be (checked, gray or
-	 * unchecked) based only on the leafs underneath it (unless it is indeed a
-	 * leaf).
+	 * Determines the state <code>item</code> should be (checked, gray or unchecked)
+	 * based only on the leafs underneath it (unless it is indeed a leaf).
 	 *
-	 * @param item
-	 *            the item to find the state of
-	 * @param provider
-	 *            the content provider which will provide <code>item</code>'s
+	 * @param item     the item to find the state of
+	 * @param provider the content provider which will provide <code>item</code>'s
 	 *            children
-	 * @param filter
-	 *            the filter that will only select elements in the currently
+	 * @param filter   the filter that will only select elements in the currently
 	 *            chosen action set
 	 * @return {@link TreeManager#CHECKSTATE_CHECKED},
 	 *         {@link TreeManager#CHECKSTATE_GRAY} or

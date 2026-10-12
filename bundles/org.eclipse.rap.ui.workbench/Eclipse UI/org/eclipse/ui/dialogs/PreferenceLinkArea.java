@@ -1,18 +1,16 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2004, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package org.eclipse.ui.dialogs;
 
+import com.ibm.icu.text.MessageFormat;
 import java.util.Iterator;
 
 import org.eclipse.jface.preference.IPreferenceNode;
@@ -27,13 +25,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
-import com.ibm.icu.text.MessageFormat;
-
 /**
  * The PreferenceLinkArea is the link area used to open a specific preference
  * page.
  *
- * @since 3.1
+ * @since 1.1
  */
 public class PreferenceLinkArea extends Object {
 
@@ -69,15 +65,17 @@ public class PreferenceLinkArea extends Object {
 			result = NLS.bind(
                     WorkbenchMessages.get().PreferenceNode_NotFound, pageId);
 		} else {
-			result = MessageFormat.format(message, node.getLabelText());
+            result = MessageFormat.format(message, new String[] { node
+                    .getLabelText() });
 
             //Only add the selection listener if the node is found
-            pageLink.addSelectionListener(new SelectionAdapter()
-            {
-                /** {@inheritDoc} */
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            pageLink.addSelectionListener(new SelectionAdapter() {
+                /*
+                 * (non-Javadoc)
+                 * 
+                 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+                 */
+                public void widgetSelected(SelectionEvent e) {
                     pageContainer.openPage(pageId, pageData);
                 }
             });

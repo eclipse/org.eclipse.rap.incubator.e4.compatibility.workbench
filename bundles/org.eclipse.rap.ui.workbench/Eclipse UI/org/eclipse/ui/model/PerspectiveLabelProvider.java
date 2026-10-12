@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -35,7 +32,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * Clients may instantiate this class. It is not intended to be subclassed.
  * </p>
  *
- * @since 3.0
+ * @since 1.0
  */
 public final class PerspectiveLabelProvider extends LabelProvider implements
         ITableLabelProvider {
@@ -70,8 +67,10 @@ public final class PerspectiveLabelProvider extends LabelProvider implements
         this.markDefault = markDefault;
     }
 
-    @Override
-	public Image getImage(Object element) {
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ILabelProvider
+     */
+    public final Image getImage(Object element) {
         if (element instanceof IPerspectiveDescriptor) {
             IPerspectiveDescriptor desc = (IPerspectiveDescriptor) element;
             ImageDescriptor imageDescriptor = desc.getImageDescriptor();
@@ -89,16 +88,20 @@ public final class PerspectiveLabelProvider extends LabelProvider implements
         return null;
     }
 
-    @Override
-	public void dispose() {
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ILabelProvider
+     */
+    public final void dispose() {
         for (Iterator i = imageCache.values().iterator(); i.hasNext();) {
             ((Image) i.next()).dispose();
         }
         imageCache.clear();
     }
 
-    @Override
-	public String getText(Object element) {
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ILabelProvider
+     */
+    public final String getText(Object element) {
         if (element instanceof IPerspectiveDescriptor) {
             IPerspectiveDescriptor desc = (IPerspectiveDescriptor) element;
             String label = desc.getLabel();
@@ -117,16 +120,14 @@ public final class PerspectiveLabelProvider extends LabelProvider implements
     /**
      * @see ITableLabelProvider#getColumnImage
      */
-    @Override
-	public Image getColumnImage(Object element, int columnIndex) {
+    public final Image getColumnImage(Object element, int columnIndex) {
         return getImage(element);
     }
 
     /**
      * @see ITableLabelProvider#getColumnText
      */
-    @Override
-	public String getColumnText(Object element, int columnIndex) {
+    public final String getColumnText(Object element, int columnIndex) {
         return getText(element);
     }
 }

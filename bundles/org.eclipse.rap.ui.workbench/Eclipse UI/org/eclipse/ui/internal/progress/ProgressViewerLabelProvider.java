@@ -20,20 +20,18 @@ import org.eclipse.swt.widgets.Control;
  * The ProgressViewerLabelProvider is the label provider for progress viewers.
  */
 public class ProgressViewerLabelProvider extends LabelProvider {
-    private Control control;
+	private final Control control;
 
     @Override
 	public String getText(Object element) {
         JobTreeElement info = (JobTreeElement) element;
-        return ProgressManagerUtil.shortenText(
-                info.getCondensedDisplayString(), control);
+		return ProgressManagerUtil.shortenText(info.getCondensedDisplayString(), control);
     }
 
     /**
      * Create a new instance of the receiver within the control.
      *
-     * @param progressControl The control that the label is
-     * being created for.
+	 * @param progressControl The control that the label is being created for.
      */
     public ProgressViewerLabelProvider(Control progressControl) {
         super();

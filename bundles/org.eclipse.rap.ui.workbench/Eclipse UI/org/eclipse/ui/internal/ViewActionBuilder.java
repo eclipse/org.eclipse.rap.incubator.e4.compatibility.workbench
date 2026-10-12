@@ -20,8 +20,8 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 
 /**
- * This class reads the registry for extensions that plug into
- * 'viewActions' extension point.
+ * This class reads the registry for extensions that plug into 'viewActions'
+ * extension point.
  */
 public class ViewActionBuilder extends PluginActionBuilder {
     public static final String TAG_CONTRIBUTION_TYPE = "viewContribution"; //$NON-NLS-1$
@@ -43,10 +43,8 @@ public class ViewActionBuilder extends PluginActionBuilder {
     }
 
     @Override
-	protected ActionDescriptor createActionDescriptor(
-            org.eclipse.core.runtime.IConfigurationElement element) {
-        return new ActionDescriptor(element, ActionDescriptor.T_VIEW,
-                targetPart);
+	protected ActionDescriptor createActionDescriptor(org.eclipse.core.runtime.IConfigurationElement element) {
+		return new ActionDescriptor(element, ActionDescriptor.T_VIEW, targetPart);
     }
 
     /**
@@ -58,19 +56,18 @@ public class ViewActionBuilder extends PluginActionBuilder {
 		}
 
         ArrayList results = new ArrayList();
-        for (int i = 0; i < cache.size(); i++) {
-            BasicContribution bc = (BasicContribution) cache.get(i);
+		for (Object element : cache) {
+			BasicContribution bc = (BasicContribution) element;
             if (bc.actions != null) {
 				results.addAll(bc.actions);
 			}
         }
-        return (ActionDescriptor[]) results
-                .toArray(new ActionDescriptor[results.size()]);
+		return (ActionDescriptor[]) results.toArray(new ActionDescriptor[results.size()]);
     }
 
     /**
-     * Reads and apply all external contributions for this view's ID registered
-     * in 'viewActions' extension point.
+	 * Reads and apply all external contributions for this view's ID registered in
+	 * 'viewActions' extension point.
      */
     public void readActionExtensions(IViewPart viewPart) {
         targetPart = viewPart;
@@ -81,8 +78,8 @@ public class ViewActionBuilder extends PluginActionBuilder {
 
     public void dispose() {
 		if (cache != null) {
-			for (int i = 0; i < cache.size(); i++) {
-				((BasicContribution) cache.get(i)).disposeActions();
+			for (Object element : cache) {
+				((BasicContribution) element).disposeActions();
 			}
 		}
 	}

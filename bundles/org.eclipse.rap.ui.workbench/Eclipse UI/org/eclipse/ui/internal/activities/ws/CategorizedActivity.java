@@ -24,9 +24,8 @@ import org.eclipse.ui.activities.NotDefinedException;
 
 /**
  * IActivity proxy that is used by the
- * <code>IActivityCategoryContentProvider</code>.  Each
- * proxy keeps a pointer to the <code>ICategory</code> under which it is being
- * provided.
+ * <code>IActivityCategoryContentProvider</code>. Each proxy keeps a pointer to
+ * the <code>ICategory</code> under which it is being provided.
  *
  * @since 3.0
  */
@@ -35,12 +34,12 @@ public class CategorizedActivity implements IActivity {
     /**
      * The real <code>IActivity</code>.
      */
-    private IActivity activity;
+	private final IActivity activity;
 
     /**
      * The <code>ICategory</code> under which this proxy will be rendered.
      */
-    private ICategory category;
+	private final ICategory category;
 
     /**
      * Create a new instance.
@@ -68,8 +67,7 @@ public class CategorizedActivity implements IActivity {
 	public boolean equals(Object o) {
         if (o instanceof CategorizedActivity) {
             if (((CategorizedActivity) o).getCategory().equals(getCategory())) {
-				return ((CategorizedActivity) o).getActivity().equals(
-                        getActivity());
+				return ((CategorizedActivity) o).getActivity().equals(getActivity());
 			}
         }
         return false;

@@ -35,15 +35,11 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
  */
 public class TriggerPointManager implements ITriggerPointManager, IExtensionChangeHandler {
 
-	private HashMap<String, AbstractTriggerPoint> triggerMap = new HashMap<>();
+	private final HashMap<String, AbstractTriggerPoint> triggerMap = new HashMap<>();
 
-    /**
-     *
-     */
     public TriggerPointManager() {
         super();
-        triggerMap.put(ITriggerPointManager.UNKNOWN_TRIGGER_POINT_ID,
-                new AbstractTriggerPoint() {
+		triggerMap.put(ITriggerPointManager.UNKNOWN_TRIGGER_POINT_ID, new AbstractTriggerPoint() {
 
                     @Override
 					public String getId() {
@@ -76,8 +72,7 @@ public class TriggerPointManager implements ITriggerPointManager, IExtensionChan
         IExtensionPoint point = getExtensionPointFilter();
         IExtension[] extensions = point.getExtensions();
         for (IExtension extension : extensions) {
-            addExtension(tracker,
-                    extension);
+			addExtension(tracker, extension);
         }
     }
 
@@ -104,29 +99,21 @@ public class TriggerPointManager implements ITriggerPointManager, IExtensionChan
 	public void addExtension(IExtensionTracker tracker, IExtension extension) {
         IConfigurationElement[] elements = extension.getConfigurationElements();
         for (IConfigurationElement element : elements) {
-            if (element.getName().equals(
-                    IWorkbenchRegistryConstants.TAG_TRIGGERPOINT)) {
-                String id = element
-                        .getAttribute(IWorkbenchRegistryConstants.ATT_ID);
+			if (element.getName().equals(IWorkbenchRegistryConstants.TAG_TRIGGERPOINT)) {
+				String id = element.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
                 if (id == null) {
 					Persistence.log(element, Persistence.ACTIVITY_TRIGGER_DESC, "missing a unique identifier"); //$NON-NLS-1$
 					continue;
 				}
-                RegistryTriggerPoint triggerPoint = new RegistryTriggerPoint(
-                        id, element);
+				RegistryTriggerPoint triggerPoint = new RegistryTriggerPoint(id, element);
                 triggerMap.put(id, triggerPoint);
-                tracker.registerObject(extension, triggerPoint,
-                        IExtensionTracker.REF_WEAK);
+				tracker.registerObject(extension, triggerPoint, IExtensionTracker.REF_WEAK);
             }
         }
     }
 
     private IExtensionPoint getExtensionPointFilter() {
-     // RAP [bm]: 
-//        return Platform.getExtensionRegistry().getExtensionPoint(
-//                "org.eclipse.ui", IWorkbenchRegistryConstants.PL_ACTIVITYSUPPORT);
-        return Platform.getExtensionRegistry().getExtensionPoint(
-                PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_ACTIVITYSUPPORT);
-        // RAPEND: [bm]
+		return Platform.getExtensionRegistry().getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
+				IWorkbenchRegistryConstants.PL_ACTIVITYSUPPORT);
     }
 }

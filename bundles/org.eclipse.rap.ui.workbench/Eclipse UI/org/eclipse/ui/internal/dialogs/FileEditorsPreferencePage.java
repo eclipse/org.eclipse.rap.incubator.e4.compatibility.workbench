@@ -1,13 +1,10 @@
 // RAP [rh] File-based editors (and thus file extensions) don't make sense in RAP
 ///*******************************************************************************
-// * Copyright (c) 2000, 2015 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2000, 2007 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -21,6 +18,7 @@
 //import java.util.Iterator;
 //import java.util.List;
 //import java.util.Map;
+//
 //import org.eclipse.core.runtime.Assert;
 //import org.eclipse.core.runtime.Platform;
 //import org.eclipse.core.runtime.content.IContentType;
@@ -156,7 +154,6 @@
 //    /**
 //     * Creates the page's UI content.
 //     */
-//    @Override
 //	protected Control createContents(Composite parent) {
 //        imagesToDispose = new ArrayList();
 //        editorsToImages = new HashMap(50);
@@ -190,7 +187,7 @@
 //        data.horizontalSpan = 2;
 //        label.setLayoutData(data);
 //
-//        resourceTypeTable = new Table(pageComponent, SWT.MULTI | SWT.BORDER
+//        resourceTypeTable = new Table(pageComponent, SWT.SINGLE | SWT.BORDER
 //                | SWT.FULL_SELECTION);
 //        resourceTypeTable.addListener(SWT.Selection, this);
 //        resourceTypeTable.addListener(SWT.DefaultSelection, this);
@@ -215,6 +212,7 @@
 //        addResourceTypeButton = new Button(groupComponent, SWT.PUSH);
 //        addResourceTypeButton.setText(WorkbenchMessages.get().FileEditorPreference_add);
 //        addResourceTypeButton.addListener(SWT.Selection, this);
+//        addResourceTypeButton.setLayoutData(data);
 //        setButtonLayoutData(addResourceTypeButton);
 //
 //        removeResourceTypeButton = new Button(groupComponent, SWT.PUSH);
@@ -237,7 +235,7 @@
 //        data.horizontalSpan = 2;
 //        editorLabel.setLayoutData(data);
 //
-//        editorTable = new Table(pageComponent, SWT.MULTI | SWT.BORDER);
+//        editorTable = new Table(pageComponent, SWT.SINGLE | SWT.BORDER);
 //        editorTable.addListener(SWT.Selection, this);
 //        editorTable.addListener(SWT.DefaultSelection, this);
 //        data = new GridData(GridData.FILL_BOTH);
@@ -290,7 +288,6 @@
 //     * (i.e fonts, cursors, etc). Subclasses should reimplement this method to
 //     * release their own allocated SWT resources.
 //     */
-//    @Override
 //	public void dispose() {
 //        super.dispose();
 //        if (imagesToDispose != null) {
@@ -311,7 +308,6 @@
 //     * Hook method to get a page specific preference store. Reimplement this
 //     * method if a page don't want to use its parent's preference store.
 //     */
-//    @Override
 //	protected IPreferenceStore doGetPreferenceStore() {
 //        return WorkbenchPlugin.getDefault().getPreferenceStore();
 //    }
@@ -320,14 +316,18 @@
 //        editorTable.removeAll();
 //        FileEditorMapping resourceType = getSelectedResourceType();
 //        if (resourceType != null) {
-//			for (IEditorDescriptor editor : resourceType.getEditors()) {
+//            IEditorDescriptor[] array = resourceType.getEditors();
+//            for (int i = 0; i < array.length; i++) {
+//                IEditorDescriptor editor = array[i];
 //                TableItem item = new TableItem(editorTable, SWT.NULL);
 //                item.setData(DATA_EDITOR, editor);
 //                // Check if it is the default editor
 //                String defaultString = null;
+//                if (resourceType != null) {
 //				if (resourceType.getDefaultEditor() == editor && resourceType.isDeclaredDefaultEditor(editor)) {
 //					defaultString = WorkbenchMessages.get().FileEditorPreference_defaultLabel;
 //				}
+//                }
 //
 //                if (defaultString != null) {
 //                    item.setText(editor.getLabel() + " " + defaultString); //$NON-NLS-1$
@@ -342,25 +342,27 @@
 //					.getDefault().getEditorRegistry();
 //			IContentType[] contentTypes = Platform.getContentTypeManager()
 //					.findContentTypesFor(resourceType.getLabel());
-//			for (IContentType contentType : contentTypes) {
-//				for (IEditorDescriptor editor : registry.getEditorsForContentType(contentType)) {
+//			for (int i = 0; i < contentTypes.length; i++) {
+//				array = registry.getEditorsForContentType(contentTypes[i]);
+//				for (int j = 0; j < array.length; j++) {
+//					IEditorDescriptor editor = array[j];
 //					// don't add duplicates
 //					TableItem[] items = editorTable.getItems();
 //					TableItem foundItem = null;
-//					for (TableItem item : items) {
-//						if (item.getData(DATA_EDITOR).equals(editor)) {
-//							foundItem = item;
+//					for (int k = 0; k < items.length; k++) {
+//						if (items[k].getData(DATA_EDITOR).equals(editor)) {
+//							foundItem = items[k];
 //							break;
 //						}
 //					}
 //					if (foundItem == null) {
 //						TableItem item = new TableItem(editorTable, SWT.NULL);
 //						item.setData(DATA_EDITOR, editor);
-//						item.setData(DATA_FROM_CONTENT_TYPE, contentType);
+//						item.setData(DATA_FROM_CONTENT_TYPE, contentTypes[i]);
 //						setLockedItemText(item, editor.getLabel());
 //						item.setImage(getImage(editor));
 //					} else { // update the item to reflect its origin
-//						foundItem.setData(DATA_FROM_CONTENT_TYPE, contentType);
+//						foundItem.setData(DATA_FROM_CONTENT_TYPE, contentTypes[i]);
 //						setLockedItemText(foundItem, foundItem.getText());
 //					}
 //				}
@@ -411,8 +413,8 @@
 //
 //    protected FileEditorMapping getSelectedResourceType() {
 //        TableItem[] items = resourceTypeTable.getSelection();
-//        if (items.length == 1) {
-//            return (FileEditorMapping) items[0].getData();
+//        if (items.length > 0) {
+//            return (FileEditorMapping) items[0].getData(); //Table is single select
 //        }
 //        return null;
 //    }
@@ -433,7 +435,6 @@
 //        return null;
 //    }
 //
-//    @Override
 //	public void handleEvent(Event event) {
 //        if (event.widget == addResourceTypeButton) {
 //            promptForResourceType();
@@ -456,7 +457,6 @@
 //    /**
 //     * @see IWorkbenchPreferencePage
 //     */
-//    @Override
 //	public void init(IWorkbench aWorkbench) {
 //        this.workbench = aWorkbench;
 //        noDefaultAndApplyButton();
@@ -492,7 +492,6 @@
 //     * For example reimplement this method if you want to save the
 //     * page's data into the preference bundle.
 //     */
-//    @Override
 //	public boolean performOk() {
 //        TableItem[] items = resourceTypeTable.getItems();
 //        FileEditorMapping[] resourceTypes = new FileEditorMapping[items.length];
@@ -568,19 +567,21 @@
 //        TableItem[] items = editorTable.getSelection();
 //        boolean defaultEditor = editorTable.getSelectionIndex() == 0;
 //        if (items.length > 0) {
-//        	for (TableItem item : items) {
 //                getSelectedResourceType().removeEditor(
-//                        (EditorDescriptor) item.getData(DATA_EDITOR));
-//                item.dispose();
-//        	}
+//                    (EditorDescriptor) items[0].getData(DATA_EDITOR));
+//            items[0].dispose(); //Table is single selection
 //        }
 //        if (defaultEditor && editorTable.getItemCount() > 0) {
 //            TableItem item = editorTable.getItem(0);
-//            // explicitly set the first editor as the default
+//            // explicitly set the new editor first editor to default
 //            getSelectedResourceType().setDefaultEditor(
 //					(EditorDescriptor) item.getData(DATA_EDITOR));
-//			item.setText(((EditorDescriptor) (item.getData(DATA_EDITOR))).getLabel()
+//            if (item != null) {
+//				item
+//                        .setText(((EditorDescriptor) (item.getData(DATA_EDITOR)))
+//                                .getLabel()
 //					+ " " + WorkbenchMessages.get().FileEditorPreference_defaultLabel); //$NON-NLS-1$
+//			}
 //			if (!isEditorRemovable(item)) {
 //				setLockedItemText(item, item.getText());
 //			}
@@ -592,8 +593,9 @@
 //     * Remove the type from the table
 //     */
 //    public void removeSelectedResourceType() {
-//		for (TableItem item : resourceTypeTable.getSelection()) {
-//        	item.dispose();
+//        TableItem[] items = resourceTypeTable.getSelection();
+//        if (items.length > 0) {
+//            items[0].dispose(); //Table is single selection
 //        }
 //        //Clear out the editors too
 //        editorTable.removeAll();
@@ -640,36 +642,30 @@
 //     */
 //    public void updateEnabledState() {
 //        //Update enabled state
-//    	int selectedResources = resourceTypeTable.getSelectionCount();
-//        int selectedEditors = editorTable.getSelectionCount();
+//        boolean resourceTypeSelected = resourceTypeTable.getSelectionIndex() != -1;
+//        boolean editorSelected = editorTable.getSelectionIndex() != -1;
 //
-//        removeResourceTypeButton.setEnabled(selectedResources != 0);
-//		editorLabel.setEnabled(selectedResources == 1);
-//        addEditorButton.setEnabled(selectedResources == 1);
-//		removeEditorButton.setEnabled(areEditorsRemovable());
-//        defaultEditorButton.setEnabled(selectedEditors == 1);
+//        removeResourceTypeButton.setEnabled(resourceTypeSelected);
+//        editorLabel.setEnabled(resourceTypeSelected);
+//        addEditorButton.setEnabled(resourceTypeSelected);
+//        removeEditorButton.setEnabled(editorSelected && isEditorRemovable());
+//        defaultEditorButton.setEnabled(editorSelected);
 //    }
 //
 //    /**
-//	 * Return whether the selected editors are removable. An editor is removable
-//	 * if it was not submitted via a content-type binding.
+//	 * Return whether the selected editor is removable. An editor is removable
+//	 * if it is not submitted via a content-type binding.
 //	 *
-//	 * @return whether all the selected editors are removable or not
+//	 * @return whether the selected editor is removable
 //	 * @since 3.1
 //	 */
-//	private boolean areEditorsRemovable() {
+//    private boolean isEditorRemovable() {
 //		TableItem[] items = editorTable.getSelection();
-//		if (items.length == 0) {
-//			return false;
+//		if (items.length > 0) {
+//			return isEditorRemovable(items[0]);
 //		}
-//
-//		for (int i = 0; i < items.length; i++) {
-//			if (!isEditorRemovable(items[i])) {
 //				return false;
 //			}
-//		}
-//		return true;
-//	}
 //
 //    /**
 //	 * Return whether the given editor is removable. An editor is removable

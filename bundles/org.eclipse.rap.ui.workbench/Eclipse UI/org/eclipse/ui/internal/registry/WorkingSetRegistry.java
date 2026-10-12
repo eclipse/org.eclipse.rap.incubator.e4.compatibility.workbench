@@ -38,44 +38,33 @@ public class WorkingSetRegistry implements IExtensionChangeHandler {
     // @issue this is an IDE specific working set page!
     private static final String DEFAULT_PAGE_ID = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
 
-	private HashMap<String, WorkingSetDescriptor> workingSetDescriptors = new HashMap<>();
+	private final HashMap<String, WorkingSetDescriptor> workingSetDescriptors = new HashMap<>();
 
-    /**
-	 *
-	 */
 	public WorkingSetRegistry() {
-		IExtensionTracker tracker = PlatformUI.getWorkbench()
-				.getExtensionTracker();
-		tracker.registerHandler(this, ExtensionTracker
-				.createExtensionPointFilter(getExtensionPointFilter()));
+		IExtensionTracker tracker = PlatformUI.getWorkbench().getExtensionTracker();
+		tracker.registerHandler(this, ExtensionTracker.createExtensionPointFilter(getExtensionPointFilter()));
 
 	}
 
 	/**
 	 *
-	 * @return
 	 * @since 3.3
 	 */
 	private IExtensionPoint getExtensionPointFilter() {
-        // RAP [bm]: namespace
-        return Platform.getExtensionRegistry().getExtensionPoint(
-                PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
+		return Platform.getExtensionRegistry().getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
                 IWorkbenchRegistryConstants.PL_WORKINGSETS);
 	}
 
     /**
      * Adds a working set descriptor.
      *
-     * @param descriptor working set descriptor to add. Must not
-     * 	exist in the registry yet.
+	 * @param descriptor working set descriptor to add. Must not exist in the
+	 *                   registry yet.
      */
     public void addWorkingSetDescriptor(WorkingSetDescriptor descriptor) {
-		Assert.isTrue(!workingSetDescriptors.containsValue(descriptor),
-				"working set descriptor already registered"); //$NON-NLS-1$
-		IExtensionTracker tracker = PlatformUI.getWorkbench()
-				.getExtensionTracker();
-		tracker.registerObject(descriptor.getConfigurationElement()
-				.getDeclaringExtension(), descriptor,
+		Assert.isTrue(!workingSetDescriptors.containsValue(descriptor), "working set descriptor already registered"); //$NON-NLS-1$
+		IExtensionTracker tracker = PlatformUI.getWorkbench().getExtensionTracker();
+		tracker.registerObject(descriptor.getConfigurationElement().getDeclaringExtension(), descriptor,
 				IExtensionTracker.REF_WEAK);
 		workingSetDescriptors.put(descriptor.getId(), descriptor);
 	}
@@ -86,7 +75,8 @@ public class WorkingSetRegistry implements IExtensionChangeHandler {
 	 * @return the default working set page.
 	 */
     public IWorkingSetPage getDefaultWorkingSetPage() {
-        // @issue this will return the IDE resource working set page... not good for generic workbench
+		// @issue this will return the IDE resource working set page... not good for
+		// generic workbench
 		WorkingSetDescriptor descriptor = workingSetDescriptors.get(DEFAULT_PAGE_ID);
 
         if (descriptor != null) {
@@ -111,39 +101,36 @@ public class WorkingSetRegistry implements IExtensionChangeHandler {
      * @return an array of all working set descriptors.
      */
     public WorkingSetDescriptor[] getWorkingSetDescriptors() {
-		return workingSetDescriptors.values().toArray(
-                new WorkingSetDescriptor[workingSetDescriptors.size()]);
+		return workingSetDescriptors.values().toArray(new WorkingSetDescriptor[workingSetDescriptors.size()]);
     }
 
     /**
-     * Returns an array of all working set descriptors having
-     * a page class attribute
+	 * Returns an array of all working set descriptors having a page class attribute
      *
-     * @return an array of all working set descriptors having a
-     * page class attribute
+	 * @return an array of all working set descriptors having a page class attribute
      */
     public WorkingSetDescriptor[] getNewPageWorkingSetDescriptors() {
-    	Collection descriptors= workingSetDescriptors.values();
-        List result= new ArrayList(descriptors.size());
-        for (Iterator iter= descriptors.iterator(); iter.hasNext();) {
-			WorkingSetDescriptor descriptor= (WorkingSetDescriptor)iter.next();
+		Collection<WorkingSetDescriptor> descriptors = workingSetDescriptors.values();
+		List<WorkingSetDescriptor> result = new ArrayList<>(descriptors.size());
+		for (Iterator<WorkingSetDescriptor> iter = descriptors.iterator(); iter.hasNext();) {
+			WorkingSetDescriptor descriptor = iter.next();
 			if (descriptor.getPageClassName() != null) {
 				result.add(descriptor);
 			}
 		}
-        return (WorkingSetDescriptor[])result.toArray(new WorkingSetDescriptor[result.size()]);
+		return result.toArray(new WorkingSetDescriptor[result.size()]);
     }
 
     /**
-     * Returns <code>true</code> if there is a working set descriptor with
-     * a page class attribute. Otherwise <code>false</code> is returned.
+	 * Returns <code>true</code> if there is a working set descriptor with a page
+	 * class attribute. Otherwise <code>false</code> is returned.
      *
      * @return whether a descriptor with a page class attribute exists
      */
     public boolean hasNewPageWorkingSetDescriptor() {
-    	Collection descriptors= workingSetDescriptors.values();
-        for (Iterator iter= descriptors.iterator(); iter.hasNext();) {
-			WorkingSetDescriptor descriptor= (WorkingSetDescriptor)iter.next();
+		Collection<WorkingSetDescriptor> descriptors = workingSetDescriptors.values();
+		for (Iterator<WorkingSetDescriptor> iter = descriptors.iterator(); iter.hasNext();) {
+			WorkingSetDescriptor descriptor = iter.next();
 			if (descriptor.getPageClassName() != null) {
 				return true;
 			}
@@ -164,21 +151,19 @@ public class WorkingSetRegistry implements IExtensionChangeHandler {
 		return result;
 	}
 
-    public WorkingSetDescriptor[] getElementAdapterDescriptorsForNamespace(
-			String namespace) {
-    	if (namespace == null) // fix for Bug 84225
+	public WorkingSetDescriptor[] getElementAdapterDescriptorsForNamespace(String namespace) {
+		if (namespace == null) { // fix for Bug 84225
     		return new WorkingSetDescriptor[0];
-		Collection descriptors = workingSetDescriptors.values();
-		List result = new ArrayList();
-		for (Iterator iter = descriptors.iterator(); iter.hasNext();) {
-			WorkingSetDescriptor descriptor = (WorkingSetDescriptor) iter
-					.next();
+		}
+		Collection<WorkingSetDescriptor> descriptors = workingSetDescriptors.values();
+		List<WorkingSetDescriptor> result = new ArrayList<>();
+		for (Iterator<WorkingSetDescriptor> iter = descriptors.iterator(); iter.hasNext();) {
+			WorkingSetDescriptor descriptor = iter.next();
 			if (namespace.equals(descriptor.getDeclaringNamespace())) {
 				result.add(descriptor);
 			}
 		}
-		return (WorkingSetDescriptor[]) result
-				.toArray(new WorkingSetDescriptor[result.size()]);
+		return result.toArray(new WorkingSetDescriptor[result.size()]);
 	}
 
     /**
@@ -215,8 +200,7 @@ public class WorkingSetRegistry implements IExtensionChangeHandler {
 	@Override
 	public void removeExtension(IExtension extension, Object[] objects) {
 		for (Object object : objects) {
-            if (object instanceof WorkingSetDescriptor) {
-                WorkingSetDescriptor desc = (WorkingSetDescriptor) object;
+			if (object instanceof WorkingSetDescriptor desc) {
                 workingSetDescriptors.remove(desc.getId());
             }
         }

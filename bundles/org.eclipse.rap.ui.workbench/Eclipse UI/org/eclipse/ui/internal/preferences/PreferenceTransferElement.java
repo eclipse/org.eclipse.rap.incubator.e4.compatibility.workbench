@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -31,7 +28,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 /**
  * Instances represent registered preference transfers.
  *
- * @since 3.1
  */
 public class PreferenceTransferElement extends WorkbenchAdapter implements
 		IPluginContribution {
@@ -133,18 +129,26 @@ public class PreferenceTransferElement extends WorkbenchAdapter implements
 				.getAttribute(IWorkbenchRegistryConstants.ATT_NAME);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IPluginContribution#getLocalId()
+	 */
 	public String getLocalId() {
 		return getID();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IPluginContribution#getPluginId()
+	 */
 	public String getPluginId() {
 		return (configurationElement != null) ? configurationElement
 				.getContributor().getName() : null;
 	}
 
-	static class PreferenceFilter implements IPreferenceFilter {
+	class PreferenceFilter implements IPreferenceFilter {
 
 		private String[] scopes;
 		private Map mappings;
@@ -154,24 +158,32 @@ public class PreferenceTransferElement extends WorkbenchAdapter implements
 			this.mappings = mappings;
 		}
 
-		@Override
 		public String[] getScopes() {
 			return scopes;
 		}
 
-		@Override
 		public Map getMapping(String scope) {
 			return (Map) mappings.get(scope);
 		}
 
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.model.WorkbenchAdapter#getLabel(java.lang.Object)
+	 */
 	public String getLabel(Object object) {
 		return getName();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.ui.model.WorkbenchAdapter#getImageDescriptor(java.lang.Object
+	 * )
+	 */
 	public ImageDescriptor getImageDescriptor(Object object) {
 		if (imageDescriptor == null) {
 			String iconName = configurationElement

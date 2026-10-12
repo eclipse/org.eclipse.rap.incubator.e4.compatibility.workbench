@@ -26,13 +26,11 @@ import org.eclipse.ui.menus.IMenuService;
 
 /**
  * @since 3.105
- *
  */
 public class SlaveMenuService implements IMenuService, IMenuServiceWorkaround {
-	private IMenuService parentService;
+	private final IMenuService parentService;
 
 	/**
-	 * @param provider
 	 * @see org.eclipse.ui.services.IServiceWithSources#addSourceProvider(org.eclipse.ui.ISourceProvider)
 	 */
 	@Override
@@ -41,7 +39,6 @@ public class SlaveMenuService implements IMenuService, IMenuServiceWorkaround {
 	}
 
 	/**
-	 * @param provider
 	 * @see org.eclipse.ui.services.IServiceWithSources#removeSourceProvider(org.eclipse.ui.ISourceProvider)
 	 */
 	@Override
@@ -50,7 +47,6 @@ public class SlaveMenuService implements IMenuService, IMenuServiceWorkaround {
 	}
 
 	/**
-	 * @param factory
 	 * @see org.eclipse.ui.menus.IMenuService#addContributionFactory(org.eclipse.ui.menus.AbstractContributionFactory)
 	 */
 	@Override
@@ -68,7 +64,6 @@ public class SlaveMenuService implements IMenuService, IMenuServiceWorkaround {
 	}
 
 	/**
-	 * @param factory
 	 * @see org.eclipse.ui.menus.IMenuService#removeContributionFactory(org.eclipse.ui.menus.AbstractContributionFactory)
 	 */
 	@Override
@@ -77,8 +72,6 @@ public class SlaveMenuService implements IMenuService, IMenuServiceWorkaround {
 	}
 
 	/**
-	 * @param mgr
-	 * @param location
 	 * @see org.eclipse.ui.menus.IMenuService#populateContributionManager(org.eclipse.jface.action.ContributionManager,
 	 *      java.lang.String)
 	 */
@@ -87,17 +80,15 @@ public class SlaveMenuService implements IMenuService, IMenuServiceWorkaround {
 		populateContributionManager(model, mgr, location);
 	}
 
-	public void populateContributionManager(MApplicationElement model, ContributionManager mgr,
-			String location) {
+	public void populateContributionManager(MApplicationElement model, ContributionManager mgr, String location) {
 		if (parentService instanceof SlaveMenuService) {
 			((SlaveMenuService) parentService).populateContributionManager(model, mgr, location);
 		} else if (parentService instanceof WorkbenchMenuService) {
-			((WorkbenchMenuService) parentService)
-					.populateContributionManager(model, mgr, location);
+			((WorkbenchMenuService) parentService).populateContributionManager(model, mgr, location);
 		}
 	}
+
 	/**
-	 * @param mgr
 	 * @see org.eclipse.ui.menus.IMenuService#releaseContributions(org.eclipse.jface.action.ContributionManager)
 	 */
 	@Override
@@ -107,20 +98,16 @@ public class SlaveMenuService implements IMenuService, IMenuServiceWorkaround {
 
 	/**
 	 * Disposes contributions created by service for given part. See bug 537046.
-	 *
-	 * @param site
-	 * @param part
 	 */
 	@Override
 	public void clearContributions(PartSite site, MPart part) {
-		if (parentService instanceof IMenuServiceWorkaround) {
-			IMenuServiceWorkaround service = (IMenuServiceWorkaround) parentService;
+		if (parentService instanceof IMenuServiceWorkaround service) {
 			service.clearContributions(site, part);
 		}
 	}
 
 	/**
-	 * @return
+	 * @return IEvaluationContext
 	 * @see org.eclipse.ui.menus.IMenuService#getCurrentState()
 	 */
 	@Override
@@ -133,9 +120,10 @@ public class SlaveMenuService implements IMenuService, IMenuServiceWorkaround {
 		this.model = model;
 	}
 
-	private MApplicationElement model;
+	private final MApplicationElement model;
 
 	public MApplicationElement getModel() {
 		return model;
 	}
 }
+

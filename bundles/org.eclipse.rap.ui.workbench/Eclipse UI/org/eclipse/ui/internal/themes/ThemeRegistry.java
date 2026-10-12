@@ -18,12 +18,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.eclipse.ui.themes.IThemeManager;
 
 /**
@@ -33,31 +31,25 @@ import org.eclipse.ui.themes.IThemeManager;
  */
 public class ThemeRegistry implements IThemeRegistry {
 
-    private List themes;
+	private final List<IThemeDescriptor> themes;
 
-    private List colors;
+	private final List<ColorDefinition> colors;
 
-    private List fonts;
+	private final List<FontDefinition> fonts;
 
-    private List categories;
+	private final List<ThemeElementCategory> categories;
 
-    private Map dataMap;
-
-    /**
-     * Map from String (categoryId) -> Set (presentationIds)
-     */
-    private Map categoryBindingMap;
+	private final Map<Object, Object> dataMap;
 
     /**
      * Create a new ThemeRegistry.
      */
     public ThemeRegistry() {
-        themes = new ArrayList();
-        colors = new ArrayList();
-        fonts = new ArrayList();
-        categories = new ArrayList();
-        dataMap = new HashMap();
-        categoryBindingMap = new HashMap();
+		themes = new ArrayList<>();
+		colors = new ArrayList<>();
+		fonts = new ArrayList<>();
+		categories = new ArrayList<>();
+		dataMap = new HashMap<>();
     }
 
     /**
@@ -92,13 +84,7 @@ public class ThemeRegistry implements IThemeRegistry {
         return (IThemeDescriptor) findDescriptor(getThemes(), id);
     }
 
-    /**
-     * @param descriptors
-     * @param id
-     * @return
-     */
-    private IThemeElementDefinition findDescriptor(
-            IThemeElementDefinition[] descriptors, String id) {
+	private IThemeElementDefinition findDescriptor(IThemeElementDefinition[] descriptors, String id) {
         int idx = Arrays.binarySearch(descriptors, id, ID_COMPARATOR);
         if (idx < 0) {
 			return null;
@@ -107,15 +93,14 @@ public class ThemeRegistry implements IThemeRegistry {
     }
 
     /*
-     * Add newElement to descriptors.
-     * If one with the same id already exists, replace it.
-     * Return the existing element in the case of replacing, null in the case of adding.
+	 * Add newElement to descriptors. If one with the same id already exists,
+	 * replace it. Return the existing element in the case of replacing, null in the
+	 * case of adding.
      */
-    private IThemeElementDefinition addOrReplaceDescriptor(
-            List descriptors, IThemeElementDefinition newElement) {
+	private <T extends IThemeElementDefinition> T addOrReplaceDescriptor(List<T> descriptors, T newElement) {
     	String id = newElement.getId();
     	for (int i = 0; i < descriptors.size(); i++) {
-    		IThemeElementDefinition existingElement = (IThemeElementDefinition) descriptors.get(i);
+			T existingElement = descriptors.get(i);
     		if(existingElement.getId().equals(id)) {
     			descriptors.remove(i);
     			descriptors.add(newElement);
@@ -175,43 +160,34 @@ public class ThemeRegistry implements IThemeRegistry {
      * @param overrides the overrides
      * @return the overlayed elements
      */
-    private IThemeElementDefinition[] overlay(IThemeElementDefinition[] defs,
-            IThemeElementDefinition[] overrides) {
+	private IThemeElementDefinition[] overlay(IThemeElementDefinition[] defs, IThemeElementDefinition[] overrides) {
         for (IThemeElementDefinition override : overrides) {
 			int idx = Arrays.binarySearch(defs, override, IThemeRegistry.ID_COMPARATOR);
             if (idx >= 0) {
-                // RAP
-//                defs[idx] = overlay(defs[idx], overrides[i]);
+				defs[idx] = overlay(defs[idx], override);
           }
       }
       return defs;
   }
 
-    // RAP
-//    /**
-//     * Overlay the override onto the base definition.
-//     *
-//     * @param defs the base definition
-//     * @param overrides the override
-//     * @return the overlayed element
-//     */
-//    private IThemeElementDefinition overlay(IThemeElementDefinition original,
-//            IThemeElementDefinition overlay) {
-//        if (original instanceof ColorDefinition) {
-//            ColorDefinition originalColor = (ColorDefinition) original;
-//            ColorDefinition overlayColor = (ColorDefinition) overlay;
-//            return new ColorDefinition(originalColor, overlayColor.getValue());
-//        } else if (original instanceof FontDefinition) {
-//            FontDefinition originalFont = (FontDefinition) original;
-//            FontDefinition overlayFont = (FontDefinition) overlay;
-//            return new FontDefinition(originalFont, overlayFont.getValue());
-//        }
-//        return null;
-//    }
-
     /**
-     * @param definition
+	 * Overlay the override onto the base definition.
+	 *
+	 * @param defs      the base definition
+	 * @param overrides the override
+	 * @return the overlayed element
      */
+	private IThemeElementDefinition overlay(IThemeElementDefinition original, IThemeElementDefinition overlay) {
+		if (original instanceof ColorDefinition originalColor) {
+			ColorDefinition overlayColor = (ColorDefinition) overlay;
+			return new ColorDefinition(originalColor, overlayColor.getValue());
+		} else if (original instanceof FontDefinition originalFont) {
+			FontDefinition overlayFont = (FontDefinition) overlay;
+			return new FontDefinition(originalFont, overlayFont.getValue());
+		}
+		return null;
+	}
+
     void add(FontDefinition definition) {
         if (findFont(definition.getId()) != null) {
 			return;
@@ -233,9 +209,6 @@ public class ThemeRegistry implements IThemeRegistry {
         return (FontDefinition) findDescriptor(getFonts(), id);
     }
 
-    /**
-     * @param definition
-     */
     void add(ThemeElementCategory definition) {
         if (findCategory(definition.getId()) != null) {
 			return;
@@ -252,10 +225,6 @@ public class ThemeRegistry implements IThemeRegistry {
         return retArray;
     }
 
-    /**
-     * @param name
-     * @param value
-     */
     void setData(String name, String value) {
         if (dataMap.containsKey(name)) {
 			return;
@@ -265,7 +234,7 @@ public class ThemeRegistry implements IThemeRegistry {
     }
 
     @Override
-	public Map getData() {
+	public Map<Object, Object> getData() {
         return Collections.unmodifiableMap(dataMap);
     }
 
@@ -284,25 +253,8 @@ public class ThemeRegistry implements IThemeRegistry {
         }
     }
     
-    /**
-     * Add a category presentation binding.  The given category will only be 
-     * availible if the given presentation is active.
-     * 
-     * @param categoryId the category id
-     * @param presentationId the presentation id
-     */
-    public void addCategoryPresentationBinding(String categoryId,
-            String presentationId) {
-        Set presentations = (Set) categoryBindingMap.get(categoryId);
-        if (presentations == null) {
-            presentations = new HashSet();
-            categoryBindingMap.put(categoryId, presentations);
-        }
-        presentations.add(presentationId);
-    }
-
     @Override
-	public Set getPresentationsBindingsFor(ThemeElementCategory category) {
-        return (Set) categoryBindingMap.get(category.getId());
+	public Set<?> getPresentationsBindingsFor(ThemeElementCategory category) {
+		return null;
     }
 }

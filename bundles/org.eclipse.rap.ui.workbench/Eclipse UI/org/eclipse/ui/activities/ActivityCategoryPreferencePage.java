@@ -169,7 +169,7 @@ public final class ActivityCategoryPreferencePage extends PreferencePage impleme
                 name = category.getId();
             }
             if (decorate && isLocked(category)) {
-                name = NLS.bind(ActivityMessages.ActivitiesPreferencePage_lockedMessage, name);
+                name = NLS.bind(ActivityMessages.get().ActivitiesPreferencePage_lockedMessage, name);
             }
             return name;
         }
@@ -258,7 +258,7 @@ public final class ActivityCategoryPreferencePage extends PreferencePage impleme
         composite.setLayout(layout);
         Label label = new Label(composite, SWT.WRAP);
         label
-                .setText(strings.getProperty(CAPTION_MESSAGE, ActivityMessages.ActivitiesPreferencePage_captionMessage));
+                .setText(strings.getProperty(CAPTION_MESSAGE, ActivityMessages.get().ActivitiesPreferencePage_captionMessage));
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = 400;
         data.horizontalSpan = 2;
@@ -295,8 +295,8 @@ public final class ActivityCategoryPreferencePage extends PreferencePage impleme
      */
     private void createPromptButton(Composite composite) {
         activityPromptButton = new Button(composite, SWT.CHECK);
-        activityPromptButton.setText(strings.getProperty(ACTIVITY_PROMPT_BUTTON, ActivityMessages.activityPromptButton));
-        activityPromptButton.setToolTipText(strings.getProperty(ACTIVITY_PROMPT_BUTTON_TOOLTIP, ActivityMessages.activityPromptToolTip));
+        activityPromptButton.setText(strings.getProperty(ACTIVITY_PROMPT_BUTTON, ActivityMessages.get().activityPromptButton));
+        activityPromptButton.setToolTipText(strings.getProperty(ACTIVITY_PROMPT_BUTTON_TOOLTIP, ActivityMessages.get().activityPromptToolTip));
         GridData data = new GridData();
         data.horizontalSpan = 2;
         activityPromptButton.setLayoutData(data);
@@ -323,7 +323,7 @@ public final class ActivityCategoryPreferencePage extends PreferencePage impleme
 				workingCopy.setEnabledActivityIds(workingCopy.getDefinedActivityIds());
 			}
 		});
-        enableAll.setText(ActivityMessages.ActivityEnabler_selectAll);
+        enableAll.setText(ActivityMessages.get().ActivityEnabler_selectAll);
         setButtonLayoutData(enableAll);
 
         Button disableAll = new Button(composite, SWT.PUSH);
@@ -333,7 +333,7 @@ public final class ActivityCategoryPreferencePage extends PreferencePage impleme
 				workingCopy.setEnabledActivityIds(Collections.emptySet());
 			}
 		});
-        disableAll.setText(ActivityMessages.ActivityEnabler_deselectAll);
+        disableAll.setText(ActivityMessages.get().ActivityEnabler_deselectAll);
         setButtonLayoutData(disableAll);
 
     }
@@ -350,14 +350,14 @@ public final class ActivityCategoryPreferencePage extends PreferencePage impleme
         composite.setLayout(layout);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        new Label(composite, SWT.NONE).setText(ActivityMessages.ActivityEnabler_description);
+        new Label(composite, SWT.NONE).setText(ActivityMessages.get().ActivityEnabler_description);
         descriptionText = new Text(composite, SWT.WRAP | SWT.READ_ONLY | SWT.BORDER);
         GridData data = new GridData(GridData.FILL_BOTH);
         data.heightHint = 100;
         data.widthHint = 200;
         descriptionText.setLayoutData(data);
 
-        new Label(composite, SWT.NONE).setText(ActivityMessages.ActivitiesPreferencePage_requirements);
+        new Label(composite, SWT.NONE).setText(ActivityMessages.get().ActivitiesPreferencePage_requirements);
         dependantViewer = new TableViewer(composite, SWT.BORDER);
         dependantViewer.getControl().setLayoutData(
                 new GridData(GridData.FILL_BOTH));
@@ -381,7 +381,7 @@ public final class ActivityCategoryPreferencePage extends PreferencePage impleme
         data.widthHint = 200;
         composite.setLayoutData(data);
         Label label = new Label(composite, SWT.NONE);
-        label.setText(strings.getProperty(CATEGORY_NAME, ActivityMessages.ActivityEnabler_categories));
+        label.setText(strings.getProperty(CATEGORY_NAME, ActivityMessages.get().ActivityEnabler_categories));
         Table table = new Table(composite, SWT.CHECK | SWT.BORDER | SWT.SINGLE);
         table.addSelectionListener(new SelectionAdapter()
         {

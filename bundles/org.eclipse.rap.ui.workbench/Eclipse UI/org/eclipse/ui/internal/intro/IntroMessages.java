@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2003, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  * IBM - Initial API and implementation
@@ -39,6 +36,8 @@ public class IntroMessages {
 	public String Intro_default_title;
 	public String Intro_missing_product_title;
 	public String Intro_missing_product_message;
+    // ENDRAP
+
 
 // RAP [bm]: different NLS due to multiple user/session capability
 //  static {

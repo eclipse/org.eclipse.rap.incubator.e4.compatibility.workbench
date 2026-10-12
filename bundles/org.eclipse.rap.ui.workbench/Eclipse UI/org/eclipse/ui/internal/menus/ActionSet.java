@@ -130,7 +130,7 @@ public class ActionSet {
 		HashSet<String> result = new HashSet<>();
 		final IExtensionRegistry registry = Platform.getExtensionRegistry();
 		final IConfigurationElement[] associations = registry
-				.getConfigurationElementsFor(PlatformUI.PLUGIN_ID + '.'
+				.getConfigurationElementsFor(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE + '.'
 						+ IWorkbenchRegistryConstants.PL_ACTION_SET_PART_ASSOCIATIONS);
 		for (IConfigurationElement element : associations) {
 			String targetId = element.getAttribute(IWorkbenchRegistryConstants.ATT_TARGET_ID);

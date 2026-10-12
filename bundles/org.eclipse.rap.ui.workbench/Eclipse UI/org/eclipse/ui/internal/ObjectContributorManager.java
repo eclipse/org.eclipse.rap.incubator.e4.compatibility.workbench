@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -24,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.eclipse.core.runtime.Adapters;
+
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -36,6 +33,7 @@ import org.eclipse.core.runtime.dynamichelpers.IExtensionChangeHandler;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.util.Util;
 
 /**
  * This class is a default implementation of <code>IObjectContributorManager</code>.
@@ -61,7 +59,7 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
 	/**
 	 * @since 3.1
 	 */
-	private static class ContributorRecord {
+	private class ContributorRecord {
 		/**
 		 * @param contributor
 		 * @param targetType
@@ -213,7 +211,6 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
      * @return an unmodifiable <code>Collection</code> containing all registered
      * contributions.  The objects in this <code>Collection</code> will be
      * <code>List</code>s containing the actual contributions.
-     * @since 3.0
      */
     public Collection getContributors() {
         return Collections.unmodifiableCollection(contributors.values());
@@ -254,11 +251,12 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
     private void internalComputeInterfaceOrder(Class[] interfaces, List result,
             Map seen) {
         List newInterfaces = new ArrayList(seen.size());
-        for (Class currentInterface : interfaces) {
-            if (seen.get(currentInterface) == null) {
-                result.add(currentInterface);
-                seen.put(currentInterface, currentInterface);
-                newInterfaces.add(currentInterface);
+        for (int i = 0; i < interfaces.length; i++) {
+            Class interfac = interfaces[i];
+            if (seen.get(interfac) == null) {
+                result.add(interfac);
+                seen.put(interfac, interfac);
+                newInterfaces.add(interfac);
             }
         }
         for (Iterator newList = newInterfaces.iterator(); newList.hasNext();) {
@@ -325,7 +323,8 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
         contributorList.add(contributor);
         flushLookup();
 
-        IConfigurationElement element = Adapters.adapt(contributor, IConfigurationElement.class);
+        IConfigurationElement element = (IConfigurationElement) Util.getAdapter(contributor,
+        	IConfigurationElement.class);
 
         //hook the object listener
         if (element != null) {
@@ -414,7 +413,6 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
      * @return the contributions for the given class. This considers
      * contributors on any super classes and interfaces.
      *
-     * @since 3.1
      */
     protected List getObjectContributors(Class objectClass) {
 		List objectList = null;
@@ -424,7 +422,7 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
 		}
 		if (objectList == null) {
 			objectList = addContributorsFor(objectClass);
-			if (objectList.isEmpty()) {
+			if (objectList.size() == 0) {
 				objectList = Collections.EMPTY_LIST;
 			}
 			else {
@@ -444,7 +442,6 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
      * @return the contributions for the given class. This considers
      * adaptable contributors on any super classes and interfaces.
      *
-     * @since 3.1
      */
 	protected List getResourceContributors(Class resourceClass) {
 		List resourceList = null;
@@ -453,7 +450,7 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
 		}
 		if (resourceList == null) {
 			resourceList = addContributorsFor(resourceClass);
-			if (resourceList.isEmpty()) {
+			if (resourceList.size() == 0) {
 				resourceList = Collections.EMPTY_LIST;
 			} else {
 				resourceList = Collections.unmodifiableList(filterOnlyAdaptableContributors(resourceList));
@@ -470,7 +467,6 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
      * @return the contributions for the given class. This considers
      * contributors to this specific type.
      *
-     * @since 3.1
      */
 	protected List getAdaptableContributors(String adapterType) {
 		List adaptableList = null;
@@ -488,7 +484,7 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
 			}
 			else {
 				adaptableList = (List) contributors.get(adapterType);
-				if (adaptableList == null || adaptableList.isEmpty()) {
+				if (adaptableList == null || adaptableList.size() == 0) {
 					adaptableList = Collections.EMPTY_LIST;
 				} else {
 					adaptableList = Collections.unmodifiableList(filterOnlyAdaptableContributors(adaptableList));
@@ -529,8 +525,8 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
             result.add(clazz);
             // add all the interfaces it implements
             Class[] interfaces = clazz.getInterfaces();
-            for (Class currentInterface : interfaces) {
-                result.add(currentInterface);
+            for (int i = 0; i < interfaces.length; i++) {
+                result.add(interfaces[i]);
             }
             // get the superclass
             clazz = clazz.getSuperclass();
@@ -552,11 +548,13 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
 		return adaptableContributors == null ? Collections.EMPTY_LIST : adaptableContributors;
 	}
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.dynamicHelpers.IExtensionChangeHandler#removeExtension(org.eclipse.core.runtime.IExtension, java.lang.Object[])
+     */
 	public void removeExtension(IExtension source, Object[] objects) {
-        for (Object object : objects) {
-            if (object instanceof ContributorRecord) {
-                ContributorRecord contributorRecord = (ContributorRecord) object;
+        for (int i = 0; i < objects.length; i++) {
+            if (objects[i] instanceof ContributorRecord) {
+                ContributorRecord contributorRecord = (ContributorRecord) objects[i];
                 unregisterContributor((contributorRecord).contributor, (contributorRecord).objectClassName);
                 contributorRecordSet.remove(contributorRecord);
             }
@@ -566,7 +564,6 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
     /**
      * Remove listeners and dispose of this manager.
      *
-     * @since 3.1
      */
     public void dispose() {
     	if(getExtensionPointFilter() != null) {
@@ -670,7 +667,7 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
      * for the given collection of objects.
      */
     private List getCommonClasses(List objects, List commonAdapters) {
-        if (objects == null || objects.isEmpty()) {
+        if (objects == null || objects.size() == 0) {
 			return null;
 		}
 
@@ -862,7 +859,9 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
         IAdapterManager adapterMgr = Platform.getAdapterManager();
         for (Iterator list = classList.iterator(); list.hasNext();) {
             Class clazz = ((Class) list.next());
-			for (String adapter : adapterMgr.computeAdapterTypes(clazz)) {
+            String[] adapters = adapterMgr.computeAdapterTypes(clazz);
+            for (int i = 0; i < adapters.length; i++) {
+                String adapter = adapters[i];
                 if (!result.contains(adapter)) {
                     result.add(adapter);
                 }
@@ -878,7 +877,7 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
      * themselves so as to prevent double registration of actions.
      */
     private Class getCommonResourceClass(List objects) {
-        if (objects == null || objects.isEmpty()) {
+        if (objects == null || objects.size() == 0) {
             return null;
         }
         Class resourceClass = LegacyResourceSupport.getResourceClass();
@@ -917,7 +916,7 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
      * Return the ResourceMapping class if the elements all adapt to it.
      */
     private Class getResourceMappingClass(List objects) {
-        if (objects == null || objects.isEmpty()) {
+        if (objects == null || objects.size() == 0) {
             return null;
         }
         Class resourceMappingClass = LegacyResourceSupport
@@ -955,7 +954,7 @@ public abstract class ObjectContributorManager implements IExtensionChangeHandle
      * collection of objects.
      */
     private Class getCommonClass(List objects) {
-        if (objects == null || objects.isEmpty()) {
+        if (objects == null || objects.size() == 0) {
 			return null;
 		}
         Class commonClass = objects.get(0).getClass();

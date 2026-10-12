@@ -16,9 +16,8 @@ package org.eclipse.ui.activities;
 
 /**
  * An instance of this class describes changes to an instance of
- * <code>IActivity</code>.  This class does not give details as to the
- * specifics of a change, only that the given property on the source object has
- * changed.
+ * <code>IActivity</code>. This class does not give details as to the specifics
+ * of a change, only that the given property on the source object has changed.
  * <p>
  * This class is not intended to be extended by clients.
  * </p>
@@ -27,86 +26,77 @@ package org.eclipse.ui.activities;
  * @see IActivityListener#activityChanged(ActivityEvent)
  */
 public final class ActivityEvent {
-    private IActivity activity;
+	private final IActivity activity;
 
-    private boolean activityRequirementBindingsChanged;
+	private final boolean activityRequirementBindingsChanged;
 
-    private boolean activityPatternBindingsChanged;
+	private final boolean activityPatternBindingsChanged;
 
-    private boolean definedChanged;
+	private final boolean definedChanged;
 
-    private boolean enabledChanged;
+	private final boolean enabledChanged;
 
-    private boolean defaultEnabledChanged;
+	private final boolean defaultEnabledChanged;
 
-    private boolean nameChanged;
+	private final boolean nameChanged;
 
-    private boolean descriptionChanged;
+	private final boolean descriptionChanged;
 
     /**
-     * Creates a new instance of this class. Since 3.1 this method will assume
-     * that the default enabled state has not changed.
+	 * Creates a new instance of this class. Since 3.1 this method will assume that
+	 * the default enabled state has not changed.
      *
-     * @param activity
-     *            the instance of the interface that changed.
-     * @param activityRequirementBindingsChanged
-     *            <code>true</code>, iff the activityRequirementBindings
+	 * @param activity                           the instance of the interface that
+	 *                                           changed.
+	 * @param activityRequirementBindingsChanged <code>true</code>, iff the
+	 *                                           activityRequirementBindings
      *            property changed.
-     * @param activityPatternBindingsChanged
-     *            <code>true</code>, iff the activityPatternBindings property
+	 * @param activityPatternBindingsChanged     <code>true</code>, iff the
+	 *                                           activityPatternBindings property
      *            changed.
-     * @param definedChanged
-     *            <code>true</code>, iff the defined property changed.
-     * @param descriptionChanged
-     *            <code>true</code>, iff the description property changed.
-     * @param enabledChanged
-     *            <code>true</code>, iff the enabled property changed.
-     * @param nameChanged
-     *            <code>true</code>, iff the name property changed.
+	 * @param definedChanged                     <code>true</code>, iff the defined
+	 *                                           property changed.
+	 * @param descriptionChanged                 <code>true</code>, iff the
+	 *                                           description property changed.
+	 * @param enabledChanged                     <code>true</code>, iff the enabled
+	 *                                           property changed.
+	 * @param nameChanged                        <code>true</code>, iff the name
+	 *                                           property changed.
      */
-    public ActivityEvent(IActivity activity,
-            boolean activityRequirementBindingsChanged,
-            boolean activityPatternBindingsChanged, boolean definedChanged,
-            boolean descriptionChanged, boolean enabledChanged,
-            boolean nameChanged) {
+	public ActivityEvent(IActivity activity, boolean activityRequirementBindingsChanged,
+			boolean activityPatternBindingsChanged, boolean definedChanged, boolean descriptionChanged,
+			boolean enabledChanged, boolean nameChanged) {
 
-        this(activity,
-                activityRequirementBindingsChanged,
-                activityPatternBindingsChanged,
-                definedChanged,
-                descriptionChanged,
-                enabledChanged,
-                nameChanged,
-                false);
+		this(activity, activityRequirementBindingsChanged, activityPatternBindingsChanged, definedChanged,
+				descriptionChanged, enabledChanged, nameChanged, false);
     }
 
     /**
      * Creates a new instance of this class.
      *
-     * @param activity
-     *        the instance of the interface that changed.
-     * @param activityRequirementBindingsChanged
-     *        <code>true</code>, iff the activityRequirementBindings property changed.
-     * @param activityPatternBindingsChanged
-     *        <code>true</code>, iff the activityPatternBindings property changed.
-     * @param definedChanged
-     *        <code>true</code>, iff the defined property changed.
-     * @param descriptionChanged
-     * 		  <code>true</code>, iff the description property changed.
-     * @param enabledChanged
-     *      <code>true</code>, iff the enabled property changed.
-     * @param nameChanged
-     *        <code>true</code>, iff the name property changed.
-     * @param defaultEnabledChanged
-     * 		  <code>true</code>, iff the default enabled property changed.
+	 * @param activity                           the instance of the interface that
+	 *                                           changed.
+	 * @param activityRequirementBindingsChanged <code>true</code>, iff the
+	 *                                           activityRequirementBindings
+	 *                                           property changed.
+	 * @param activityPatternBindingsChanged     <code>true</code>, iff the
+	 *                                           activityPatternBindings property
+	 *                                           changed.
+	 * @param definedChanged                     <code>true</code>, iff the defined
+	 *                                           property changed.
+	 * @param descriptionChanged                 <code>true</code>, iff the
+	 *                                           description property changed.
+	 * @param enabledChanged                     <code>true</code>, iff the enabled
+	 *                                           property changed.
+	 * @param nameChanged                        <code>true</code>, iff the name
+	 *                                           property changed.
+	 * @param defaultEnabledChanged              <code>true</code>, iff the default
+	 *                                           enabled property changed.
      * @since 3.1
      */
-    public ActivityEvent(IActivity activity,
-            boolean activityRequirementBindingsChanged,
-            boolean activityPatternBindingsChanged, boolean definedChanged,
-            boolean descriptionChanged, boolean enabledChanged,
-            boolean nameChanged,
-            boolean defaultEnabledChanged) {
+	public ActivityEvent(IActivity activity, boolean activityRequirementBindingsChanged,
+			boolean activityPatternBindingsChanged, boolean definedChanged, boolean descriptionChanged,
+			boolean enabledChanged, boolean nameChanged, boolean defaultEnabledChanged) {
         if (activity == null) {
 			throw new NullPointerException();
 		}
@@ -120,7 +110,6 @@ public final class ActivityEvent {
         this.descriptionChanged = descriptionChanged;
         this.defaultEnabledChanged = defaultEnabledChanged;
     }
-
 
     /**
      * Returns the instance of the interface that changed.
@@ -181,7 +170,8 @@ public final class ActivityEvent {
     /**
      * Returns whether or not the activityRequirementBindings property changed.
      *
-     * @return <code>true</code>, iff the activityRequirementBindings property changed.
+	 * @return <code>true</code>, iff the activityRequirementBindings property
+	 *         changed.
      */
     public boolean haveActivityRequirementBindingsChanged() {
         return activityRequirementBindingsChanged;

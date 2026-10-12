@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -118,7 +115,7 @@ public class ActionDescriptor implements IPluginContribution {
             int targetType, Object target) {
         // Load attributes.
         id = actionElement.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
-		pluginId = actionElement.getContributor().getName();
+        pluginId = actionElement.getNamespace();
         String label = actionElement.getAttribute(IWorkbenchRegistryConstants.ATT_LABEL);
         String tooltip = actionElement.getAttribute(IWorkbenchRegistryConstants.ATT_TOOLTIP);
         String helpContextId = actionElement.getAttribute(IWorkbenchRegistryConstants.ATT_HELP_CONTEXT_ID);
@@ -185,10 +182,10 @@ public class ActionDescriptor implements IPluginContribution {
 		}
         if (helpContextId != null) {
             String fullID = helpContextId;
-            if (helpContextId.indexOf('.') == -1) {
+            if (helpContextId.indexOf(".") == -1) { //$NON-NLS-1$
 				// For backward compatibility we auto qualify the id if it is not
                 // qualified)
-				fullID = actionElement.getContributor().getName()
+                fullID = actionElement.getNamespace()
                         + "." + helpContextId;//$NON-NLS-1$
 			}
             PlatformUI.getWorkbench().getHelpSystem().setHelp(action, fullID);
@@ -216,7 +213,7 @@ public class ActionDescriptor implements IPluginContribution {
         }
 
         String extendingPluginId = actionElement.getDeclaringExtension()
-				.getContributor().getName();
+                .getNamespace();
 
         if (icon != null) {
             action.setImageDescriptor(AbstractUIPlugin
@@ -340,7 +337,6 @@ public class ActionDescriptor implements IPluginContribution {
     /**
      * For debugging only.
      */
-    @Override
 	public String toString() {
         return "ActionDescriptor(" + id + ")";//$NON-NLS-2$//$NON-NLS-1$
     }
@@ -369,12 +365,16 @@ public class ActionDescriptor implements IPluginContribution {
 		}
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IPluginContribution#getLocalId()
+     */
 	public String getLocalId() {
         return getId();
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.IPluginContribution#getPluginId()
+     */
 	public String getPluginId() {
         return pluginId;
     }

@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
@@ -358,3 +358,4 @@ public class SelectionService implements ISelectionChangedListener, ISelectionSe
 	}
 
 }
+

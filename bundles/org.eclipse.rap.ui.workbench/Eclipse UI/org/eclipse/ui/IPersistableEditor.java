@@ -23,13 +23,13 @@ package org.eclipse.ui;
  * <p>
  * If a memento is available, restoreState(*) will be inserted into the editor
  * startup.
+ * </p>
  * <ol>
  * <li><code>editor.init(site, input)</code></li>
  * <li><code>editor.restoreState(memento)</code></li>
  * <li><code>editor.createPartControl(parent)</code></li>
  * <li>...</li>
  * </ol>
- * </p>
  * <p>
  * On workbench shutdown, the editor state will be persisted when the editor
  * references are saved.
@@ -39,11 +39,10 @@ package org.eclipse.ui;
  */
 public interface IPersistableEditor extends IPersistable {
 	/**
-	 * Called with a memento for this editor. The editor can parse the data or
-	 * save the memento. This method may not be called.
+	 * Called with a memento for this editor. The editor can parse the data or save
+	 * the memento. This method may not be called.
 	 *
-	 * @param memento
-	 *            the saved state for this editor. May be <code>null</code>.
+	 * @param memento the saved state for this editor. May be <code>null</code>.
 	 */
 	void restoreState(IMemento memento);
 }

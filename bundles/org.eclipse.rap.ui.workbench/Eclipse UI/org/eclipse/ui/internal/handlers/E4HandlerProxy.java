@@ -17,7 +17,7 @@ package org.eclipse.ui.internal.handlers;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -197,3 +197,4 @@ public class E4HandlerProxy implements IHandler2, IHandlerListener, IElementUpda
 	}
 
 }
+

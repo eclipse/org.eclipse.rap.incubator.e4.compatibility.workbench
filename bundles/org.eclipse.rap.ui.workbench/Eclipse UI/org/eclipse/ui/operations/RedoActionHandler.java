@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -19,7 +16,6 @@ import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchMessages;
@@ -31,7 +27,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * clients.
  * </p>
  *
- * @since 3.1
+ * @since 1.1
  */
 public final class RedoActionHandler extends OperationHistoryActionHandler {
 
@@ -50,46 +46,37 @@ public final class RedoActionHandler extends OperationHistoryActionHandler {
 				.getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
 		setDisabledImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
 				.getImageDescriptor(ISharedImages.IMG_TOOL_REDO_DISABLED));
-		setActionDefinitionId(IWorkbenchCommandConstants.EDIT_REDO);
 	}
 
-	@Override
 	void flush() {
 		getHistory().dispose(getUndoContext(), false, true, false);
 	}
 
-	@Override
 	String getCommandString() {
 		return WorkbenchMessages.get().Operations_redoCommand;
 	}
 
-	@Override
 	String getTooltipString() {
 		return WorkbenchMessages.get().Operations_redoTooltipCommand;
 	}
 
-	@Override
 	String getSimpleCommandString() {
 		return WorkbenchMessages.get().Workbench_redo;
 	}
 
-	@Override
 	String getSimpleTooltipString() {
 		return WorkbenchMessages.get().Workbench_redoToolTip;
 	}
 
 
-	@Override
 	IUndoableOperation getOperation() {
 		return getHistory().getRedoOperation(getUndoContext());
 	}
 
-	@Override
 	IStatus runCommand(IProgressMonitor pm) throws ExecutionException {
 		return getHistory().redo(getUndoContext(), pm, this);
 	}
 
-	@Override
 	boolean shouldBeEnabled() {
 		return getHistory().canRedo(getUndoContext());
 	}

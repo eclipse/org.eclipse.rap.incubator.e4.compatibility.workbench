@@ -1,13 +1,10 @@
 // RAP [rh] AboutDialog left out for now
 ///*******************************************************************************
-// * Copyright (c) 2003, 2018 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2003, 2007 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -20,14 +17,13 @@
 //import java.io.IOException;
 //import java.io.InputStreamReader;
 //import java.io.PrintWriter;
+//import java.util.Comparator;
 //import java.util.Iterator;
 //import java.util.LinkedList;
-//import java.util.Map.Entry;
 //import java.util.Properties;
-//import java.util.Set;
 //import java.util.SortedSet;
-//import java.util.TreeMap;
 //import java.util.TreeSet;
+//
 //import org.eclipse.core.runtime.CoreException;
 //import org.eclipse.core.runtime.IBundleGroup;
 //import org.eclipse.core.runtime.IBundleGroupProvider;
@@ -38,6 +34,7 @@
 //import org.eclipse.ui.about.ISystemSummarySection;
 //import org.eclipse.ui.internal.WorkbenchMessages;
 //import org.eclipse.ui.internal.WorkbenchPlugin;
+//import org.eclipse.ui.internal.util.Util;
 //import org.osgi.framework.Bundle;
 //
 ///**
@@ -51,10 +48,11 @@
 //
 //    private static final String ECLIPSE_PROPERTY_PREFIX = "eclipse."; //$NON-NLS-1$
 //
-//    @Override
+//    /* (non-Javadoc)
+//     * @see org.eclipse.ui.about.ISystemSummarySection#write(java.io.PrintWriter)
+//     */
 //	public void write(PrintWriter writer) {
 //        appendProperties(writer);
-//		appendEnvironmentVariables(writer);
 //        appendFeatures(writer);
 //        appendRegistry(writer);
 //        appendUserPreferences(writer);
@@ -67,13 +65,15 @@
 //        writer.println();
 //        writer.println(WorkbenchMessages.get().SystemSummary_systemProperties);
 //        Properties properties = System.getProperties();
-//		SortedSet<Object> set = new TreeSet<>((o1, o2) -> {
+//        SortedSet set = new TreeSet(new Comparator() {
+//            public int compare(Object o1, Object o2) {
 //		    String s1 = (String) o1;
 //		    String s2 = (String) o2;
 //		    return s1.compareTo(s2);
+//            }
 //		});
 //        set.addAll(properties.keySet());
-//		Iterator<Object> i = set.iterator();
+//        Iterator i = set.iterator();
 //        while (i.hasNext()) {
 //            String key = (String)i.next();
 //            String value = properties.getProperty(key);
@@ -97,9 +97,9 @@
 //    }
 //
 //    private static void printEclipseProperty(PrintWriter writer, String value) {
-//		String[] lines = value.split("\n"); //$NON-NLS-1$
-//        for (String line : lines) {
-//			writer.println(line);
+//        String[] lines = Util.getArrayFromList(value, "\n"); //$NON-NLS-1$
+//        for (int i = 0; i < lines.length; ++i) {
+//			writer.println(lines[i]);
 //		}
 //    }
 //
@@ -111,21 +111,24 @@
 //        writer.println(WorkbenchMessages.get().SystemSummary_features);
 //
 //		IBundleGroupProvider[] providers = Platform.getBundleGroupProviders();
-//		LinkedList<AboutBundleGroupData> groups = new LinkedList<>();
+//        LinkedList groups = new LinkedList();
 //		if (providers != null) {
-//			for (IBundleGroupProvider provider : providers) {
-//				IBundleGroup[] bundleGroups = provider.getBundleGroups();
-//				for (IBundleGroup bundleGroup : bundleGroups) {
-//					groups.add(new AboutBundleGroupData(bundleGroup));
+//			for (int i = 0; i < providers.length; ++i) {
+//                IBundleGroup[] bundleGroups = providers[i].getBundleGroups();
+//                for (int j = 0; j < bundleGroups.length; ++j) {
+//					groups.add(new AboutBundleGroupData(bundleGroups[j]));
 //				}
 //			}
 //		}
-//		AboutBundleGroupData[] bundleGroupInfos = groups.toArray(new AboutBundleGroupData[0]);
+//        AboutBundleGroupData[] bundleGroupInfos = (AboutBundleGroupData[]) groups
+//                .toArray(new AboutBundleGroupData[0]);
 //
 //        AboutData.sortById(false, bundleGroupInfos);
 //
-//		for (AboutBundleGroupData info : bundleGroupInfos) {
-//			String[] args = new String[] { info.getId(), info.getVersion(), info.getName() };
+//        for (int i = 0; i < bundleGroupInfos.length; ++i) {
+//            AboutBundleGroupData info = bundleGroupInfos[i];
+//            String[] args = new String[] { info.getId(), info.getVersion(),
+//                    info.getName() };
 //			writer.println(NLS.bind(WorkbenchMessages.get().SystemSummary_featureVersion, args));
 //		}
 //    }
@@ -146,7 +149,8 @@
 //
 //        AboutData.sortById(false, bundleInfos);
 //
-//        for (AboutBundleData info : bundleInfos) {
+//        for (int i = 0; i < bundleInfos.length; ++i) {
+//            AboutBundleData info = bundleInfos[i];
 //            String[] args = new String[] { info.getId(), info.getVersion(),
 //                    info.getName(), info.getStateName() };
 //            writer.println(NLS.bind(WorkbenchMessages.get().SystemSummary_descriptorIdVersionState, args));
@@ -191,31 +195,4 @@
 //
 //        // ByteArray streams don't need to be closed
 //    }
-//
-//	/**
-//	 * Appends environment variables.
-//	 */
-//	private void appendEnvironmentVariables(PrintWriter writer) {
-//		writer.println();
-//		writer.println(WorkbenchMessages.get().SystemSummary_systemVariables);
-//		TreeMap<String, String> envSorted = new TreeMap<>(System.getenv());
-//		Set<Entry<String, String>> entrySet = envSorted.entrySet();
-//		for (Entry<String, String> entry : entrySet) {
-//			String key = entry.getKey();
-//			String value = entry.getValue();
-//
-//			writer.print(key);
-//			writer.print('=');
-//
-//			if (key.toUpperCase().indexOf("PASSWORD") != -1) { //$NON-NLS-1$
-//				// We should obscure any property that may be a password
-//				for (int j = 0; j < value.length(); j++) {
-//					writer.print('*');
-//				}
-//				writer.println();
-//			} else {
-//				writer.println(value);
-//			}
-//		}
-//	}
 //}

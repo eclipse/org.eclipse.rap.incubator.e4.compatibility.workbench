@@ -15,7 +15,6 @@ package org.eclipse.ui.internal;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
@@ -26,11 +25,11 @@ import org.eclipse.jface.action.SubMenuManager;
 import org.eclipse.ui.actions.RetargetAction;
 
 /**
- * An <code>EditorMenuManager</code> is used to sort the contributions
- * made by an editor so that they always appear after the action sets.
+ * An <code>EditorMenuManager</code> is used to sort the contributions made by
+ * an editor so that they always appear after the action sets.
  */
 public class EditorMenuManager extends SubMenuManager {
-    private ArrayList wrappers;
+	private ArrayList<EditorMenuManager> wrappers;
 
     private boolean enabledAllowed = true;
 
@@ -46,9 +45,7 @@ public class EditorMenuManager extends SubMenuManager {
             }
             // update the wrapped menus
             if (wrappers != null) {
-                for (int i = 0; i < wrappers.size(); i++) {
-                    EditorMenuManager manager = (EditorMenuManager) wrappers
-                            .get(i);
+				for (EditorMenuManager manager : wrappers) {
                     manager.setEnabledAllowed(enabledAllowed);
                 }
             }
@@ -56,9 +53,8 @@ public class EditorMenuManager extends SubMenuManager {
 
         @Override
 		public Boolean getEnabled(IContributionItem item) {
-            if (((item instanceof ActionContributionItem) && (((ActionContributionItem) item)
-                    .getAction() instanceof RetargetAction))
-                    || enabledAllowed) {
+			if (((item instanceof ActionContributionItem)
+					&& (((ActionContributionItem) item).getAction() instanceof RetargetAction)) || enabledAllowed) {
 				return null;
 			}
 			return Boolean.FALSE;
@@ -67,17 +63,15 @@ public class EditorMenuManager extends SubMenuManager {
         @Override
 		public Integer getAccelerator(IContributionItem item) {
             if (getEnabled(item) == null) {
-				return getParentMenuManager().getOverrides().getAccelerator(
-                        item);
+				return getParentMenuManager().getOverrides().getAccelerator(item);
 			}
-			// no acclerator if the item is disabled
+			// no accelerator if the item is disabled
 			return Integer.valueOf(0);
         }
 
         @Override
 		public String getAcceleratorText(IContributionItem item) {
-            return getParentMenuManager().getOverrides().getAcceleratorText(
-                    item);
+			return getParentMenuManager().getOverrides().getAcceleratorText(item);
         }
 
         @Override
@@ -91,7 +85,7 @@ public class EditorMenuManager extends SubMenuManager {
         }
     }
 
-    private Overrides overrides = new Overrides();
+	private final Overrides overrides = new Overrides();
 
     /**
      * Constructs a new editor manager.
@@ -134,10 +128,12 @@ public class EditorMenuManager extends SubMenuManager {
      * then each item within the manager appears within the parent manager.
      * Otherwise, the items are not visible.
      * <p>
-     * If force visibility is <code>true</code>, or grayed out if force visibility is <code>false</code>
+	 * If force visibility is <code>true</code>, or grayed out if force visibility
+	 * is <code>false</code>
      * <p>
-     * This is a workaround for the layout flashing when editors contribute
-     * large amounts of items.</p>
+	 * This is a workaround for the layout flashing when editors contribute large
+	 * amounts of items.
+	 * </p>
      *
      * @param visible the new visibility
      * @param forceVisibility whether to change the visibility or just the
@@ -158,15 +154,13 @@ public class EditorMenuManager extends SubMenuManager {
             if (!isVisible()) {
 				setVisible(true);
 			}
-        } else {
-            if (forceVisibility) {
+		} else if (forceVisibility) {
 				// Remove the editor menu items
                 setVisible(false);
 			} else {
 				// Disable the editor menu items.
                 setEnabledAllowed(false);
 			}
-        }
     }
 
     /**
@@ -186,7 +180,7 @@ public class EditorMenuManager extends SubMenuManager {
     @Override
 	protected SubMenuManager wrapMenu(IMenuManager menu) {
         if (wrappers == null) {
-			wrappers = new ArrayList();
+			wrappers = new ArrayList<>();
 		}
 		EditorMenuManager manager = new EditorMenuManager(menu);
         wrappers.add(manager);
@@ -194,25 +188,24 @@ public class EditorMenuManager extends SubMenuManager {
     }
 
     protected IAction[] getAllContributedActions() {
-        HashSet set = new HashSet();
+		HashSet<IAction> set = new HashSet<>();
         getAllContributedActions(set);
-        return (IAction[]) set.toArray(new IAction[set.size()]);
+		return set.toArray(new IAction[set.size()]);
     }
 
-    protected void getAllContributedActions(HashSet set) {
+	protected void getAllContributedActions(HashSet<IAction> set) {
 		for (IContributionItem item : super.getItems()) {
 			getAllContributedActions(set, item);
 		}
         if (wrappers == null) {
 			return;
 		}
-        for (Iterator iter = wrappers.iterator(); iter.hasNext();) {
-            EditorMenuManager element = (EditorMenuManager) iter.next();
+		for (EditorMenuManager element : wrappers) {
             element.getAllContributedActions(set);
         }
     }
 
-    protected void getAllContributedActions(HashSet set, IContributionItem item) {
+	protected void getAllContributedActions(HashSet<IAction> set, IContributionItem item) {
         if (item instanceof MenuManager) {
 			for (IContributionItem subItem : ((MenuManager) item).getItems()) {
 				getAllContributedActions(set, subItem);

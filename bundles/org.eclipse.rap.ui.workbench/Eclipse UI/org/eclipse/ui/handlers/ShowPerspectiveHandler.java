@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -39,13 +36,12 @@ import org.eclipse.ui.internal.dialogs.SelectPerspectiveDialog;
  * Shows the given perspective. If no perspective is specified in the
  * parameters, then this opens the perspective selection dialog.
  *
- * @since 3.1
+ * @since 1.1
  */
 public final class ShowPerspectiveHandler extends AbstractHandler {
 
 
-	@Override
-	public Object execute(final ExecutionEvent event)
+	public final Object execute(final ExecutionEvent event)
 			throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil
 				.getActiveWorkbenchWindowChecked(event);
@@ -97,7 +93,7 @@ public final class ShowPerspectiveHandler extends AbstractHandler {
 	 * @throws ExecutionException
 	 *             If the perspective could not be opened.
 	 */
-	private void openOther(final IWorkbenchWindow activeWorkbenchWindow)
+	private final void openOther(final IWorkbenchWindow activeWorkbenchWindow)
 			throws ExecutionException {
 		final SelectPerspectiveDialog dialog = new SelectPerspectiveDialog(
 				activeWorkbenchWindow.getShell(), WorkbenchPlugin.getDefault()
@@ -132,7 +128,7 @@ public final class ShowPerspectiveHandler extends AbstractHandler {
 	 * @throws ExecutionException
 	 *             If the perspective could not be opened.
 	 */
-	private void openPerspective(final String perspectiveId,
+	private final void openPerspective(final String perspectiveId,
 			final IWorkbenchWindow activeWorkbenchWindow)
 			throws ExecutionException {
 		final IWorkbench workbench = PlatformUI.getWorkbench();

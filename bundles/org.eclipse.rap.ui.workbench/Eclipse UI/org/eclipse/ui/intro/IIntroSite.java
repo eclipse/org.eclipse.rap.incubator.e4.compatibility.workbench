@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2015 IBM Corporation and others.
+ * Copyright (c) 2004, 2019 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -41,30 +41,30 @@ public interface IIntroSite extends IWorkbenchSite {
     String getId();
 
     /**
-     * Returns the unique identifier of the plug-in that defines this intro
-     * site's part.
+	 * Returns the unique identifier of the plug-in that defines this intro site's
+	 * part.
      *
      * @return the unique identifier of the declaring plug-in
-     * @see org.eclipse.core.runtime.IPluginDescriptor#getUniqueIdentifier()
      */
     String getPluginId();
 
     /**
      * Returns the key binding service in use.
      * <p>
-     * The part will access this service to register
-     * all of its actions, to set the active scope.
+	 * The part will access this service to register all of its actions, to set the
+	 * active scope.
      * </p>
      *
      * @return the key binding service in use
-     * @deprecated Use IServiceLocator#getService(*) to retrieve
-     * IContextService and IHandlerService instead.
+	 * @deprecated Use IServiceLocator#getService(*) to retrieve IContextService and
+	 *             IHandlerService instead.
      */
-    @Deprecated IKeyBindingService getKeyBindingService();
+	@Deprecated
+	IKeyBindingService getKeyBindingService();
 
     /**
-     * Returns the action bars for this part site.
-     * The intro part has exclusive use of its site's action bars.
+	 * Returns the action bars for this part site. The intro part has exclusive use
+	 * of its site's action bars.
      *
      * @return the action bars
      */

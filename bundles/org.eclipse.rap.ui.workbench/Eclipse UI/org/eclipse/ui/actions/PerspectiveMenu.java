@@ -1,21 +1,16 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Tonny Madsen, RCP Company - bug 201055
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
  *******************************************************************************/
 package org.eclipse.ui.actions;
 
-import com.ibm.icu.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,24 +18,32 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.NotEnabledException;
-import org.eclipse.core.commands.NotHandledException;
-import org.eclipse.core.commands.common.NotDefinedException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+
+import com.ibm.icu.text.Collator;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.common.NotDefinedException;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ContributionItem;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveRegistry;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -68,13 +71,12 @@ import org.eclipse.ui.statushandlers.StatusManager;
  * This class is abstract.  Subclasses must implement the <code>run</code> method,
  * which performs a specialized action for the selected perspective.
  * </p>
+ * @since 1.0
  */
 public abstract class PerspectiveMenu extends ContributionItem {
     /**
-     * @since 3.4
-	 * @deprecated As of 3.5, replaced by {@link IWorkbenchCommandConstants#PERSPECTIVES_SHOW_PERSPECTIVE}
+	 * @deprecated Replaced by {@link IWorkbenchCommandConstants#PERSPECTIVES_SHOW_PERSPECTIVE}
 	 */
-	@Deprecated
 	protected static final String SHOW_PERSP_ID = IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE;
 
 	private IPerspectiveRegistry reg;
@@ -85,24 +87,25 @@ public abstract class PerspectiveMenu extends ContributionItem {
 
     private boolean dirty = true;
 
-    private IMenuListener menuListener = manager -> {
+    private IMenuListener menuListener = new IMenuListener() {
+        public void menuAboutToShow(IMenuManager manager) {
 	    manager.markDirty();
 	    dirty = true;
+        }
 	};
 
-	private Comparator<IPerspectiveDescriptor> comparator = new Comparator<IPerspectiveDescriptor>() {
+    private Comparator comparator = new Comparator() {
         private Collator collator = Collator.getInstance();
 
-        @Override
-		public int compare(IPerspectiveDescriptor ob1, IPerspectiveDescriptor ob2) {
-			return collator.compare(ob1.getLabel(), ob2.getLabel());
+        public int compare(Object ob1, Object ob2) {
+            IPerspectiveDescriptor d1 = (IPerspectiveDescriptor) ob1;
+            IPerspectiveDescriptor d2 = (IPerspectiveDescriptor) ob2;
+            return collator.compare(d1.getLabel(), d2.getLabel());
         }
     };
 
     /**
      * The translatable message to show when there are no perspectives.
-     *
-     * @since 3.1
      */
     private static final String NO_TARGETS_MSG = WorkbenchMessages.get().Workbench_showInNoPerspectives;
 
@@ -110,18 +113,13 @@ public abstract class PerspectiveMenu extends ContributionItem {
      * The map of perspective identifiers (String) to actions
      * (OpenPerspectiveAction). This map may be empty, but it is never
      * <code>null</code>.
-     *
-     * @since 3.1
      */
-	private Map<String, IAction> actions = new HashMap<>();
+    private Map actions = new HashMap();
 
     /**
      * The action for that allows the user to choose any perspective to open.
-     *
-     * @since 3.1
      */
     private Action openOtherAction = new Action(WorkbenchMessages.get().PerspectiveMenu_otherItem) {
-        @Override
 		public final void runWithEvent(final Event event) {
             runOther(new SelectionEvent(event));
         }
@@ -142,7 +140,9 @@ public abstract class PerspectiveMenu extends ContributionItem {
 				.setActionDefinitionId(IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE);
     }
 
-    @Override
+    /*
+     * (non-Javadoc) Fills the menu with perspective items.
+     */
 	public void fill(Menu menu, int index) {
         if (getParent() instanceof MenuManager) {
 			((MenuManager) getParent()).addMenuListener(menuListener);
@@ -160,8 +160,8 @@ public abstract class PerspectiveMenu extends ContributionItem {
             item.setText(NO_TARGETS_MSG);
             item.setEnabled(false);
         } else {
-            for (IContributionItem item : items) {
-                item.fill(menu, index++);
+            for (int i = 0; i < items.length; i++) {
+                items[i].fill(menu, index++);
             }
         }
         dirty = false;
@@ -175,23 +175,22 @@ public abstract class PerspectiveMenu extends ContributionItem {
      * @param manager
      *            The menu manager that should receive the menu items; must not
      *            be <code>null</code>.
-     * @since 3.1
      */
     private final void fillMenu(final MenuManager manager) {
         // Clear out the manager so that we have a blank slate.
         manager.removeAll();
 
         // Collect and sort perspective descriptors.
-		final List<IPerspectiveDescriptor> persps = getPerspectiveItems();
+        final List persps = getPerspectiveItems();
         Collections.sort(persps, comparator);
 
         /*
          * Convert the perspective descriptors to actions, and filter out
          * actions using the activity/capability mechanism.
          */
-		final List<IAction> actions = new ArrayList<>(persps.size());
-		for (Iterator<IPerspectiveDescriptor> i = persps.iterator(); i.hasNext();) {
-			final IPerspectiveDescriptor descriptor = i
+        final List actions = new ArrayList(persps.size());
+        for (Iterator i = persps.iterator(); i.hasNext();) {
+            final IPerspectiveDescriptor descriptor = (IPerspectiveDescriptor) i
                     .next();
             final IAction action = getAction(descriptor.getId());
             if (action != null) {
@@ -203,8 +202,8 @@ public abstract class PerspectiveMenu extends ContributionItem {
         }
 
         // Go through and add each of the actions to the menu manager.
-		for (Iterator<IAction> i = actions.iterator(); i.hasNext();) {
-			manager.add(i.next());
+        for (Iterator i = actions.iterator(); i.hasNext();) {
+            manager.add((IAction) i.next());
         }
 
         if (PrefUtil
@@ -229,10 +228,9 @@ public abstract class PerspectiveMenu extends ContributionItem {
      *            be retrieved.
      * @return The action for the given identifier; or <code>null</code> if
      *         there is no perspective with the given identifier.
-     * @since 3.1
      */
     private final IAction getAction(final String id) {
-		IAction action = actions.get(id);
+        IAction action = (IAction) actions.get(id);
         if (action == null) {
             IPerspectiveDescriptor descriptor = reg.findPerspectiveWithId(id);
             if (descriptor != null) {
@@ -244,13 +242,13 @@ public abstract class PerspectiveMenu extends ContributionItem {
         return action;
     }
 
-    /*
+    /* (non-Javadoc)
      * Returns the perspective shortcut items for the active perspective.
      *
      * @return a list of <code>IPerspectiveDescriptor</code> items
      */
-	private ArrayList<IPerspectiveDescriptor> getPerspectiveShortcuts() {
-		ArrayList<IPerspectiveDescriptor> list = new ArrayList<>();
+    private ArrayList getPerspectiveShortcuts() {
+        ArrayList list = new ArrayList();
 
         IWorkbenchPage page = window.getActivePage();
         if (page == null) {
@@ -259,8 +257,8 @@ public abstract class PerspectiveMenu extends ContributionItem {
 
         String[] ids = page.getPerspectiveShortcuts();
 
-		for (String perspectiveId : ids) {
-			IPerspectiveDescriptor desc = reg.findPerspectiveWithId(perspectiveId);
+        for (int i = 0; i < ids.length; i++) {
+            IPerspectiveDescriptor desc = reg.findPerspectiveWithId(ids[i]);
             if (desc != null && !list.contains(desc)) {
                 if (WorkbenchActivityHelper.filterItem(desc)) {
 					continue;
@@ -283,11 +281,11 @@ public abstract class PerspectiveMenu extends ContributionItem {
      *
      * @return an <code>ArrayList<code> of perspective items <code>IPerspectiveDescriptor</code>
      */
-	protected ArrayList<IPerspectiveDescriptor> getPerspectiveItems() {
+    protected ArrayList getPerspectiveItems() {
         /* Allow the user to see all the perspectives they have
          * selected via Customize Perspective. Bugzilla bug #23445 */
-		ArrayList<IPerspectiveDescriptor> shortcuts = getPerspectiveShortcuts();
-		ArrayList<IPerspectiveDescriptor> list = new ArrayList<>(shortcuts.size());
+        ArrayList shortcuts = getPerspectiveShortcuts();
+        ArrayList list = new ArrayList(shortcuts.size());
 
         // Add perspective shortcuts from the active perspective
         int size = shortcuts.size();
@@ -319,12 +317,16 @@ public abstract class PerspectiveMenu extends ContributionItem {
         return window;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Returns whether this menu is dynamic.
+     */
 	public boolean isDirty() {
         return dirty;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Returns whether this menu is dynamic.
+     */
 	public boolean isDynamic() {
         return true;
     }
@@ -360,11 +362,23 @@ public abstract class PerspectiveMenu extends ContributionItem {
 	 * @param event the selection event
 	 */
     void runOther(SelectionEvent event) {
-		IHandlerService handlerService = window
+		IHandlerService handlerService = (IHandlerService) window
 				.getService(IHandlerService.class);
 		try {
 			handlerService.executeCommand(IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE, null);
-		} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
+		} catch (ExecutionException e) {
+			StatusManager.getManager().handle(
+					new Status(IStatus.WARNING, WorkbenchPlugin.PI_WORKBENCH,
+							"Failed to execute " + IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE, e)); //$NON-NLS-1$
+		} catch (NotDefinedException e) {
+			StatusManager.getManager().handle(
+					new Status(IStatus.WARNING, WorkbenchPlugin.PI_WORKBENCH,
+							"Failed to execute " + IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE, e)); //$NON-NLS-1$
+		} catch (NotEnabledException e) {
+			StatusManager.getManager().handle(
+					new Status(IStatus.WARNING, WorkbenchPlugin.PI_WORKBENCH,
+							"Failed to execute " + IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE, e)); //$NON-NLS-1$
+		} catch (NotHandledException e) {
 			StatusManager.getManager().handle(
 					new Status(IStatus.WARNING, WorkbenchPlugin.PI_WORKBENCH,
 							"Failed to execute " + IWorkbenchCommandConstants.PERSPECTIVES_SHOW_PERSPECTIVE, e)); //$NON-NLS-1$
@@ -380,10 +394,4 @@ public abstract class PerspectiveMenu extends ContributionItem {
     protected void showActive(boolean b) {
         showActive = b;
     }
-
-	@Override
-	public void dispose() {
-		window = null;
-		super.dispose();
-	}
 }

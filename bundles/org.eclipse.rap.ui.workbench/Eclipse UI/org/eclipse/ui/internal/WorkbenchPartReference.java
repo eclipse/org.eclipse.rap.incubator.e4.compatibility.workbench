@@ -20,10 +20,10 @@ package org.eclipse.ui.internal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -34,8 +34,6 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.e4.ui.workbench.renderers.swt.SWTPartRenderer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IPropertyListener;
@@ -57,9 +55,6 @@ import org.eclipse.ui.internal.util.Util;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 
-/**
- *
- */
 public abstract class WorkbenchPartReference implements IWorkbenchPartReference, ISizeProvider {
 
 	/**
@@ -73,7 +68,8 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
     public static final int INTERNAL_PROPERTY_CLOSED = 0x212;
 
     /**
-     * Internal property ID: Indicates that the result of IEditorReference.isPinned()
+	 * Internal property ID: Indicates that the result of
+	 * IEditorReference.isPinned()
      */
     public static final int INTERNAL_PROPERTY_PINNED = 0x213;
 
@@ -94,8 +90,8 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
     public static final int INTERNAL_PROPERTY_ACTIVE_CHILD_CHANGED = 0x216;
 
     /**
-     * Internal property ID: Indicates that changed in the min / max
-     * state has changed
+	 * Internal property ID: Indicates that changed in the min / max state has
+	 * changed
      */
     public static final int INTERNAL_PROPERTY_MAXIMIZED = 0x217;
 
@@ -117,18 +113,18 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
     public static int STATE_CREATED = 2;
 
     /**
-     * State constant indicating that the reference has been disposed (the reference shouldn't be
-     * used anymore)
+	 * State constant indicating that the reference has been disposed (the reference
+	 * shouldn't be used anymore)
      */
     public static int STATE_DISPOSED = 3;
 
 	static String MEMENTO_KEY = "memento"; //$NON-NLS-1$
 
     /**
-     * Current state of the reference. Used to detect recursive creation errors, disposed
-     * references, etc.
+	 * Current state of the reference. Used to detect recursive creation errors,
+	 * disposed references, etc.
      */
-    private int state = STATE_LAZY;
+	private final int state = STATE_LAZY;
 
 	protected IWorkbenchPart legacyPart;
     private boolean pinned = false;
@@ -136,37 +132,27 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
     /**
      * API listener list
      */
-	private ListenerList<IPropertyListener> propChangeListeners = new ListenerList<>();
+	private final ListenerList<IPropertyListener> propChangeListeners = new ListenerList<>();
 
     /**
-     * Internal listener list. Listens to the INTERNAL_PROPERTY_* property change events that are not yet API.
-     * TODO: Make these properties API in 3.2
+	 * Internal listener list. Listens to the INTERNAL_PROPERTY_* property change
+	 * events that are not yet API. TODO: Make these properties API in 3.2
      */
-	private ListenerList<IPropertyListener> internalPropChangeListeners = new ListenerList<>();
+	private final ListenerList<IPropertyListener> internalPropChangeListeners = new ListenerList<>();
 
-	private ListenerList<IPropertyChangeListener> partChangeListeners = new ListenerList<>();
+	private final ListenerList<IPropertyChangeListener> partChangeListeners = new ListenerList<>();
 
-    protected Map propertyCache = new HashMap();
+	protected Map<String, String> propertyCache = new HashMap<>();
 
-	private static DisposeListener prematureDisposeListener = new DisposeListener() {
-		@Override
-		public void widgetDisposed(DisposeEvent e) {
-// RAP[if] Check if platform is running to prevent bug 336852          
-			if (Platform.isRunning()) {
-				WorkbenchPlugin.log(new RuntimeException("Widget disposed too early!")); //$NON-NLS-1$
-			}
-		}
-	};
+	private final IPropertyListener propertyChangeListener = this::partPropertyChanged;
 
-    private IPropertyListener propertyChangeListener = (source, propId) -> partPropertyChanged(source, propId);
-
-    private IPropertyChangeListener partPropertyChangeListener = event -> partPropertyChanged(event);
+	private final IPropertyChangeListener partPropertyChangeListener = this::partPropertyChanged;
 
 	private IWorkbenchPage page;
 
-	private MPart part;
+	private final MPart part;
 
-	private IEclipseContext windowContext;
+	private final IEclipseContext windowContext;
 
 	private EventHandler contextEventHandler;
 
@@ -183,7 +169,7 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 
 	private EventHandler createContextEventHandler() {
 		if (contextEventHandler == null) {
-			contextEventHandler = event -> handleContextSet(event);
+			contextEventHandler = this::handleContextSet;
 		}
 		return contextEventHandler;
 	}
@@ -202,8 +188,7 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 
 	public void subscribe() {
 		IEventBroker broker = windowContext.get(IEventBroker.class);
-		broker.subscribe(UIEvents.Context.TOPIC_CONTEXT,
-				createContextEventHandler());
+		broker.subscribe(UIEvents.Context.TOPIC_CONTEXT, createContextEventHandler());
 	}
 
 	public void unsubscribe() {
@@ -228,7 +213,7 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 		return part;
 	}
 
-
+	/** @param source used for IPropertyListener */
     protected void partPropertyChanged(Object source, int propId) {
 		firePropertyChange(propId);
 
@@ -236,7 +221,8 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
         if (propId == IWorkbenchPartConstants.PROP_DIRTY) {
         	IWorkbenchPart actualPart = getPart(false);
         	if (actualPart != null) {
-				SaveablesList modelManager = (SaveablesList) actualPart.getSite().getService(ISaveablesLifecycleListener.class);
+				SaveablesList modelManager = (SaveablesList) actualPart.getSite()
+						.getService(ISaveablesLifecycleListener.class);
 	        	modelManager.dirtyChanged(actualPart);
         	}
         }
@@ -247,8 +233,8 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
     }
 
     /**
-     * Releases any references maintained by this part reference
-     * when its actual part becomes known (not called when it is disposed).
+	 * Releases any references maintained by this part reference when its actual
+	 * part becomes known (not called when it is disposed).
      */
     protected void releaseReferences() {
 
@@ -287,14 +273,15 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
      */
     @Override
 	public void removePropertyListener(IPropertyListener listener) {
-        // Currently I'm not calling checkReference here for fear of breaking things late in 3.1, but it may
-        // make sense to do so later. For now we just turn it into a NOP if the reference is disposed.
+		// Currently I'm not calling checkReference here for fear of breaking things
+		// late in 3.1, but it may
+		// make sense to do so later. For now we just turn it into a NOP if the
+		// reference is disposed.
         if (isDisposed()) {
             return;
         }
         propChangeListeners.remove(listener);
     }
-
 
 	@Override
 	public String getTitle() {
@@ -304,10 +291,10 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 
 	@Override
 	public String getTitleToolTip() {
-		String toolTip = (String) part.getTransientData().get(
-				IPresentationEngine.OVERRIDE_TITLE_TOOL_TIP_KEY);
-		if (toolTip == null || toolTip.length() == 0)
+		String toolTip = (String) part.getTransientData().get(IPresentationEngine.OVERRIDE_TITLE_TOOL_TIP_KEY);
+		if (toolTip == null || toolTip.isEmpty()) {
 			toolTip = part.getLocalizedTooltip();
+		}
 		return Util.safeString(toolTip);
 	}
 
@@ -321,7 +308,8 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 	}
 
     /**
-     * Computes a new title for the part. Subclasses may override to change the default behavior.
+	 * Computes a new title for the part. Subclasses may override to change the
+	 * default behavior.
      *
      * @return the title for the part
      */
@@ -332,7 +320,8 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
     /**
      * Returns the unmodified title for the part, or the empty string if none
      *
-     * @return the unmodified title, as set by the IWorkbenchPart. Returns the empty string if none.
+	 * @return the unmodified title, as set by the IWorkbenchPart. Returns the empty
+	 *         string if none.
      */
     protected final String getRawTitle() {
 		return Util.safeString(legacyPart.getTitle());
@@ -344,8 +333,7 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 			return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_DEF_VIEW);
 		}
 
-		WorkbenchWindow wbw = (WorkbenchWindow) PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow();
+		WorkbenchWindow wbw = (WorkbenchWindow) PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		if (part != null && wbw.getModel().getRenderer() instanceof SWTPartRenderer) {
 			SWTPartRenderer r = (SWTPartRenderer) wbw.getModel().getRenderer();
 			Image image = r.getImage(part);
@@ -354,7 +342,7 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 			}
 		}
 
-		return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_DEF_VIEW);
+		return wbw.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_DEF_VIEW);
 	}
 
     /* package */ void fireVisibilityChange() {
@@ -388,8 +376,7 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 			workbenchPart.addPropertyListener(propertyChangeListener);
 
 			if (workbenchPart instanceof IWorkbenchPart3) {
-				((IWorkbenchPart3) workbenchPart)
-						.addPartPropertyListener(partPropertyChangeListener);
+				((IWorkbenchPart3) workbenchPart).addPartPropertyListener(partPropertyChangeListener);
 
 			}
 		}
@@ -439,9 +426,6 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 		// To be implemented by subclasses
 	}
 
-    /**
-     *
-     */
 	private void doDisposePart() {
 		if (legacyPart != null) {
             fireInternalPropertyChange(INTERNAL_PROPERTY_CLOSED);
@@ -449,8 +433,7 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
             try {
 				legacyPart.removePropertyListener(propertyChangeListener);
 				if (legacyPart instanceof IWorkbenchPart3) {
-					((IWorkbenchPart3) legacyPart)
-							.removePartPropertyListener(partPropertyChangeListener);
+					((IWorkbenchPart3) legacyPart).removePartPropertyListener(partPropertyChangeListener);
                 }
             } catch (Exception e) {
                 WorkbenchPlugin.log(e);
@@ -471,10 +454,11 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
         pinned = newPinned;
 
 		immediateFirePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
-        if (pinned)
+		if (pinned) {
         	part.getTags().add(IPresentationEngine.ADORNMENT_PIN);
-        else
+		} else {
         	part.getTags().remove(IPresentationEngine.ADORNMENT_PIN);
+		}
 
         fireInternalPropertyChange(INTERNAL_PROPERTY_PINNED);
     }
@@ -490,7 +474,7 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 				return ((IWorkbenchPart3) legacyPart).getPartProperty(key);
 			}
 		} else {
-			return (String)propertyCache.get(key);
+			return propertyCache.get(key);
 		}
 		return null;
 	}
@@ -518,16 +502,16 @@ public abstract class WorkbenchPartReference implements IWorkbenchPartReference,
 	}
 
     protected void createPartProperties(IWorkbenchPart3 workbenchPart) {
-		Iterator i = propertyCache.entrySet().iterator();
+		Iterator<Entry<String, String>> i = propertyCache.entrySet().iterator();
 		while (i.hasNext()) {
-			Map.Entry e = (Map.Entry) i.next();
-			workbenchPart.setPartProperty((String) e.getKey(), (String) e.getValue());
+			Entry<String, String> e = i.next();
+			workbenchPart.setPartProperty(e.getKey(), e.getValue());
 		}
 	}
 
     @Override
-	public int computePreferredSize(boolean width, int availableParallel,
-            int availablePerpendicular, int preferredResult) {
+	public int computePreferredSize(boolean width, int availableParallel, int availablePerpendicular,
+			int preferredResult) {
 
 		ISizeProvider sizeProvider = Adapters.adapt(legacyPart, ISizeProvider.class);
         if (sizeProvider != null) {

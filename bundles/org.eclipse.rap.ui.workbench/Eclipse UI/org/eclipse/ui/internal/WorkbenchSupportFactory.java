@@ -36,11 +36,9 @@ import org.eclipse.ui.services.IServiceLocator;
 public class WorkbenchSupportFactory extends AbstractServiceFactory {
 
 	@Override
-	public Object create(Class serviceInterface, IServiceLocator parentLocator,
-			IServiceLocator locator) {
+	public Object create(Class serviceInterface, IServiceLocator parentLocator, IServiceLocator locator) {
 
-		IWorkbenchLocationService wls = locator
-				.getService(IWorkbenchLocationService.class);
+		IWorkbenchLocationService wls = locator.getService(IWorkbenchLocationService.class);
 		final IWorkbench wb = wls.getWorkbench();
 		if (wb == null) {
 			return null;
@@ -78,10 +76,6 @@ public class WorkbenchSupportFactory extends AbstractServiceFactory {
 		}
 
 		if (ISelectionService.class.equals(serviceInterface)) {
-			if (parent instanceof WindowSelectionService && window != null
-					&& window.getActivePage() != null) {
-				return new SlaveSelectionService(window.getActivePage());
-			}
 			return new SlaveSelectionService((ISelectionService) parent);
 		}
 

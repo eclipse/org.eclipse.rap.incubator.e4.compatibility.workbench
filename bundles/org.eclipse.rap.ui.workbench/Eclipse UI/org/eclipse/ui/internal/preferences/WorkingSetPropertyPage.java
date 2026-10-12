@@ -1,23 +1,17 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package org.eclipse.ui.internal.preferences;
 
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.wizard.IWizard;
-import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -30,7 +24,6 @@ import org.eclipse.ui.preferences.WizardPropertyPage;
 /**
  * Embeds a working set wizard for a given working set into a property page.
  *
- * @since 3.4
  */
 public class WorkingSetPropertyPage extends WizardPropertyPage {
 
@@ -42,7 +35,6 @@ public class WorkingSetPropertyPage extends WizardPropertyPage {
 		/**
 		 * {@inheritDoc}
 		 */
-		@Override
 		public boolean performFinish() {
 			return true;
 		}
@@ -50,7 +42,6 @@ public class WorkingSetPropertyPage extends WizardPropertyPage {
 		/**
 		 * {@inheritDoc}
 		 */
-		@Override
 		public void addPages() {
 			addPage(new ReadOnlyPage());
 		}
@@ -66,7 +57,6 @@ public class WorkingSetPropertyPage extends WizardPropertyPage {
 		/**
 		 * {@inheritDoc}
 		 */
-		@Override
 		public void createControl(Composite parent) {
 			Composite composite= new Composite(parent, SWT.NONE);
 			composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -85,16 +75,19 @@ public class WorkingSetPropertyPage extends WizardPropertyPage {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
 	public void setElement(IAdaptable element) {
 		super.setElement(element);
-		fWorkingSet = Adapters.adapt(element, IWorkingSet.class);
+		
+		if (element instanceof IWorkingSet) {
+			fWorkingSet= (IWorkingSet)element;
+		} else {
+			fWorkingSet= (IWorkingSet)element.getAdapter(IWorkingSet.class);
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
 	protected void applyChanges() {
 		//Wizard does all the work
 	}
@@ -102,7 +95,6 @@ public class WorkingSetPropertyPage extends WizardPropertyPage {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
 	protected IWizard createWizard() {
 		if (fWorkingSet.isEditable()) {
 			return PlatformUI.getWorkbench().getWorkingSetManager().createWorkingSetEditWizard(fWorkingSet);

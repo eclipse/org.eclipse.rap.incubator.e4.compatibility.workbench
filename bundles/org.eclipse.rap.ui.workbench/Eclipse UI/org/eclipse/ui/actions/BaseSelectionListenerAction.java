@@ -29,28 +29,29 @@ import org.eclipse.swt.widgets.Event;
  * monitor selection changes that could affect the availability of the action.
  * <p>
  * Subclasses must implement the following <code>IAction</code> method:
+ * </p>
  * <ul>
  *   <li><code>run</code> - to do the action's work</li>
  * </ul>
+ * <p>
+ * Subclasses may extend the <code>updateSelection</code> method to update the
+ * action determine its availability based on the current selection.
  * </p>
  * <p>
- * Subclasses may extend the <code>updateSelection</code> method to update
- * the action determine its availability based on the current selection.
+ * The object instantiating the subclass is responsible for registering the
+ * instance with a selection provider. Alternatively, the object can notify the
+ * subclass instance directly of a selection change using the methods:
  * </p>
- * <p>
- * The object instantiating the subclass is responsible for registering
- * the instance with a selection provider. Alternatively, the object can
- * notify the subclass instance directly of a selection change using the
- * methods:
  * <ul>
- *   <li><code>selectionChanged(IStructuredSelection)</code> - passing the selection</li>
- *   <li><code>selectionChanged(ISelectionChangedEvent)</code> - passing the selection change event</li>
+ * <li><code>selectionChanged(IStructuredSelection)</code> - passing the
+ * selection</li>
+ * <li><code>selectionChanged(ISelectionChangedEvent)</code> - passing the
+ * selection change event</li>
  * </ul>
- * </p>
+ *
  * @since 3.0
  */
-public abstract class BaseSelectionListenerAction extends Action implements
-        ISelectionChangedListener {
+public abstract class BaseSelectionListenerAction extends Action implements ISelectionChangedListener {
     /**
      * The current selection.
      */
@@ -62,24 +63,24 @@ public abstract class BaseSelectionListenerAction extends Action implements
     private boolean running = false;
 
     /**
-     * The deferred selection.  Any selection change that occurs
-     * while the action is running is held here until the run is complete.
+	 * The deferred selection. Any selection change that occurs while the action is
+	 * running is held here until the run is complete.
      */
     private IStructuredSelection deferredSelection = null;
 
     /**
      * Creates a new action with the given text.
      *
-     * @param text the string used as the text for the action,
-     *   or <code>null</code> if there is no text
+	 * @param text the string used as the text for the action, or <code>null</code>
+	 *             if there is no text
      */
     protected BaseSelectionListenerAction(String text) {
         super(text);
     }
 
     /**
-     * Clears any cached state associated with the selection.
-     * Called when the selection changes.
+	 * Clears any cached state associated with the selection. Called when the
+	 * selection changes.
      * <p>
      * The <code>BaseSelectionListenerAction</code> implementation of this method
      * does nothing. Subclasses may override.
@@ -91,8 +92,8 @@ public abstract class BaseSelectionListenerAction extends Action implements
 
     /**
      * Returns the current structured selection in the workbench, or an empty
-     * selection if nothing is selected or if selection does not include
-     * objects (for example, raw text).
+	 * selection if nothing is selected or if selection does not include objects
+	 * (for example, raw text).
      *
      * @return the current structured selection in the workbench
      */
@@ -105,9 +106,9 @@ public abstract class BaseSelectionListenerAction extends Action implements
      * <p>
      * The <code>BaseSelectionListenerAction</code> implementation of this method
      * records the given selection for future reference and calls
-     * <code>updateSelection</code>, updating the enable state of this action
-     * based on the outcome. Subclasses should override <code>updateSelection</code>
-     * to react to selection changes.
+	 * <code>updateSelection</code>, updating the enable state of this action based
+	 * on the outcome. Subclasses should override <code>updateSelection</code> to
+	 * react to selection changes.
      * </p>
      *
      * @param selection the new selection

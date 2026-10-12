@@ -19,14 +19,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import org.eclipse.core.expressions.Expression;
 import org.eclipse.ui.internal.util.Util;
 
 public final class ActivityDefinition implements Comparable<ActivityDefinition> {
     private static final int HASH_FACTOR = 89;
 
-    private static final int HASH_INITIAL = ActivityDefinition.class.getName()
-            .hashCode();
+	private static final int HASH_INITIAL = ActivityDefinition.class.getName().hashCode();
 
 	static Map<String, ActivityDefinition> activityDefinitionsById(Collection<ActivityDefinition> activityDefinitions,
             boolean allowNullIds) {
@@ -50,8 +50,7 @@ public final class ActivityDefinition implements Comparable<ActivityDefinition> 
     }
 
 	static Map<String, Collection<ActivityDefinition>> activityDefinitionsByName(
-			Collection<ActivityDefinition> activityDefinitions,
-            boolean allowNullNames) {
+			Collection<ActivityDefinition> activityDefinitions, boolean allowNullNames) {
         if (activityDefinitions == null) {
 			throw new NullPointerException();
 		}
@@ -80,20 +79,19 @@ public final class ActivityDefinition implements Comparable<ActivityDefinition> 
 
     private transient int hashCode = HASH_INITIAL;
 
-    private String id;
+	private final String id;
 
-    private String name;
+	private final String name;
 
-    private String sourceId;
+	private final String sourceId;
 
-    private String description;
+	private final String description;
 
     private transient String string;
 
 	private Expression enabledWhen;
 
-    public ActivityDefinition(String id, String name, String sourceId,
-            String description) {
+	public ActivityDefinition(String id, String name, String sourceId, String description) {
         this.id = id;
         this.name = name;
         this.sourceId = sourceId;
@@ -117,20 +115,12 @@ public final class ActivityDefinition implements Comparable<ActivityDefinition> 
 
     @Override
 	public boolean equals(Object object) {
-        if (!(object instanceof ActivityDefinition)) {
+		if (!(object instanceof final ActivityDefinition castedObject)) {
 			return false;
 		}
 
-        final ActivityDefinition castedObject = (ActivityDefinition) object;
-        if (!Util.equals(id, castedObject.id)) {
-            return false;
-        }
-
-        if (!Util.equals(name, castedObject.name)) {
-            return false;
-        }
-
-        return Util.equals(sourceId, castedObject.sourceId);
+		return Objects.equals(id, castedObject.id) && Objects.equals(name, castedObject.name)
+				&& Objects.equals(sourceId, castedObject.sourceId);
     }
 
     public String getId() {
@@ -148,14 +138,13 @@ public final class ActivityDefinition implements Comparable<ActivityDefinition> 
     @Override
 	public int hashCode() {
         if (hashCode == HASH_INITIAL) {
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(id);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(name);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(sourceId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(id);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(name);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(sourceId);
             if (hashCode == HASH_INITIAL) {
 				hashCode++;
 			}
         }
-
         return hashCode;
     }
 

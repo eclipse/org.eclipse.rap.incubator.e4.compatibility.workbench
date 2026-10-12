@@ -33,15 +33,13 @@ import org.eclipse.ui.services.IServiceLocator;
 
 /**
  * @since 3.2
- *
  */
-public final class ServiceLocator implements IDisposable, INestable,
-		IServiceLocator {
+public final class ServiceLocator implements IDisposable, INestable, IServiceLocator {
 	boolean activated = false;
 
 	private static class ParentLocator implements IServiceLocator {
-		private IServiceLocator locator;
-		private Class<?> key;
+		private final IServiceLocator locator;
+		private final Class<?> key;
 
 		public ParentLocator(IServiceLocator parent, Class<?> serviceInterface) {
 			locator = parent;
@@ -92,15 +90,11 @@ public final class ServiceLocator implements IDisposable, INestable,
 	/**
 	 * Constructs a service locator with the given parent.
 	 *
-	 * @param parent
-	 *            The parent for this service locator; this value may be
+	 * @param parent  The parent for this service locator; this value may be
 	 *            <code>null</code>.
-	 * @param factory
-	 *            a local factory that can provide services at this level
-	 * @param owner
+	 * @param factory a local factory that can provide services at this level
 	 */
-	public ServiceLocator(final IServiceLocator parent,
-			AbstractServiceFactory factory, IDisposable owner) {
+	public ServiceLocator(final IServiceLocator parent, AbstractServiceFactory factory, IDisposable owner) {
 		this.parent = parent;
 		this.factory = factory;
 		this.owner = owner;
@@ -188,8 +182,7 @@ public final class ServiceLocator implements IDisposable, INestable,
 
 					@Override
 					public void handleException(Throwable ex) {
-						WorkbenchPlugin
-								.log(StatusUtil.newStatus(IStatus.ERROR,
+						WorkbenchPlugin.log(StatusUtil.newStatus(IStatus.ERROR,
 										"Error while disposing: " + iDisposable.getClass().getName(), ex)); //$NON-NLS-1$
 					}
 				});
@@ -232,8 +225,7 @@ public final class ServiceLocator implements IDisposable, INestable,
 				service = factory.create(key, factoryParent, this);
 			}
 			if (service == null) {
-				service = WorkbenchServiceRegistry.getRegistry().getService(key, factoryParent,
-						this);
+				service = WorkbenchServiceRegistry.getRegistry().getService(key, factoryParent, this);
 			}
 			if (service == null) {
 				service = factoryParent.getService(key);
@@ -255,14 +247,12 @@ public final class ServiceLocator implements IDisposable, INestable,
 
 	/**
 	 * Registers a service with this locator. If there is an existing service
-	 * matching the same <code>api</code> and it implements {@link IDisposable},
-	 * it will be disposed.
+	 * matching the same <code>api</code> and it implements {@link IDisposable}, it
+	 * will be disposed.
 	 *
-	 * @param api
-	 *            This is the interface that the service implements. Must not be
+	 * @param api     This is the interface that the service implements. Must not be
 	 *            <code>null</code>.
-	 * @param service
-	 *            The service to register. This must be some implementation of
+	 * @param service The service to register. This must be some implementation of
 	 *            <code>api</code>. This value must not be <code>null</code>.
 	 */
 	public void registerService(final Class api, final Object service) {
@@ -276,7 +266,7 @@ public final class ServiceLocator implements IDisposable, INestable,
 
 		if (!api.isInstance(service)) {
 			throw new IllegalArgumentException(
-					"The service does not implement the given interface"); //$NON-NLS-1$
+					"The service '" + service + "' does not implement the given interface: '" + api.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
 		if (isDisposed()) {
 			IllegalStateException ex = new IllegalStateException("An attempt was made to register service " + service //$NON-NLS-1$
@@ -300,19 +290,16 @@ public final class ServiceLocator implements IDisposable, INestable,
 		}
 	}
 
-	/**
-	 * @return
-	 */
 	public boolean isDisposed() {
 		return disposed;
 	}
 
 	/**
-	 * Some services that were contributed to this locator are no longer
-	 * available (because the plug-in containing the AbstractServiceFactory is
-	 * no longer available). Notify the owner of the locator about this.
+	 * Some services that were contributed to this locator are no longer available
+	 * (because the plug-in containing the AbstractServiceFactory is no longer
+	 * available). Notify the owner of the locator about this.
 	 */
-	public void unregisterServices(String[] serviceNames) {
+	public void unregisterServices() {
 		if (owner != null) {
 			owner.dispose();
 		}

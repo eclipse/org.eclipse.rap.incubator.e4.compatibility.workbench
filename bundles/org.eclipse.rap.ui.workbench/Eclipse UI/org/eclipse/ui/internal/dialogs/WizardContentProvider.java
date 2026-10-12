@@ -34,10 +34,8 @@ public class WizardContentProvider implements ITreeContentProvider {
 
     @Override
 	public Object[] getChildren(Object parentElement) {
-        if (parentElement instanceof WizardCollectionElement) {
+		if (parentElement instanceof WizardCollectionElement element) {
             ArrayList list = new ArrayList();
-            WizardCollectionElement element = (WizardCollectionElement) parentElement;
-
 			for (Object childCollection : element.getChildren()) {
                 handleChild(childCollection, list);
             }
@@ -46,24 +44,12 @@ public class WizardContentProvider implements ITreeContentProvider {
                 handleChild(childWizard, list);
             }
 
-            // flatten lists with only one category
-            if (list.size() == 1
-                    && list.get(0) instanceof WizardCollectionElement) {
-                return getChildren(list.get(0));
-            }
-
             return list.toArray();
-        } else if (parentElement instanceof AdaptableList) {
-            AdaptableList aList = (AdaptableList) parentElement;
+		} else if (parentElement instanceof AdaptableList aList) {
             Object[] children = aList.getChildren();
             ArrayList list = new ArrayList(children.length);
             for (Object element : children) {
                 handleChild(element, list);
-            }
-            // if there is only one category, return it's children directly (flatten list)
-            if (list.size() == 1
-            		&& list.get(0) instanceof WizardCollectionElement) {
-                return getChildren(list.get(0));
             }
 
             return list.toArray();
@@ -91,7 +77,8 @@ public class WizardContentProvider implements ITreeContentProvider {
     }
 
     /**
-     * Adds the item to the list, unless it's a collection element without any children.
+	 * Adds the item to the list, unless it's a collection element without any
+	 * children.
      *
      * @param element the element to test and add
      * @param list the <code>Collection</code> to add to.

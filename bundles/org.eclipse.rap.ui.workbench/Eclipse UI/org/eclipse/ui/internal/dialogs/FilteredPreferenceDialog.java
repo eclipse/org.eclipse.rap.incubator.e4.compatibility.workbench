@@ -1,31 +1,25 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2018 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2003, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Oakland Software (Francis Upton) <francisu@ieee.org> - bug 219273
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
- *     Stefan Xenos <sxenos@google.com> - Bug 466793
- *     Lucas Bullen (Red Hat Inc.) - Bug 500051, 530654
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.PreferenceContentProvider;
@@ -35,19 +29,20 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -55,14 +50,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ActiveShellExpression;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
@@ -75,8 +68,6 @@ import org.eclipse.ui.internal.IWorkbenchGraphicConstants;
 import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.internal.misc.StatusUtil;
-import org.eclipse.ui.internal.wizards.preferences.PreferencesExportWizard;
-import org.eclipse.ui.internal.wizards.preferences.PreferencesImportWizard;
 import org.eclipse.ui.model.IContributionService;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.preferences.IWorkingCopyManager;
@@ -89,7 +80,6 @@ import org.osgi.service.prefs.BackingStoreException;
  * Baseclass for preference dialogs that will show two tabs of preferences -
  * filtered and unfiltered.
  *
- * @since 3.0
  */
 public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		implements IWorkbenchPreferenceContainer {
@@ -140,6 +130,7 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		protected void addFilter(ViewerFilter filter) {
 			viewerFilter = filter;
 			getViewer().addFilter(filter);
+			setInitialText(WorkbenchMessages.get().FilteredTree_FilterMessage);
 
 			if (filterText != null) {
 				setFilterText(WorkbenchMessages.get().FilteredTree_FilterMessage);
@@ -153,12 +144,20 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 							cachedTitle));
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.ui.dialogs.FilteredTree#updateToolbar(boolean)
+		 */
 		protected void updateToolbar(boolean visible) {
 			super.updateToolbar(viewerFilter != null || visible);
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.ui.dialogs.FilteredTree#clearText()
+		 */
 		protected void clearText() {
 			setFilterText(""); //$NON-NLS-1$
 			// remove the filter if text is cleared
@@ -177,12 +176,11 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 
 	IWorkingCopyManager workingCopyManager;
 
-	private Collection<Job> updateJobs = new ArrayList<>();
+	private Collection updateJobs = new ArrayList();
 
 	/**
 	 * The preference page history.
 	 *
-	 * @since 3.1
 	 */
 	PreferencePageHistory history;
 
@@ -191,10 +189,6 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 	private IHandlerActivation showViewHandler;
 
 	private boolean locked;
-
-	private Image importImage;
-
-	private Image exportImage;
 
 	/**
 	 * Creates a new preference dialog under the control of the given preference
@@ -218,7 +212,6 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 	 *
 	 * @see org.eclipse.jface.preference.PreferenceDialog#findNodeMatching(java.lang.String)
 	 */
-	@Override
 	protected IPreferenceNode findNodeMatching(String nodeId) {
 		IPreferenceNode node = super.findNodeMatching(nodeId);
 		if (WorkbenchActivityHelper.filterItem(node)) {
@@ -227,12 +220,18 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		return node;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.PreferenceDialog#createTreeViewer(org.eclipse.swt.widgets.Composite)
+	 */
 	protected TreeViewer createTreeViewer(Composite parent) {
 		int styleBits = SWT.SINGLE;
 		TreeViewer tree;
 		if (!hasAtMostOnePage()) {
 			filteredTree= new PreferenceFilteredTree(parent, styleBits, new PreferencePatternFilter());
+			GridData gd= new GridData(SWT.FILL, SWT.FILL, true, true);
+			gd.horizontalIndent= IDialogConstants.HORIZONTAL_MARGIN;
 			filteredTree.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
 			tree= filteredTree.getViewer();
@@ -245,7 +244,16 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 
 		tree.addFilter(new CapabilityFilter());
 
-		tree.addSelectionChangedListener(event -> handleTreeSelectionChanged(event));
+		tree.addSelectionChangedListener(new ISelectionChangedListener() {
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
+			 */
+			public void selectionChanged(SelectionChangedEvent event) {
+				handleTreeSelectionChanged(event);
+			}
+		});
 
 		super.addListeners(tree);
 		return tree;
@@ -277,7 +285,7 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		} else {
 			treeViewer.setLabelProvider(new PreferenceBoldLabelProvider(filteredTree));
 		}
-		IContributionService cs = PlatformUI
+		IContributionService cs = (IContributionService) PlatformUI
 				.getWorkbench().getActiveWorkbenchWindow().getService(
 						IContributionService.class);
 		treeViewer.setComparator(cs.getComparatorFor(getContributionType()));
@@ -305,7 +313,11 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		// Do nothing by default
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.PreferenceDialog#createTreeAreaContents(org.eclipse.swt.widgets.Composite)
+	 */
 	protected Control createTreeAreaContents(Composite parent) {
 		Composite leftArea = new Composite(parent, SWT.NONE);
 		leftArea.setBackground(parent.getDisplay().getSystemColor(
@@ -340,9 +352,7 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 	 * @param filteredIds
 	 */
 	public void showOnly(String[] filteredIds) {
-		if (!hasAtMostOnePage()) {
 			filteredTree.addFilter(new PreferenceNodeFilter(filteredIds));
-		}
 	}
 
 	/**
@@ -355,7 +365,11 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		this.pageData = pageData;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.PreferenceDialog#createPage(org.eclipse.jface.preference.IPreferenceNode)
+	 */
 	protected void createPage(IPreferenceNode node) {
 
 		super.createPage(node);
@@ -370,87 +384,21 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 
 	}
 
-	@Override
-	protected Control createHelpControl(Composite parent) {
-		Control control = super.createHelpControl(parent);
-		addButtonsToHelpControl(control);
-		return control;
-	}
-
-	protected void addButtonsToHelpControl(Control control) {
-		Composite parent = control.getParent();
-		if (control instanceof ToolBar) {
-			ToolBar toolBar = (ToolBar) control;
-
-			ToolItem importButton = new ToolItem(toolBar, SWT.PUSH);
-			importImage = WorkbenchImages.getImageDescriptor(IWorkbenchGraphicConstants.IMG_PREF_IMPORT)
-					.createImage();
-			importButton.setImage(importImage);
-			importButton.setToolTipText(WorkbenchMessages.get().Preference_import);
-			importButton.addListener(SWT.Selection, e -> openImportWizard(parent));
-
-			ToolItem exportButton = new ToolItem(toolBar, SWT.PUSH);
-			exportImage = WorkbenchImages.getImageDescriptor(IWorkbenchGraphicConstants.IMG_PREF_EXPORT)
-					.createImage();
-			exportButton.setImage(exportImage);
-			exportButton.setToolTipText(WorkbenchMessages.get().Preference_export);
-			exportButton.addListener(SWT.Selection, e -> openExportWizard(parent));
-		} else if (control instanceof Link) {
-			Composite linkParent = ((Link) control).getParent();
-			Link importLink = new Link(linkParent, SWT.WRAP | SWT.NO_FOCUS);
-			((GridLayout) parent.getLayout()).numColumns++;
-			importLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
-			importLink.setText(" <a>" + WorkbenchMessages.get().Preference_import + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
-			importLink.addListener(SWT.Selection, e -> openImportWizard(parent));
-
-			Link exportLink = new Link(linkParent, SWT.WRAP | SWT.NO_FOCUS);
-			((GridLayout) parent.getLayout()).numColumns++;
-			exportLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
-			exportLink.setText(" <a>" + WorkbenchMessages.get().Preference_export + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
-			exportLink.addListener(SWT.Selection, e -> openExportWizard(parent));
-		}
-	}
-
-	private void openImportWizard(Composite parent) {
-		PreferencesImportWizard importWizard = new PreferencesImportWizard();
-		importWizard.init(PlatformUI.getWorkbench(), null);
-		WizardDialog wizardDialog = new WizardDialog(parent.getShell(), importWizard);
-		wizardDialog.open();
-		if (wizardDialog.getReturnCode() == 0) {
-			parent.getShell().close();
-		}
-	}
-
-	private void openExportWizard(Composite parent) {
-		PreferencesExportWizard exportWizard = new PreferencesExportWizard();
-		exportWizard.init(PlatformUI.getWorkbench(), null);
-		WizardDialog wizardDialog = new WizardDialog(parent.getShell(), exportWizard);
-
-		MessageDialog dialog = new MessageDialog(parent.getShell(),
-				WorkbenchMessages.get().PreferenceExportWarning_title, null,
-				WorkbenchMessages.get().PreferenceExportWarning_message, MessageDialog.CONFIRM,
-				new String[] { WorkbenchMessages.get().PreferenceExportWarning_applyAndContinue,
-						WorkbenchMessages.get().PreferenceExportWarning_continue },
-				0);
-		int dialogResponse = dialog.open();
-		if (dialogResponse == -1) {
-			return;
-		} else if (dialogResponse == 0) {
-			okPressed();
-		}
-
-		wizardDialog.open();
-		if (dialogResponse == 1) {
-			close();
-		}
-	}
-
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.PreferenceDialog#getCurrentPage()
+	 */
 	public IPreferencePage getCurrentPage() {
 		return super.getCurrentPage();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.preferences.IWorkbenchPreferenceContainer#openPage(java.lang.String,
+	 *      java.lang.Object)
+	 */
 	public boolean openPage(String pageId, Object data) {
 		setPageData(data);
 		setCurrentPageId(pageId);
@@ -477,7 +425,11 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.preferences.IWorkbenchPreferenceContainer#getWorkingCopyManager()
+	 */
 	public IWorkingCopyManager getWorkingCopyManager() {
 		if (workingCopyManager == null) {
 			workingCopyManager = new WorkingCopyManager();
@@ -485,7 +437,11 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		return workingCopyManager;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+	 */
 	protected void okPressed() {
 		super.okPressed();
 
@@ -510,10 +466,17 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		}
 
 		// Run the update jobs
-		updateJobs.forEach(Job::schedule);
+		Iterator updateIterator = updateJobs.iterator();
+		while (updateIterator.hasNext()) {
+			((Job) updateIterator.next()).schedule();
+		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.preferences.IWorkbenchPreferenceContainer#registerUpdateJob(org.eclipse.core.runtime.jobs.Job)
+	 */
 	public void registerUpdateJob(Job job) {
 		updateJobs.add(job);
 	}
@@ -533,28 +496,38 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 				historyManager);
 
 		Action popupMenuAction = new Action() {
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.jface.action.Action#getImageDescriptor()
+			 */
 			public ImageDescriptor getImageDescriptor() {
 				return WorkbenchImages
 						.getImageDescriptor(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU);
 			}
 
-			@Override
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.eclipse.jface.action.Action#run()
+			 */
 			public void run() {
 				MenuManager manager = new MenuManager();
 				manager.add(new Action() {
-					@Override
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see org.eclipse.jface.action.Action#run()
+					 */
 					public void run() {
 
 						sash.addFocusListener(new FocusAdapter() {
-							@Override
 							public void focusGained(FocusEvent e) {
 								sash.setBackground(sash.getDisplay()
 										.getSystemColor(
 												SWT.COLOR_LIST_SELECTION));
 							}
 
-							@Override
 							public void focusLost(FocusEvent e) {
 								sash.setBackground(sash.getDisplay()
 										.getSystemColor(SWT.COLOR_LIST_BACKGROUND));
@@ -563,18 +536,30 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 						sash.setFocus();
 					}
 
-					@Override
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see org.eclipse.jface.action.Action#getText()
+					 */
 					public String getText() {
 						return WorkbenchMessages.get().FilteredPreferenceDialog_Resize;
 					}
 				});
 				manager.add(new Action() {
-					@Override
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see org.eclipse.jface.action.Action#run()
+					 */
 					public void run() {
 						activeKeyScrolling();
 					}
 
-					@Override
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see org.eclipse.jface.action.Action#getText()
+					 */
 					public String getText() {
 						return WorkbenchMessages.get().FilteredPreferenceDialog_Key_Scrolling;
 					}
@@ -587,9 +572,8 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 				menu.setVisible(true);
 			}
 		};
-		popupMenuAction.setToolTipText(WorkbenchMessages.get().FilteredPreferenceDialog_FilterToolTip);
 		historyManager.add(popupMenuAction);
-		IHandlerService service = PlatformUI.getWorkbench()
+		IHandlerService service = (IHandlerService) PlatformUI.getWorkbench()
 				.getService(IHandlerService.class);
 		showViewHandler = service
 				.activateHandler(
@@ -612,7 +596,8 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 				return;
 			}
 			final ScrolledComposite sc = (ScrolledComposite) pageParent;
-			keyScrollingFilter = event -> {
+			keyScrollingFilter = new Listener() {
+				public void handleEvent(Event event) {
 				if (!keyScrollingEnabled || sc.isDisposed()) {
 					return;
 				}
@@ -652,11 +637,16 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 				}
 				event.type = SWT.None;
 				event.doit = false;
+				}
 			};
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.addFilter(SWT.KeyDown, keyScrollingFilter);
 			display.addFilter(SWT.Traverse, keyScrollingFilter);
-			sc.addDisposeListener(e -> removeKeyScrolling());
+			sc.addDisposeListener(new DisposeListener() {
+				public void widgetDisposed(DisposeEvent e) {
+					removeKeyScrolling();
+				}
+			});
 		}
 		keyScrollingEnabled = true;
 	}
@@ -673,7 +663,11 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.PreferenceDialog#showPage(org.eclipse.jface.preference.IPreferenceNode)
+	 */
 	protected boolean showPage(IPreferenceNode node) {
 		final boolean success = super.showPage(node);
 		if (success) {
@@ -683,10 +677,14 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		return success;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.window.Window#close()
+	 */
 	public boolean close() {
 		if (showViewHandler != null) {
-			IHandlerService service = PlatformUI
+			IHandlerService service = (IHandlerService) PlatformUI
 					.getWorkbench().getService(IHandlerService.class);
 			service.deactivateHandler(showViewHandler);
 			showViewHandler.getHandler().dispose();
@@ -694,14 +692,14 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		}
 		removeKeyScrolling();
 		history.dispose();
-		if (importImage != null)
-			importImage.dispose();
-		if (exportImage != null)
-			exportImage.dispose();
 		return super.close();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.PreferenceDialog#createTitleArea(org.eclipse.swt.widgets.Composite)
+	 */
 	protected Composite createTitleArea(Composite parent) {
 
 		GridLayout parentLayout = (GridLayout) parent.getLayout();
@@ -724,7 +722,6 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		return titleComposite;
 	}
 
-	@Override
 	protected void selectSavedItem() {
 		getTreeViewer().setInput(getPreferenceManager());
 		super.selectSavedItem();
@@ -738,7 +735,11 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.PreferenceDialog#updateTreeFont(org.eclipse.swt.graphics.Font)
+	 */
 	protected void updateTreeFont(Font dialogFont) {
 		if (hasAtMostOnePage()) {
 			Composite composite= getTreeViewer().getTree();
@@ -760,13 +761,15 @@ public abstract class FilteredPreferenceDialog extends PreferenceDialog
 		control.setFont(dialogFont);
 		if (control instanceof Composite) {
 			Control[] children = ((Composite) control).getChildren();
-			for (Control element : children) {
-				applyDialogFont(element, dialogFont);
+			for (int i = 0; i < children.length; i++) {
+				applyDialogFont(children[i], dialogFont);
 			}
 		}
 	}
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.PreferenceDialog#createSash(org.eclipse.swt.widgets.Composite, org.eclipse.swt.widgets.Control)
+	 */
 	protected Sash createSash(Composite composite, Control rightControl) {
 		sash = super.createSash(composite, rightControl);
 		return sash;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
+ * Copyright (c) 2005, 2022 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.dynamichelpers.ExtensionTracker;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionChangeHandler;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
-import org.eclipse.rap.rwt.SingletonUtil;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
@@ -41,15 +40,7 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
  */
 public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
 
-// RAP [rh] replaced application-scoped instance field with session-singleton
-//		private static WorkbenchBrowserSupport instance;
-
-	private static final class InstanceHolder {
-		public static WorkbenchBrowserSupport getInstance() {
-			return SingletonUtil.getSessionInstance(WorkbenchBrowserSupport.class);
-		}
-	}
-// RAP [rh] end RAP specific
+	private static WorkbenchBrowserSupport instance;
 
 	private IWorkbenchBrowserSupport activeSupport;
 
@@ -57,7 +48,7 @@ public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
 
     private String desiredBrowserSupportId;
 
-	private IExtensionChangeHandler handler = new IExtensionChangeHandler() {
+	private final IExtensionChangeHandler handler = new IExtensionChangeHandler() {
 
         @Override
 		public void addExtension(IExtensionTracker tracker,IExtension extension) {
@@ -71,8 +62,7 @@ public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
 					dispose();
 					// remove ourselves - we'll be added again in initalize if
 					// needed
-					PlatformUI.getWorkbench().getExtensionTracker()
-							.unregisterHandler(handler);
+					PlatformUI.getWorkbench().getExtensionTracker().unregisterHandler(handler);
 				}
 			}
 		}
@@ -90,19 +80,16 @@ public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
 	 * @return shared instance
 	 */
 	public static IWorkbenchBrowserSupport getInstance() {
-// RAP [rh] replace application-scoped singleton with session-singleton
-//		if (instance == null) {
-//			instance = new WorkbenchBrowserSupport();
-//		}
-//		return instance;
-		return InstanceHolder.getInstance();
+		if (instance == null) {
+			instance = new WorkbenchBrowserSupport();
+		}
+		return instance;
 	}
 
 	@Override
-	public IWebBrowser createBrowser(int style, String browserId, String name,
-			String tooltip) throws PartInitException {
-		return getActiveSupport()
-				.createBrowser(style, browserId, name, tooltip);
+	public IWebBrowser createBrowser(int style, String browserId, String name, String tooltip)
+			throws PartInitException {
+		return getActiveSupport().createBrowser(style, browserId, name, tooltip);
 	}
 
 	@Override
@@ -116,7 +103,7 @@ public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
 	}
 
 	private IWorkbenchBrowserSupport getActiveSupport() {
-		if (initialized == false) {
+		if (!initialized) {
 			loadActiveSupport();
 		}
 		// ensure we always have an active instance
@@ -139,14 +126,8 @@ public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
 		BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
 			@Override
 			public void run() {
-// RAP [rh]: ep namespace differs from bundle id (bug #249708)
-//              IConfigurationElement[] elements = Platform
-//                      .getExtensionRegistry().getConfigurationElementsFor(
-//                              PlatformUI.PLUGIN_ID,
-//                              IWorkbenchRegistryConstants.PL_BROWSER_SUPPORT);
 				IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(
-                                PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
-                                IWorkbenchRegistryConstants.PL_BROWSER_SUPPORT);
+						PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_BROWSER_SUPPORT);
 				IConfigurationElement elementToUse = null;
 
                 if (desiredBrowserSupportId != null) {
@@ -160,11 +141,10 @@ public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
 			}
 
             /**
-             * Search for the element whose extension has ID equal to that of
-             * the field desiredBrowserSupport.
+			 * Search for the element whose extension has ID equal to that of the field
+			 * desiredBrowserSupport.
              *
-             * @param elements
-             *            the elements to search
+			 * @param elements the elements to search
              * @return the element or <code>null</code>
              */
             private IConfigurationElement findDesiredElement(IConfigurationElement [] elements) {
@@ -177,15 +157,11 @@ public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
             }
 
             private IExtensionPoint getExtensionPoint() {
-// RAP [rh]: ep namespace differs from bundle id (bug #249708)
-//              return Platform.getExtensionRegistry()
-//						.getExtensionPoint(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_BROWSER_SUPPORT);
-                return Platform.getExtensionRegistry()
-						.getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_BROWSER_SUPPORT);
+				return Platform.getExtensionRegistry().getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
+						IWorkbenchRegistryConstants.PL_BROWSER_SUPPORT);
             }
 
-			private IConfigurationElement getElementToUse(
-					IConfigurationElement[] elements) {
+			private IConfigurationElement getElementToUse(IConfigurationElement[] elements) {
 				if (elements.length == 0) {
 					return null;
 				}
@@ -197,17 +173,15 @@ public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
 				for (IConfigurationElement element : elements) {
 					if (element.getName().equals(IWorkbenchRegistryConstants.TAG_SUPPORT)) {
 						String def = element.getAttribute(IWorkbenchRegistryConstants.ATT_DEFAULT);
-						if (def != null && Boolean.valueOf(def).booleanValue()) {
+						if (def != null && Boolean.parseBoolean(def)) {
 							if (defaultElement == null) {
 								defaultElement = element;
 							}
-						} else {
-							// non-default
+						} else // non-default
 							if (choice == null) {
 								choice = element;
 							}
 						}
-					}
 				}
 				if (choice == null) {
 					choice = defaultElement;
@@ -215,25 +189,22 @@ public class WorkbenchBrowserSupport extends AbstractWorkbenchBrowserSupport {
 				return choice;
 			}
 
-			private boolean initializePluggableBrowserSupport(
-					IConfigurationElement element) {
+			private boolean initializePluggableBrowserSupport(IConfigurationElement element) {
 				// Instantiate the browser support
 				try {
-					activeSupport = (AbstractWorkbenchBrowserSupport) WorkbenchPlugin
-							.createExtension(element, IWorkbenchRegistryConstants.ATT_CLASS);
+					activeSupport = (AbstractWorkbenchBrowserSupport) WorkbenchPlugin.createExtension(element,
+							IWorkbenchRegistryConstants.ATT_CLASS);
 					// start listening for removals
 					IExtensionTracker extensionTracker = PlatformUI.getWorkbench().getExtensionTracker();
-                    extensionTracker.registerHandler(handler, ExtensionTracker
-                            .createExtensionPointFilter(getExtensionPoint()));
+					extensionTracker.registerHandler(handler,
+							ExtensionTracker.createExtensionPointFilter(getExtensionPoint()));
 					// register the new browser support for removal
 					// notification
-					extensionTracker
-							.registerObject(element.getDeclaringExtension(),
-									activeSupport, IExtensionTracker.REF_WEAK);
+					extensionTracker.registerObject(element.getDeclaringExtension(), activeSupport,
+							IExtensionTracker.REF_WEAK);
 					return true;
 				} catch (CoreException e) {
-					WorkbenchPlugin
-							.log("Unable to instantiate browser support" + e.getStatus(), e);//$NON-NLS-1$
+					WorkbenchPlugin.log("Unable to instantiate browser support" + e.getStatus(), e);//$NON-NLS-1$
 				}
 				return false;
 			}

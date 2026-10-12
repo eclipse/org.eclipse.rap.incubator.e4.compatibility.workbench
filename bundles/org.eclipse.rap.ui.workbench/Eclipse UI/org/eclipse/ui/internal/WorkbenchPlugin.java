@@ -1446,7 +1446,7 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 				return this.vr;
 			}
 		});
-		e4Context.set(ActionSetRegistry.class.getName(), ActionSetRegistry.getInstance());
+		e4Context.set(ActionSetRegistry.class.getName(), new ActionSetRegistry());
 		context.set(IDecoratorManager.class.getName(), new ContextFunction() {
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
@@ -1570,7 +1570,7 @@ public class WorkbenchPlugin extends AbstractUIPlugin {
 			@Override
 			public Object compute(IEclipseContext context, String contextKey) {
 				if (editorRegistry == null) {
-					editorRegistry = new EditorRegistry(Platform.getContentTypeManager());
+					editorRegistry = EditorRegistry.getInstance();
 				}
 				return editorRegistry;
 			}

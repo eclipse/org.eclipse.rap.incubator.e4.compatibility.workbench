@@ -21,8 +21,8 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.internal.registry.RegistryReader;
 
 /**
- * This reader loads the popup menu manager with all the
- * popup menu contributors found in the workbench registry.
+ * This reader loads the popup menu manager with all the popup menu contributors
+ * found in the workbench registry.
  */
 public class ObjectActionContributorReader extends RegistryReader {
 
@@ -60,20 +60,14 @@ public class ObjectActionContributorReader extends RegistryReader {
     }
 
     /**
-     * Reads the registry and registers popup menu contributors
-     * found there.
+	 * Reads the registry and registers popup menu contributors found there.
      *
      * @param mng the manager to read into
      */
     public void readPopupContributors(ObjectActionContributorManager mng) {
         setManager(mng);
         IExtensionRegistry registry = Platform.getExtensionRegistry();
-        // RAP [bm]: 
-//        readRegistry(registry, PlatformUI.PLUGIN_ID,
-//                IWorkbenchRegistryConstants.PL_POPUP_MENU);
-        readRegistry(registry, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
-              IWorkbenchRegistryConstants.PL_POPUP_MENU);
-        // RAPEND: [bm] 
+		readRegistry(registry, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_POPUP_MENU);
     }
 
     /**

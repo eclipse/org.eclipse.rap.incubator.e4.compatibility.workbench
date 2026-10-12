@@ -15,20 +15,17 @@
 
 package org.eclipse.ui.internal.registry;
 
+import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.PreferenceFilterEntry;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.preferences.PreferenceTransferElement;
-
-import com.ibm.icu.text.Collator;
 
 /**
  * Preference Transfer registry reader to read extenders of the
@@ -37,15 +34,14 @@ import com.ibm.icu.text.Collator;
  * @since 3.1
  */
 public class PreferenceTransferRegistryReader extends RegistryReader {
-	private List preferenceTransfers;
+	private List<PreferenceTransferElement> preferenceTransfers;
 
-	private String pluginPoint;
+	private final String pluginPoint;
 
 	/**
 	 * Create an instance of this class.
 	 *
-	 * @param pluginPointId
-	 *            java.lang.String
+	 * @param pluginPointId java.lang.String
 	 */
 	public PreferenceTransferRegistryReader(String pluginPointId) {
 		pluginPoint = pluginPointId;
@@ -55,13 +51,11 @@ public class PreferenceTransferRegistryReader extends RegistryReader {
 	 * Returns a new PreferenceTransferElement configured according to the
 	 * parameters contained in the passed element.
 	 *
-	 * @param element
-	 *            the configuration element
-	 * @return the preference transfer element or <code>null</code> if there was
-	 *         not enough information in the element
+	 * @param element the configuration element
+	 * @return the preference transfer element or <code>null</code> if there was not
+	 *         enough information in the element
 	 */
-	protected PreferenceTransferElement createPreferenceTransferElement(
-			IConfigurationElement element) {
+	protected PreferenceTransferElement createPreferenceTransferElement(IConfigurationElement element) {
 		// PreferenceTransfers must have a class attribute
 		if (element.getAttribute(IWorkbenchRegistryConstants.ATT_NAME) == null) {
 			logMissingAttribute(element, IWorkbenchRegistryConstants.ATT_NAME);
@@ -84,11 +78,10 @@ public class PreferenceTransferRegistryReader extends RegistryReader {
 	 */
 	public PreferenceTransferElement[] getPreferenceTransfers() {
 		readPreferenceTransfers();
-		PreferenceTransferElement[] transfers = new PreferenceTransferElement[preferenceTransfers
-				.size()];
-		Collections.sort(preferenceTransfers, (o1, o2) -> {
-			String name1 = ((PreferenceTransferElement) o1).getName();
-			String name2 = ((PreferenceTransferElement) o2).getName();
+		PreferenceTransferElement[] transfers = new PreferenceTransferElement[preferenceTransfers.size()];
+		preferenceTransfers.sort((o1, o2) -> {
+			String name1 = o1.getName();
+			String name2 = o2.getName();
 
 			return Collator.getInstance().compare(name1, name2);
 		});
@@ -101,47 +94,41 @@ public class PreferenceTransferRegistryReader extends RegistryReader {
 		if (element.getName().equals(IWorkbenchRegistryConstants.TAG_TRANSFER)) {
 
 			PreferenceTransferElement transfer = createPreferenceTransferElement(element);
-			if (transfer != null)
+			if (transfer != null) {
 				preferenceTransfers.add(transfer);
+			}
 			return true;
 		}
 
 		// Allow settings transfers as well.
 
-		return element.getName().equals(
-				IWorkbenchRegistryConstants.TAG_SETTINGS_TRANSFER);
+		return element.getName().equals(IWorkbenchRegistryConstants.TAG_SETTINGS_TRANSFER);
 	}
 
 	/**
 	 * Reads the wizards in a registry.
 	 */
 	protected void readPreferenceTransfers() {
-		preferenceTransfers = new ArrayList();
+		preferenceTransfers = new ArrayList<>();
 		IExtensionRegistry registry = Platform.getExtensionRegistry();
-		// RAP [bm]: namespace
 		readRegistry(registry, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, pluginPoint);
 	}
 
 	/**
 	 * Get the preference mappings.
 	 *
-	 * @param configElement
 	 * @return the child configuration elements
 	 */
-	public static IConfigurationElement[] getMappings(
-			IConfigurationElement configElement) {
-		IConfigurationElement[] children = configElement
-				.getChildren(IWorkbenchRegistryConstants.TAG_MAPPING);
+	public static IConfigurationElement[] getMappings(IConfigurationElement configElement) {
+		IConfigurationElement[] children = configElement.getChildren(IWorkbenchRegistryConstants.TAG_MAPPING);
 		if (children.length < 1) {
-			logMissingElement(configElement,
-					IWorkbenchRegistryConstants.TAG_MAPPING);
+			logMissingElement(configElement, IWorkbenchRegistryConstants.TAG_MAPPING);
 			return new IConfigurationElement[0];
 		}
 		return children;
 	}
 
 	/**
-	 * @param element
 	 * @return the scope attribute for this element
 	 */
 	public static String getScope(IConfigurationElement element) {
@@ -149,17 +136,16 @@ public class PreferenceTransferRegistryReader extends RegistryReader {
 	}
 
 	/**
-	 * @param element
-	 *            the configuration element
-	 * @return a map that maps nodes to keys for this element or
-	 *         <code>null</code> for all nodes
+	 * @param element the configuration element
+	 * @return a map that maps nodes to keys for this element or <code>null</code>
+	 *         for all nodes
 	 */
-	public static Map getEntry(IConfigurationElement element) {
+	public static Map<String, PreferenceFilterEntry[]> getEntry(IConfigurationElement element) {
 		IConfigurationElement[] entries = element.getChildren(IWorkbenchRegistryConstants.TAG_ENTRY);
 		if (entries.length == 0) {
 			return null;
 		}
-		Map map = new HashMap(entries.length);
+		Map<String, PreferenceFilterEntry[]> map = new HashMap<>(entries.length);
 		for (IConfigurationElement entry : entries) {
 			IConfigurationElement[] keys = entry.getChildren(IWorkbenchRegistryConstants.ATT_KEY);
 			PreferenceFilterEntry[] prefFilters = null;

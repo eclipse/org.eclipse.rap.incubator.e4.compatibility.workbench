@@ -1,13 +1,10 @@
 // RAP [rh] Disabled OpenNewPageMenu action: workbench pages concept is deprecated
 ///*******************************************************************************
-// * Copyright (c) 2000, 2015 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2000, 2007 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -43,7 +40,6 @@
 // * 		user ui model. See IWorkbench.showPerspective methods.
 // * @noextend This class is not intended to be subclassed by clients.
 // */
-//@Deprecated
 //public class OpenNewPageMenu extends PerspectiveMenu {
 //    private IAdaptable pageInput;
 //
@@ -76,7 +72,9 @@
 //        this.pageInput = input;
 //    }
 //
-//    @Override
+//    /* (non-Javadoc)
+//     * Opens a new page with a particular perspective and input.
+//     */
 //	protected void run(IPerspectiveDescriptor desc) {
 //        // Verify page input.
 //        if (pageInput == null) {

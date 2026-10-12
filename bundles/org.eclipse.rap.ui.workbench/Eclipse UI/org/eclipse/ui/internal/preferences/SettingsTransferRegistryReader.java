@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2015 IBM Corporation and others.
+ * Copyright (c) 2006, 2019 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -16,7 +16,6 @@ package org.eclipse.ui.internal.preferences;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
@@ -31,11 +30,10 @@ import org.eclipse.ui.internal.registry.RegistryReader;
  *
  *
  * @since 3.3
- *
  */
 public class SettingsTransferRegistryReader extends RegistryReader {
 
-	Collection settingsTransfers = new ArrayList();
+	Collection<IConfigurationElement> settingsTransfers = new ArrayList<>();
 
 	/**
 	 * Create an instance of the receiver.
@@ -51,14 +49,12 @@ public class SettingsTransferRegistryReader extends RegistryReader {
 	 */
 	public IConfigurationElement[] getSettingTransfers() {
 
-		settingsTransfers = new ArrayList();
+		settingsTransfers = new ArrayList<>();
 		IExtensionRegistry registry = Platform.getExtensionRegistry();
-		// RAP [bm]: namespace
 		readRegistry(registry, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 				IWorkbenchRegistryConstants.PL_PREFERENCE_TRANSFER);
 
-		IConfigurationElement[] transfers = new IConfigurationElement[settingsTransfers
-				.size()];
+		IConfigurationElement[] transfers = new IConfigurationElement[settingsTransfers.size()];
 		settingsTransfers.toArray(transfers);
 		return transfers;
 
@@ -66,16 +62,14 @@ public class SettingsTransferRegistryReader extends RegistryReader {
 
 	@Override
 	protected boolean readElement(IConfigurationElement element) {
-		if (element.getName().equals(
-				IWorkbenchRegistryConstants.TAG_SETTINGS_TRANSFER)) {
+		if (element.getName().equals(IWorkbenchRegistryConstants.TAG_SETTINGS_TRANSFER)) {
 
 			settingsTransfers.add(element);
 			return true;
 		}
 
 		//Ignore the preference transfers
-		return element.getName().equals(
-				IWorkbenchRegistryConstants.TAG_TRANSFER);
+		return element.getName().equals(IWorkbenchRegistryConstants.TAG_TRANSFER);
 	}
 
 }

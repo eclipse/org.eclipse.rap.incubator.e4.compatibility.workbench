@@ -23,21 +23,23 @@ import org.eclipse.ui.dialogs.PropertyDialogAction;
  * <p>
  * Clients should implement this interface and include the name of their class
  * in an extension contributed to the workbench's property page extension point
- * (named <code>"org.eclipse.ui.propertyPages"</code>).
- * For example, the plug-in's XML markup might contain:
+ * (named <code>"org.eclipse.ui.propertyPages"</code>). For example, the
+ * plug-in's XML markup might contain:
+ * </p>
+ *
  * <pre>
- * &LT;extension point="org.eclipse.ui.propertyPages"&GT;
- *      &LT;page id="com.example.myplugin.props"
+ * &lt;extension point="org.eclipse.ui.propertyPages"&gt;
+ *      &lt;page id="com.example.myplugin.props"
  *         name="Knobs"
  *         objectClass="org.eclipse.core.resources.IResource"
- *         class="com.example.myplugin.MyPropertyPage" /&GT;
- * &LT;/extension&GT;
+ *         class="com.example.myplugin.MyPropertyPage" /&gt;
+ * &lt;/extension&gt;
  * </pre>
- * </p>
  * <p>
- * Property pages that support multiple selected objects should
- * implement {@link IWorkbenchPropertyPageMulti} instead.
+ * Property pages that support multiple selected objects should implement
+ * {@link IWorkbenchPropertyPageMulti} instead.
  * </p>
+ *
  * @see IWorkbenchPropertyPageMulti
  */
 public interface IWorkbenchPropertyPage extends IPreferencePage {
@@ -49,15 +51,16 @@ public interface IWorkbenchPropertyPage extends IPreferencePage {
     IAdaptable getElement();
 
     /**
-     * Sets the object that owns the properties shown in this page.
-     * The page is expected to store this object and provide it if
-     * <code>getElement</code> is called.
-     * <p> As of Eclipse 3.2 the org.eclipse.ui.propertyPages extension
-     * point now supports non IAdaptable inputs. An input
-     * that is not an IAdaptable will be wrapped in an
-     * IAdaptable by the workbench before it is forwarded
-     * to this method.
+	 * Sets the object that owns the properties shown in this page. The page is
+	 * expected to store this object and provide it if <code>getElement</code> is
+	 * called.
+	 * <p>
+	 * As of Eclipse 3.2 the org.eclipse.ui.propertyPages extension point now
+	 * supports non IAdaptable inputs. An input that is not an IAdaptable will be
+	 * wrapped in an IAdaptable by the workbench before it is forwarded to this
+	 * method.
      * </p>
+	 *
      * @see PropertyDialogAction
      *
      * @param element the object that owns the properties shown in this page

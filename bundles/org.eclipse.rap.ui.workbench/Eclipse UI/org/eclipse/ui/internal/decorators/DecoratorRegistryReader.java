@@ -23,15 +23,15 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.internal.registry.RegistryReader;
 
 /**
- * The DecoratorRegistryReader is the class that reads the
- * decorator descriptions from the registry
+ * The DecoratorRegistryReader is the class that reads the decorator
+ * descriptions from the registry
  */
 public class DecoratorRegistryReader extends RegistryReader {
 
     //The registry values are the ones read from the registry
-    private Collection values = new ArrayList();
+	private final Collection<DecoratorDefinition> values = new ArrayList<>();
 
-    private Collection ids = new HashSet();
+	private final Collection<String> ids = new HashSet<>();
 
     /**
      * Constructor for DecoratorRegistryReader.
@@ -59,9 +59,9 @@ public class DecoratorRegistryReader extends RegistryReader {
     }
 
     /**
-     * Return the DecoratorDefinition defined by element or <code>null</code>
-     * if it cannot be determined.
-     * @param element
+	 * Return the DecoratorDefinition defined by element or <code>null</code> if it
+	 * cannot be determined.
+	 *
      * @return DecoratorDefinition
      */
     DecoratorDefinition getDecoratorDefinition(IConfigurationElement element){
@@ -75,8 +75,9 @@ public class DecoratorRegistryReader extends RegistryReader {
 
         boolean noClass = element.getAttribute(DecoratorDefinition.ATT_CLASS) == null;
 
-        //Lightweight or Full? It is lightweight if it is declared lightweight or if there is no class
-        if (Boolean.valueOf(element.getAttribute(IWorkbenchRegistryConstants.ATT_LIGHTWEIGHT)).booleanValue() || noClass) {
+		// Lightweight or Full? It is lightweight if it is declared lightweight or if
+		// there is no class
+		if (Boolean.parseBoolean(element.getAttribute(IWorkbenchRegistryConstants.ATT_LIGHTWEIGHT)) || noClass) {
 
             String iconPath = element.getAttribute(LightweightDecoratorDefinition.ATT_ICON);
 
@@ -92,19 +93,13 @@ public class DecoratorRegistryReader extends RegistryReader {
     }
 
     /**
-     * Read the decorator extensions within a registry and set
-     * up the registry values.
+	 * Read the decorator extensions within a registry and set up the registry
+	 * values.
      */
-    Collection readRegistry(IExtensionRegistry in) {
+	Collection<DecoratorDefinition> readRegistry(IExtensionRegistry in) {
         values.clear();
         ids.clear();
-        // RAP [bm]:
-//      readRegistry(in, PlatformUI.PLUGIN_ID,
-//              IWorkbenchRegistryConstants.PL_DECORATORS);
-    readRegistry(in, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
-                IWorkbenchRegistryConstants.PL_DECORATORS);
-		// RAPEND: [bm]
-
+		readRegistry(in, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_DECORATORS);
 		return values;
     }
 
@@ -113,7 +108,7 @@ public class DecoratorRegistryReader extends RegistryReader {
      *
      * @return the values
      */
-    public Collection getValues() {
+	public Collection<DecoratorDefinition> getValues() {
         return values;
     }
 

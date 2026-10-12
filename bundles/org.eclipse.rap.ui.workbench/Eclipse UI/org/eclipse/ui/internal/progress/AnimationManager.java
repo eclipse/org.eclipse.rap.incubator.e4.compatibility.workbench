@@ -10,66 +10,56 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     EclipseSource - adaptation for RAP
  *******************************************************************************/
 package org.eclipse.ui.internal.progress;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.rap.rwt.RWT;
-import org.eclipse.rap.rwt.SingletonUtil;
-import org.eclipse.rap.rwt.service.UISessionEvent;
-import org.eclipse.rap.rwt.service.UISessionListener;
-import org.eclipse.rap.ui.internal.progress.IJobMarker;
-import org.eclipse.rap.ui.internal.progress.JobCanceler;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.progress.WorkbenchJob;
 
 /**
  * The AnimationManager is the class that keeps track of the animation items to
  * update.
  */
-//RAP [fappel]: AnimationManager needs to be session aware
 public class AnimationManager {
-//    private static AnimationManager singleton;
+	private static final int DEBOUNCE_MILLIS = 200;
 
-    boolean animated = false;
+	private static AnimationManager singleton;
+
+	volatile boolean animated = false;
 
     private IJobProgressManagerListener listener;
 
     IAnimationProcessor animationProcessor;
 
-    WorkbenchJob animationUpdateJob;
+	private final Display display;
 
-    Display display;
+	private final AtomicBoolean updatePending = new AtomicBoolean();
 
+	private final Runnable updateRunnable;
+
+	/**
+	 * Returns the singleton {@link AnimationManager} instance
+	 *
+	 * @return the singleton {@link AnimationManager} instance
+	 */
     public static AnimationManager getInstance() {
-// RAP [fappel]: AnimationManager needs to be session aware
-//      if (singleton == null) {
-//          singleton = new AnimationManager();
-//      }
-//      return singleton;
-      AnimationManager instance = SingletonUtil.getSessionInstance( AnimationManager.class );
-      if( instance.display == null ) {
-        instance.display = Display.getCurrent();
+		if (singleton == null) {
+			singleton = new AnimationManager();
       }
-      return instance;
+		return singleton;
     }
 
     /**
      * Get the background color to be used.
      *
-     * @param control
-     *            The source of the display.
+	 * @param control The source of the display.
      * @return Color
      */
     static Color getItemBackgroundColor(Control control) {
@@ -77,79 +67,29 @@ public class AnimationManager {
     }
 
     AnimationManager() {
-         // RAP [fappel]: This is a helping flag used to avoid a memory leak
-         //               due to thread management.
-         //               Note that this is still under investigation.
-         //               See comment in JobManagerAdapter
-         final AtomicBoolean done = new AtomicBoolean();
-
 
         animationProcessor = new ProgressAnimationProcessor(this);
-
-        animationUpdateJob = new WorkbenchJob(ProgressMessages.get().AnimationManager_AnimationStart) {
-
-            /*
-             * (non-Javadoc)
-             *
-             * @see org.eclipse.ui.progress.UIJob#runInUIThread(org.eclipse.core.runtime.IProgressMonitor)
-             */
-            @Override
-			public IStatus runInUIThread(IProgressMonitor monitor) {
-
+		display = Display.getDefault();
+		updateRunnable = () -> {
+			if (display.isDisposed()) {
+				return;
+			}
                 if (animated) {
 					animationProcessor.animationStarted();
 				} else {
 					animationProcessor.animationFinished();
 				}
-                return Status.OK_STATUS;
-            }
-
-            // RAP [fappel]: This is a helping mechanism used to avoid a memory
-            //               leak due to thread management.
-            //               Note that this is still under investigation.
-            //               See comment in JobManagerAdapter
-            @Override
-			public Object getAdapter( final Class adapter ) {
-              Object result;
-              if( adapter == IJobMarker.class ) {
-                result = new IJobMarker() {
-                  @Override
-				public boolean canBeRemoved() {
-                    return done.get();
-                  }
-                };
-              } else {
-                result = super.getAdapter( adapter );
-              }
-              return result;
-            }
-
         };
-        animationUpdateJob.setSystem(true);
 
         listener = getProgressListener();
         ProgressManager.getInstance().addListener(listener);
 
-        // RAP [fappel]: This is a helping mechanism used to avoid a memory leak
-        //               due to thread management.
-        //               Note that this is still under investigation.
-        //               See comment in JobManagerAdapter
-        RWT.getUISession().addUISessionListener( new UISessionListener() {
-          @Override
-		public void beforeDestroy( UISessionEvent event ) {
-            if( animationUpdateJob != null ) {
-              animationUpdateJob.cancel();
-              animationUpdateJob.addJobChangeListener( new JobCanceler() );
-              done.set( true );
-            }
-          }
-        } );
     }
 
     /**
      * Add an item to the list
      *
-     * @param item
+	 * @param item animation item to add
      */
     void addItem(final AnimationItem item) {
         animationProcessor.addItem(item);
@@ -158,7 +98,7 @@ public class AnimationManager {
     /**
      * Remove an item from the list
      *
-     * @param item
+	 * @param item animation item to remove
      */
     void removeItem(final AnimationItem item) {
         animationProcessor.removeItem(item);
@@ -167,7 +107,7 @@ public class AnimationManager {
     /**
      * Return whether or not the current state is animated.
      *
-     * @return boolean
+	 * @return whether or not the current state is animated
      */
     boolean isAnimated() {
         return animated;
@@ -176,17 +116,36 @@ public class AnimationManager {
     /**
 	 * Set whether or not the receiver is animated.
 	 *
-	 * @param bool
+	 * @param bool receivers new animated state
 	 */
     void setAnimated(final boolean bool) {
         animated = bool;
-		Runnable scheduler = new Runnable() {
-			@Override
-			public void run() {
-				animationUpdateJob.schedule(100);
+		scheduleUpdate();
+	}
+
+	private void scheduleUpdate() {
+		if (display.isDisposed()) {
+			return;
+		}
+		// Coalesce bursts: only post one asyncExec at a time. Each posted
+		// runnable calls timerExec with the shared updateRunnable, which
+		// resets any pending timer so the latest call wins (matches the
+		// original Job.schedule(DEBOUNCE_MILLIS) behavior on a sleeping job).
+		if (updatePending.compareAndSet(false, true)) {
+			try {
+				display.asyncExec(() -> {
+					updatePending.set(false);
+					if (!display.isDisposed()) {
+						display.timerExec(DEBOUNCE_MILLIS, updateRunnable);
+					}
+				});
+			} catch (SWTException e) {
+				updatePending.set(false);
+				if (!display.isDisposed()) {
+					throw e;
+				}
 			}
-		};
-		RWT.getUISession(display).exec(scheduler);
+			}
     }
 
     /**
@@ -199,23 +158,13 @@ public class AnimationManager {
 
     private IJobProgressManagerListener getProgressListener() {
         return new IJobProgressManagerListener() {
-            Set jobs = Collections.synchronizedSet(new HashSet());
+			Set<Job> jobs = new HashSet<>();
 
-            /*
-             * (non-Javadoc)
-             *
-             * @see org.eclipse.ui.internal.progress.IJobProgressManagerListener#addJob(org.eclipse.ui.internal.progress.JobInfo)
-             */
             @Override
 			public void addJob(JobInfo info) {
                 incrementJobCount(info);
             }
 
-            /*
-             * (non-Javadoc)
-             *
-             * @see org.eclipse.ui.internal.progress.IJobProgressManagerListener#refreshJobInfo(org.eclipse.ui.internal.progress.JobInfo)
-             */
             @Override
 			public void refreshJobInfo(JobInfo info) {
                 int state = info.getJob().getState();
@@ -226,37 +175,21 @@ public class AnimationManager {
 				}
             }
 
-            /*
-             * (non-Javadoc)
-             *
-             * @see org.eclipse.ui.internal.progress.IJobProgressManagerListener#refreshAll()
-             */
             @Override
 			public void refreshAll() {
                 ProgressManager manager = ProgressManager.getInstance();
                 jobs.clear();
                 setAnimated(false);
-                JobInfo[] currentInfos = manager.getJobInfos(showsDebug());
-                for (int i = 0; i < currentInfos.length; i++) {
-                    addJob(currentInfos[i]);
+				for (JobInfo currentInfo : manager.getJobInfos(showsDebug())) {
+					addJob(currentInfo);
                 }
             }
 
-            /*
-             * (non-Javadoc)
-             *
-             * @see org.eclipse.ui.internal.progress.IJobProgressManagerListener#remove(org.eclipse.ui.internal.progress.JobInfo)
-             */
             @Override
 			public void removeJob(JobInfo info) {
                 decrementJobCount(info.getJob());
             }
 
-            /*
-             * (non-Javadoc)
-             *
-             * @see org.eclipse.ui.internal.progress.IJobProgressManagerListener#showsDebug()
-             */
             @Override
 			public boolean showsDebug() {
                 return false;
@@ -289,35 +222,19 @@ public class AnimationManager {
             private boolean isNotTracked(JobInfo info) {
                 //We always track errors
                 Job job = info.getJob();
-                return job.getState() != Job.RUNNING
-                        || animationProcessor.isProcessorJob(job);
+				return job.getState() != Job.RUNNING || animationProcessor.isProcessorJob(job);
             }
 
-            /*
-             * (non-Javadoc)
-             *
-             * @see org.eclipse.ui.internal.progress.IJobProgressManagerListener#addGroup(org.eclipse.ui.internal.progress.GroupInfo)
-             */
             @Override
 			public void addGroup(GroupInfo info) {
                 //Don't care about groups
             }
 
-            /*
-             * (non-Javadoc)
-             *
-             * @see org.eclipse.ui.internal.progress.IJobProgressManagerListener#removeGroup(org.eclipse.ui.internal.progress.GroupInfo)
-             */
             @Override
 			public void removeGroup(GroupInfo group) {
                 //Don't care about groups
             }
 
-            /*
-             * (non-Javadoc)
-             *
-             * @see org.eclipse.ui.internal.progress.IJobProgressManagerListener#refreshGroup(org.eclipse.ui.internal.progress.GroupInfo)
-             */
             @Override
 			public void refreshGroup(GroupInfo info) {
                 //Don't care about groups

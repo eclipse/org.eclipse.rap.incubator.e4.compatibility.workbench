@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -43,14 +40,18 @@ import org.osgi.framework.Constants;
 /**
  * The Startup preference page.
  */
-public class StartupPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
+public class StartupPreferencePage extends PreferencePage implements
+        IWorkbenchPreferencePage {
     private Table pluginsList;
 
     private Workbench workbench;
 
-    @Override
+    /**
+     * @see PreferencePage#createContents(Composite)
+     */
 	protected Control createContents(Composite parent) {
-    	PlatformUI.getWorkbench().getHelpSystem().setHelp(parent,IWorkbenchHelpContextIds.STARTUP_PREFERENCE_PAGE);
+    	PlatformUI.getWorkbench().getHelpSystem().setHelp(parent,
+				IWorkbenchHelpContextIds.STARTUP_PREFERENCE_PAGE);
 
         Composite composite = createComposite(parent);
 
@@ -65,8 +66,8 @@ public class StartupPreferencePage extends PreferencePage implements IWorkbenchP
         layout.marginWidth = 0;
         layout.marginHeight = 0;
         composite.setLayout(layout);
-		GridData data = new GridData(
-				GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_FILL | GridData.HORIZONTAL_ALIGN_FILL);
+        GridData data = new GridData(GridData.FILL_BOTH
+                | GridData.VERTICAL_ALIGN_FILL | GridData.HORIZONTAL_ALIGN_FILL);
         composite.setLayoutData(data);
         composite.setFont(parent.getFont());
 
@@ -79,16 +80,17 @@ public class StartupPreferencePage extends PreferencePage implements IWorkbenchP
         label.setFont(parent.getFont());
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         label.setLayoutData(data);
-		pluginsList = new Table(parent, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
+        pluginsList = new Table(parent, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL
+                | SWT.V_SCROLL);
         data = new GridData(GridData.FILL_BOTH);
         pluginsList.setFont(parent.getFont());
         pluginsList.setLayoutData(data);
 		TableViewer viewer = new TableViewer(pluginsList);
 		viewer.setLabelProvider(new LabelProvider() {
-			@Override
 			public String getText(Object element) {
-				return Platform.getBundle(((ContributionInfo) element).getBundleId()).getHeaders()
-						.get(Constants.BUNDLE_NAME);
+				return (String) Platform.getBundle(((ContributionInfo) element).getBundleId())
+						.getHeaders().get(
+						Constants.BUNDLE_NAME);
 			}
 		});
 		viewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -97,7 +99,7 @@ public class StartupPreferencePage extends PreferencePage implements IWorkbenchP
     }
 
 	private void updateCheckState() {
-		HashSet<String> disabledPlugins = new HashSet<>(Arrays.asList(workbench.getDisabledEarlyActivatedPlugins()));
+        HashSet disabledPlugins = new HashSet(Arrays.asList(workbench.getDisabledEarlyActivatedPlugins()));
 		for (int i = 0; i < pluginsList.getItemCount(); i++) {
 			TableItem item = pluginsList.getItem(i);
 			String pluginId = ((ContributionInfo) item.getData()).getBundleId();
@@ -105,22 +107,29 @@ public class StartupPreferencePage extends PreferencePage implements IWorkbenchP
         }
     }
 
-    @Override
+    /**
+     * @see IWorkbenchPreferencePage
+     */
 	public void init(IWorkbench workbench) {
         this.workbench = (Workbench) workbench;
     }
 
-    @Override
+    /**
+     * @see PreferencePage
+     */
 	protected void performDefaults() {
-		IPreferenceStore store = PrefUtil.getInternalPreferenceStore();
-		store.setToDefault(IPreferenceConstants.PLUGINS_NOT_ACTIVATED_ON_STARTUP);
-		updateCheckState();
+        TableItem items[] = pluginsList.getItems();
+        for (int i = 0; i < items.length; i++) {
+            items[i].setChecked(true);
+        }
     }
 
-    @Override
+    /**
+     * @see PreferencePage
+     */
 	public boolean performOk() {
-        StringBuilder preference = new StringBuilder();
-		TableItem[] items = pluginsList.getItems();
+        StringBuffer preference = new StringBuffer();
+        TableItem items[] = pluginsList.getItems();
         for (int i = 0; i < items.length; i++) {
             if (!items[i].getChecked()) {
 				preference.append(((ContributionInfo) items[i].getData()).getBundleId());
@@ -129,7 +138,8 @@ public class StartupPreferencePage extends PreferencePage implements IWorkbenchP
         }
         String pref = preference.toString();
         IPreferenceStore store = PrefUtil.getInternalPreferenceStore();
-		store.setValue(IPreferenceConstants.PLUGINS_NOT_ACTIVATED_ON_STARTUP, pref);
+        store.putValue(IPreferenceConstants.PLUGINS_NOT_ACTIVATED_ON_STARTUP,
+                pref);
         PrefUtil.savePrefs();
         return true;
     }

@@ -44,14 +44,15 @@ package org.eclipse.ui.contexts;
 public interface IContext extends Comparable {
 
     /**
-     * Registers an instance of <code>IContextListener</code> to listen for
-     * changes to properties of this instance.
+	 * Registers an instance of <code>IContextListener</code> to listen for changes
+	 * to properties of this instance.
      *
-     * @param contextListener
-     *            the instance to register. Must not be <code>null</code>. If
-     *            an attempt is made to register an instance which is already
-     *            registered with this instance, no operation is performed.
+	 * @param contextListener the instance to register. Must not be
+	 *                        <code>null</code>. If an attempt is made to register
+	 *                        an instance which is already registered with this
+	 *                        instance, no operation is performed.
      */
+	@Deprecated
     void addContextListener(IContextListener contextListener);
 
     /**
@@ -60,66 +61,65 @@ public interface IContext extends Comparable {
      * @return the identifier of this instance. Guaranteed not to be
      *         <code>null</code>.
      */
+	@Deprecated
     String getId();
 
     /**
      * Returns the name of this instance suitable for display to the user.
      * <p>
-     * Notification is sent to all registered listeners if this property
-     * changes.
+	 * Notification is sent to all registered listeners if this property changes.
      * </p>
      *
      * @return the name of this instance. Guaranteed not to be <code>null</code>.
-     * @throws NotDefinedException
-     *             if this instance is not defined.
+	 * @throws NotDefinedException if this instance is not defined.
      */
+	@Deprecated
     String getName() throws NotDefinedException;
 
     /**
      * Returns the identifier of the parent of this instance.
      * <p>
-     * Notification is sent to all registered listeners if this property
-     * changes.
+	 * Notification is sent to all registered listeners if this property changes.
      * </p>
      *
      * @return the identifier of the parent of this instance. May be
      *         <code>null</code>.
-     * @throws NotDefinedException
-     *             if this instance is not defined.
+	 * @throws NotDefinedException if this instance is not defined.
      */
+	@Deprecated
     String getParentId() throws NotDefinedException;
 
     /**
      * Returns whether or not this instance is defined.
      * <p>
-     * Notification is sent to all registered listeners if this property
-     * changes.
+	 * Notification is sent to all registered listeners if this property changes.
      * </p>
      *
      * @return true, iff this instance is defined.
      */
+	@Deprecated
     boolean isDefined();
 
     /**
      * Returns whether or not this instance is enabled.
      * <p>
-     * Notification is sent to all registered listeners if this property
-     * changes.
+	 * Notification is sent to all registered listeners if this property changes.
      * </p>
      *
      * @return true, iff this instance is enabled.
      */
+	@Deprecated
     boolean isEnabled();
 
     /**
      * Unregisters an instance of <code>IContextListener</code> listening for
      * changes to properties of this instance.
      *
-     * @param contextListener
-     *            the instance to unregister. Must not be <code>null</code>.
-     *            If an attempt is made to unregister an instance which is not
-     *            already registered with this instance, no operation is
-     *            performed.
+	 * @param contextListener the instance to unregister. Must not be
+	 *                        <code>null</code>. If an attempt is made to unregister
+	 *                        an instance which is not already registered with this
+	 *                        instance, no operation is performed.
      */
+	@Deprecated
     void removeContextListener(IContextListener contextListener);
 }

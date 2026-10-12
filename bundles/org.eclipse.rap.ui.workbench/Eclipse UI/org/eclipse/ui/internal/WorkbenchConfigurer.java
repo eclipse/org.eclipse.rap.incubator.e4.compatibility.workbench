@@ -23,7 +23,6 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
@@ -31,8 +30,8 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 /**
  * Internal class providing special access for configuring the workbench.
  * <p>
- * Note that these objects are only available to the main application
- * (the plug-in that creates and owns the workbench).
+ * Note that these objects are only available to the main application (the
+ * plug-in that creates and owns the workbench).
  * </p>
  * <p>
  * This class is not intended to be instantiated or subclassed by clients.
@@ -45,27 +44,28 @@ public final class WorkbenchConfigurer implements IWorkbenchConfigurer {
     /**
      * Table to hold arbitrary key-data settings (key type: <code>String</code>,
      * value type: <code>Object</code>).
+	 *
      * @see #setData
      */
-    private Map extraData = new HashMap();
+	private final Map extraData = new HashMap();
 
     /**
-     * Indicates whether workbench state should be saved on close and
-     * restored on subsequent open.
+	 * Indicates whether workbench state should be saved on close and restored on
+	 * subsequent open.
      */
     private boolean saveAndRestore = false;
 
     /**
-     * Indicates whether the workbench is being force to close. During
-     * an emergency close, no interaction with the user should be done.
+	 * Indicates whether the workbench is being force to close. During an emergency
+	 * close, no interaction with the user should be done.
      */
     private boolean isEmergencyClosing = false;
 
     /**
-     * Indicates the behaviour when the last window is closed.
-     * If <code>true</code>, the workbench will exit (saving the last window's state,
-     * if configured to do so).
-     * If <code>false</code> the window will be closed, leaving the workbench running.
+	 * Indicates the behaviour when the last window is closed. If <code>true</code>,
+	 * the workbench will exit (saving the last window's state, if configured to do
+	 * so). If <code>false</code> the window will be closed, leaving the workbench
+	 * running.
      *
      * @since 3.1
      */
@@ -74,8 +74,8 @@ public final class WorkbenchConfigurer implements IWorkbenchConfigurer {
     /**
      * Creates a new workbench configurer.
      * <p>
-     * This method is declared package-private. Clients are passed an instance
-     * only via {@link WorkbenchAdvisor#initialize WorkbenchAdvisor.initialize}
+	 * This method is declared package-private. Clients are passed an instance only
+	 * via {@link WorkbenchAdvisor#initialize WorkbenchAdvisor.initialize}
      * </p>
      */
     /* package */WorkbenchConfigurer() {
@@ -94,8 +94,7 @@ public final class WorkbenchConfigurer implements IWorkbenchConfigurer {
     }
 
     @Override
-	public void declareImage(String symbolicName, ImageDescriptor descriptor,
-            boolean shared) {
+	public void declareImage(String symbolicName, ImageDescriptor descriptor, boolean shared) {
         if (symbolicName == null || descriptor == null) {
             throw new IllegalArgumentException();
         }
@@ -103,8 +102,7 @@ public final class WorkbenchConfigurer implements IWorkbenchConfigurer {
     }
 
     @Override
-	public IWorkbenchWindowConfigurer getWindowConfigurer(
-            IWorkbenchWindow window) {
+	public IWorkbenchWindowConfigurer getWindowConfigurer(IWorkbenchWindow window) {
         if (window == null) {
             throw new IllegalArgumentException();
         }
@@ -145,10 +143,8 @@ public final class WorkbenchConfigurer implements IWorkbenchConfigurer {
 	public void emergencyClose() {
         if (!isEmergencyClosing) {
             isEmergencyClosing = true;
-            if (Workbench.getInstance() != null
-                    && !Workbench.getInstance().isClosing()) {
-                Workbench.getInstance().close(
-                        PlatformUI.RETURN_EMERGENCY_CLOSE, true);
+			if (Workbench.getInstance() != null && !Workbench.getInstance().isClosing()) {
+				Workbench.getInstance().close(PlatformUI.RETURN_EMERGENCY_CLOSE, true);
             }
         }
 
@@ -170,7 +166,7 @@ public final class WorkbenchConfigurer implements IWorkbenchConfigurer {
     }
 
 	@Override
-	public IWorkbenchWindowConfigurer restoreWorkbenchWindow(IMemento memento) throws WorkbenchException {
+	public IWorkbenchWindowConfigurer restoreWorkbenchWindow(IMemento memento) {
 		return getWindowConfigurer(null);
 	}
 

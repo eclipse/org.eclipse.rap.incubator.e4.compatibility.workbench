@@ -14,6 +14,7 @@
 package org.eclipse.ui.internal.misc;
 
 import org.eclipse.ui.IPartListener;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
@@ -22,8 +23,8 @@ import org.eclipse.ui.IWorkbenchPart;
 public class TestPartListener implements IPartListener {
     /**
      * TestPartListener constructor comment.
-     * @issue seems like garbage - no one using it
      */
+	// TODO seems like garbage - no one using it
     public TestPartListener() {
         super();
     }
@@ -32,7 +33,7 @@ public class TestPartListener implements IPartListener {
      * Notifies this listener that the given part has been activated.
      *
      * @param part the part that was activated
-     * @see IPerspective#activate
+	 * @see IWorkbenchPage#activate
      */
     @Override
 	public void partActivated(IWorkbenchPart part) {
@@ -43,14 +44,14 @@ public class TestPartListener implements IPartListener {
      * Notifies this listener that the given part has been brought to the top.
      * <p>
      * These events occur when an editor is brought to the top in the editor area,
-     * or when a view is brought to the top in a page book with multiple views.
-     * They are normally only sent when a part is brought to the top
-     * programmatically (via <code>IPerspective.bringToTop</code>). When a part is
-     * activated by the user clicking on it, only <code>partActivated</code> is sent.
+	 * or when a view is brought to the top in a page book with multiple views. They
+	 * are normally only sent when a part is brought to the top programmatically
+	 * (via <code>IPerspective.bringToTop</code>). When a part is activated by the
+	 * user clicking on it, only <code>partActivated</code> is sent.
      * </p>
      *
      * @param part the part that was surfaced
-     * @see IPerspective#bringToTop
+	 * @see IWorkbenchPage#bringToTop
      */
     @Override
 	public void partBroughtToTop(IWorkbenchPart part) {
@@ -61,7 +62,7 @@ public class TestPartListener implements IPartListener {
      * Notifies this listener that the given part has been closed.
      *
      * @param part the part that was closed
-     * @see IPerspective#close
+	 * @see IWorkbenchPage#close
      */
     @Override
 	public void partClosed(IWorkbenchPart part) {
@@ -72,7 +73,7 @@ public class TestPartListener implements IPartListener {
      * Notifies this listener that the given part has been deactivated.
      *
      * @param part the part that was deactivated
-     * @see IPerspective#activate
+	 * @see IWorkbenchPage#activate
      */
     @Override
 	public void partDeactivated(IWorkbenchPart part) {

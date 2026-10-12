@@ -32,7 +32,6 @@ import org.eclipse.ui.services.IDisposable;
  * </p>
  *
  * @since 3.4
- *
  */
 public class SlavePartService implements IPartService, IDisposable {
 
@@ -40,21 +39,19 @@ public class SlavePartService implements IPartService, IDisposable {
 	 * The parent part service to which all listeners are routed. This value is
 	 * never <code>null</code>.
 	 */
-	private IPartService parent;
+	private final IPartService parent;
 
-	private ListenerList listeners = new ListenerList(ListenerList.IDENTITY);
+	private final ListenerList listeners = new ListenerList(ListenerList.IDENTITY);
 
 	/**
 	 * Constructs a new instance.
 	 *
-	 * @param parentPartService
-	 *            The parent part service for this slave. Never
+	 * @param parentPartService The parent part service for this slave. Never
 	 *            <code>null</code>.
 	 */
 	public SlavePartService(IPartService parentPartService) {
 		if (parentPartService == null) {
-			throw new IllegalArgumentException(
-					"The parent part service cannot be null"); //$NON-NLS-1$
+			throw new IllegalArgumentException("The parent part service cannot be null"); //$NON-NLS-1$
 		}
 		this.parent = parentPartService;
 	}

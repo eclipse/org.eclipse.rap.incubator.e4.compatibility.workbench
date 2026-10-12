@@ -15,7 +15,6 @@
 package org.eclipse.ui.internal;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -38,29 +37,25 @@ public class SelectionConversionService implements ISelectionConversionService {
 
 	/**
 	 * Attempt to convert the elements in the passed selection into resources by
-	 * asking each for its IResource property (iff it isn't already a resource).
-	 * If all elements in the initial selection can be converted to resources
-	 * then answer a new selection containing these resources; otherwise answer
-	 * an empty selection.
+	 * asking each for its IResource property (iff it isn't already a resource). If
+	 * all elements in the initial selection can be converted to resources then
+	 * answer a new selection containing these resources; otherwise answer an empty
+	 * selection.
 	 *
-	 * @param originalSelection
-	 *            the original selection
+	 * @param originalSelection the original selection
 	 * @return the converted selection or an empty selection.
 	 */
 	@Override
-	public IStructuredSelection convertToResources(
-			IStructuredSelection originalSelection) {
+	public IStructuredSelection convertToResources(IStructuredSelection originalSelection) {
 		// @issue resource-specific code should be pushed into IDE
-		Class resourceClass = LegacyResourceSupport.getResourceClass();
+		Class<?> resourceClass = LegacyResourceSupport.getResourceClass();
 		if (resourceClass == null) {
 			return originalSelection;
 		}
 
 		List result = new ArrayList();
-		Iterator elements = originalSelection.iterator();
 
-		while (elements.hasNext()) {
-			Object currentElement = elements.next();
+		for (Object currentElement : originalSelection) {
 			Object resource = Adapters.adapt(currentElement, resourceClass);
             if (resource != null) {
             	result.add(resource);

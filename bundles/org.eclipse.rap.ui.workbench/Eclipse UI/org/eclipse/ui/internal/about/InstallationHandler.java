@@ -1,13 +1,10 @@
-// RAP [rh] AboutDialog left out for now
+// RAP [bm] AboutDialog left out for now
 ///*******************************************************************************
-// * Copyright (c) 2009, 2015 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2009 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -22,7 +19,6 @@
 //
 //public class InstallationHandler extends AbstractHandler{
 //
-//	@Override
 //	public Object execute(ExecutionEvent event) {
 //		IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
 //		if (workbenchWindow == null)

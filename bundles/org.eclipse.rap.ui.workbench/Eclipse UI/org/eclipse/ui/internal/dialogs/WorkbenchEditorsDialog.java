@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -15,7 +12,7 @@ package org.eclipse.ui.internal.dialogs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+//import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,6 +23,8 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.TextProcessor;
 import org.eclipse.swt.SWT;
+//import org.eclipse.swt.events.DisposeEvent;
+//import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -49,17 +48,17 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorRegistry;
-import org.eclipse.ui.ISaveablesLifecycleListener;
+import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.SelectionDialog;
 import org.eclipse.ui.internal.IWorkbenchHelpContextIds;
-import org.eclipse.ui.internal.SaveablesList;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.internal.WorkbenchPage;
+import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.layout.CellData;
 import org.eclipse.ui.internal.layout.CellLayout;
@@ -94,9 +93,10 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
 
     private List elements = new ArrayList();
 
-    private HashMap imageCache = new HashMap(11);
-
-    private HashMap disabledImageCache = new HashMap(11);
+// RAP [rh] imageCaches are unused    
+//    private HashMap imageCache = new HashMap(11);
+//
+//    private HashMap disabledImageCache = new HashMap(11);
 
     private boolean reverse = false;
 
@@ -114,12 +114,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
 
     private static final String COLUMNS = "columns"; //$NON-NLS-1$
 
-    private SelectionListener headerListener = new SelectionAdapter()
-    {
-        /** {@inheritDoc} */
-        @Override
-        public void widgetSelected(SelectionEvent e)
-        {
+    private SelectionListener headerListener = new SelectionAdapter() {
+        public void widgetSelected(SelectionEvent e) {
             TableColumn column = (TableColumn) e.widget;
             int index = editorsTable.indexOf(column);
             if (index == sortColumn) {
@@ -152,30 +148,35 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
             String[] array = s.getArray(BOUNDS);
             if (array != null) {
                 bounds = new Rectangle(0, 0, 0, 0);
-                bounds.x = Integer.valueOf(array[0]).intValue();
-                bounds.y = Integer.valueOf(array[1]).intValue();
-                bounds.width = Integer.valueOf(array[2]).intValue();
-                bounds.height = Integer.valueOf(array[3]).intValue();
+                bounds.x = new Integer(array[0]).intValue();
+                bounds.y = new Integer(array[1]).intValue();
+                bounds.width = new Integer(array[2]).intValue();
+                bounds.height = new Integer(array[3]).intValue();
             }
             array = s.getArray(COLUMNS);
             if (array != null) {
                 columnsWidth = new int[array.length];
                 for (int i = 0; i < columnsWidth.length; i++) {
-					columnsWidth[i] = Integer.valueOf(array[i]).intValue();
+					columnsWidth[i] = new Integer(array[i]).intValue();
 				}
             }
         }
 		setShellStyle(getShellStyle() | SWT.SHEET);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on Window.
+     */
 	protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(newShell,
 				IWorkbenchHelpContextIds.WORKBENCH_EDITORS_DIALOG);
     }
 
-    @Override
+    /*
+     *  (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
 	protected void createButtonsForButtonBar(Composite parent) {
         // Typically we would use the parent's createButtonsForButtonBar.
         // However, we only want a Cancel button and not an OK button.  The
@@ -194,7 +195,6 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
      * Initialize the dialog bounds with the bounds saved
      * from the settings.
      */
-    @Override
 	protected void initializeBounds() {
         if (bounds != null) {
             getShell().setBounds(bounds);
@@ -207,7 +207,6 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
      * Creates the contents of this dialog, initializes the
      * listener and the update thread.
      */
-    @Override
 	protected Control createDialogArea(Composite parent) {
 
         initializeDialogUnits(parent);
@@ -246,13 +245,11 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
 
         editorsTable.setLayoutData(tableData);
         editorsTable.setLayout(new Layout() {
-            @Override
 			protected Point computeSize(Composite composite, int wHint,
                     int hHint, boolean flushCache) {
                 return new Point(width, height);
             }
 
-            @Override
 			protected void layout(Composite composite, boolean flushCache) {
                 TableColumn c[] = editorsTable.getColumns();
                 if (columnsWidth == null) {
@@ -288,12 +285,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         //Select clean editors button
         selectClean = new Button(selectionButtons, SWT.PUSH);
         selectClean.setText(WorkbenchMessages.get().WorkbenchEditorsDialog_selectClean);
-        selectClean.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        selectClean.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
     		    editorsTable.setSelection(selectClean(editorsTable.getItems()));
     		    updateButtons();
             }
@@ -304,13 +297,10 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         //Invert selection button
         invertSelection = new Button(selectionButtons, SWT.PUSH);
         invertSelection.setText(WorkbenchMessages.get().WorkbenchEditorsDialog_invertSelection);
-        invertSelection.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                editorsTable.setSelection(invertedSelection(editorsTable.getItems(), editorsTable.getSelection()));
+        invertSelection.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                editorsTable.setSelection(invertedSelection(editorsTable
+                        .getItems(), editorsTable.getSelection()));
                 updateButtons();
             }
 		});
@@ -320,12 +310,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         //Select all button
         allSelection = new Button(selectionButtons, SWT.PUSH);
         allSelection.setText(WorkbenchMessages.get().WorkbenchEditorsDialog_allSelection);
-        allSelection.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        allSelection.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
     		    editorsTable.setSelection(editorsTable.getItems());
     		    updateButtons();
             }
@@ -348,12 +334,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         //Close selected editors button
         closeSelected = new Button(actionButtons, SWT.PUSH);
         closeSelected.setText(WorkbenchMessages.get().WorkbenchEditorsDialog_closeSelected);
-        closeSelected.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        closeSelected.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
                 closeItems(editorsTable.getSelection());
             }
         });
@@ -363,12 +345,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         //Save selected editors button
         saveSelected = new Button(actionButtons, SWT.PUSH);
         saveSelected.setText(WorkbenchMessages.get().WorkbenchEditorsDialog_saveSelected);
-        saveSelected.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        saveSelected.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
                 saveItems(editorsTable.getSelection());
             }
         });
@@ -381,12 +359,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         showAllPerspButton.setSelection(showAllPersp);
         showAllPerspButton.setFont(font);
         setButtonLayoutData(showAllPerspButton);
-        showAllPerspButton.addSelectionListener(new SelectionAdapter()
-        {
-            /** {@inheritDoc} */
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        showAllPerspButton.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
     		    showAllPersp = showAllPerspButton.getSelection();
     		    updateItems();
             }
@@ -396,28 +370,29 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         updateButtons();
 
         editorsTable.addSelectionListener(new SelectionAdapter() {
-            @Override
 			public void widgetSelected(SelectionEvent e) {
                 updateButtons();
             }
 
-            @Override
 			public void widgetDefaultSelected(SelectionEvent e) {
                 okPressed();
             }
         });
-        editorsTable.addDisposeListener(e -> {
-		    for (Iterator images1 = imageCache.values().iterator(); images1
-		            .hasNext();) {
-		        Image i1 = (Image) images1.next();
-		        i1.dispose();
-		    }
-		    for (Iterator images2 = disabledImageCache.values().iterator(); images2
-		            .hasNext();) {
-		        Image i2 = (Image) images2.next();
-		        i2.dispose();
-		    }
-		});
+// RAP [rh] disposeListener unnecessary as it only disposes images        
+//        editorsTable.addDisposeListener(new DisposeListener() {
+//            public void widgetDisposed(DisposeEvent e) {
+//                for (Iterator images = imageCache.values().iterator(); images
+//                        .hasNext();) {
+//                    Image i = (Image) images.next();
+//                    i.dispose();
+//                }
+//                for (Iterator images = disabledImageCache.values().iterator(); images
+//                        .hasNext();) {
+//                    Image i = (Image) images.next();
+//                    i.dispose();
+//                }
+//            }
+//        });
         editorsTable.setFocus();
         applyDialogFont(dialogArea);
         return dialogArea;
@@ -429,8 +404,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
     private void updateButtons() {
         TableItem selectedItems[] = editorsTable.getSelection();
         boolean hasDirty = false;
-        for (TableItem selectedItem : selectedItems) {
-            Adapter editor = (Adapter) selectedItem.getData();
+        for (int i = 0; i < selectedItems.length; i++) {
+            Adapter editor = (Adapter) selectedItems[i].getData();
             if (editor.isDirty()) {
                 hasDirty = true;
                 break;
@@ -440,8 +415,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
 
         TableItem allItems[] = editorsTable.getItems();
         boolean hasClean = false;
-        for (TableItem tableItem : allItems) {
-            Adapter editor = (Adapter) tableItem.getData();
+        for (int i = 0; i < allItems.length; i++) {
+            Adapter editor = (Adapter) allItems[i].getData();
             if (!editor.isDirty()) {
                 hasClean = true;
                 break;
@@ -464,31 +439,11 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         if (items.length == 0) {
 			return;
 		}
-
-        // collect all instantiated editors that have been selected
-		List selectedEditors = new ArrayList();
-        for (TableItem item : items) {
-            Adapter e = (Adapter) item.getData();
-			if (e.editorRef != null) {
-				IWorkbenchPart part = e.editorRef.getPart(false);
-				if (part != null) {
-					selectedEditors.add(part);
-				}
-			}
-		}
-
-		SaveablesList saveablesList = (SaveablesList) window
-				.getService(ISaveablesLifecycleListener.class);
-		// prompt for save
-		if (saveablesList.preCloseParts(selectedEditors, true, this, window) != null) {
-			// close all editors
-			for (TableItem item : items) {
-				Adapter e = (Adapter) item.getData();
+        for (int i = 0; i < items.length; i++) {
+            Adapter e = (Adapter) items[i].getData();
 				e.close();
 			}
-			// update the list
 			updateItems();
-        }
     }
 
     /**
@@ -500,10 +455,10 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
 		}
         ProgressMonitorDialog pmd = new ProgressMonitorJobsDialog(getShell());
         pmd.open();
-        for (TableItem item : items) {
-            Adapter editor = (Adapter) item.getData();
+        for (int i = 0; i < items.length; i++) {
+            Adapter editor = (Adapter) items[i].getData();
             editor.save(pmd.getProgressMonitor());
-            updateItem(item, editor);
+            updateItem(items[i], editor);
         }
         pmd.close();
         updateItems();
@@ -517,10 +472,10 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
 			return new TableItem[0];
 		}
         ArrayList cleanItems = new ArrayList(items.length);
-        for (TableItem item : items) {
-            Adapter editor = (Adapter) item.getData();
+        for (int i = 0; i < items.length; i++) {
+            Adapter editor = (Adapter) items[i].getData();
             if (!editor.isDirty()) {
-				cleanItems.add(item);
+				cleanItems.add(items[i]);
 			}
         }
         TableItem result[] = new TableItem[cleanItems.size()];
@@ -566,9 +521,10 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
      * Adds all editors to elements
      */
     private void updateEditors(IWorkbenchPage[] pages) {
-        for (IWorkbenchPage page : pages) {
-			for (IEditorReference editor : page.getEditorReferences()) {
-                elements.add(new Adapter(editor));
+        for (int j = 0; j < pages.length; j++) {
+            IEditorReference editors[] = pages[j].getEditorReferences();
+            for (int k = 0; k < editors.length; k++) {
+                elements.add(new Adapter(editors[k]));
             }
         }
     }
@@ -588,8 +544,10 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         editorsTable.removeAll();
         elements = new ArrayList();
         if (showAllPersp) {
-			for (IWorkbenchWindow workbenchWindow : window.getWorkbench().getWorkbenchWindows()) {
-				updateEditors(workbenchWindow.getPages());
+            IWorkbenchWindow windows[] = window.getWorkbench()
+                    .getWorkbenchWindows();
+            for (int i = 0; i < windows.length; i++) {
+				updateEditors(windows[i].getPages());
 			}
         } else {
             IWorkbenchPage page = window.getActivePage();
@@ -608,8 +566,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
             updateItem(item, e);
 
             // try to match this item's editor to one that was previously selected
-			for (Adapter selectedAdapter : selectedAdapters) {
-				if (selectedAdapter.editorRef == e.editorRef) {
+			for (int i = 0; i < selectedAdapters.length; i++) {
+				if (selectedAdapters[i].editorRef == e.editorRef) {
 					selection.add(item);
 				}
 			}
@@ -639,13 +597,14 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
     /**
      * The user has selected a resource and the dialog is closing.
      */
-    @Override
 	protected void okPressed() {
         TableItem items[] = editorsTable.getSelection();
         if (items.length != 1) {
             super.okPressed();
             return;
         }
+
+        saveDialogSettings();
 
         Adapter selection = (Adapter) items[0].getData();
         //It would be better to activate before closing the
@@ -654,12 +613,6 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
         super.okPressed();
         selection.activate();
     }
-
-	@Override
-	public boolean close() {
-		saveDialogSettings();
-		return super.close();
-	}
 
     /**
      * Saves the dialog settings.
@@ -726,9 +679,9 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
             if (editorRef == null) {
 				return;
 			}
-			WorkbenchPage p = (WorkbenchPage) editorRef.getPage();
-            // already saved when the i
-            p.closeEditor(editorRef, false);
+            WorkbenchPage p = ((WorkbenchPartReference) editorRef).getPane()
+                    .getPage();
+            p.closeEditor(editorRef, true);
         }
 
         void save(IProgressMonitor monitor) {
@@ -788,17 +741,18 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
                         // image = registry.getDefaultEditor().getImageDescriptor();
                     }
                 }
-                if (imageDesc != null) {
-                    image = (Image) disabledImageCache.get(imageDesc);
-                    if (image == null) {
-                        Image enabled = imageDesc.createImage();
-                        Image disabled = new Image(editorsTable.getDisplay(),
-                                enabled, SWT.IMAGE_DISABLE);
-                        enabled.dispose();
-                        disabledImageCache.put(imageDesc, disabled);
-                        image = disabled;
-                    }
-                }
+// RAP [rh] missing support to create disabled images on the fly                
+//                if (image != null) {
+//                    images[0] = (Image) disabledImageCache.get(image);
+//                    if (images[0] == null) {
+//                        Image enabled = image.createImage();
+//                        Image disabled = new Image(editorsTable.getDisplay(),
+//                                enabled, SWT.IMAGE_DISABLE);
+//                        enabled.dispose();
+//                        disabledImageCache.put(image, disabled);
+//                        images[0] = disabled;
+//                    }
+//                }
             }
             return image;
         }
@@ -812,7 +766,8 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
                 if (s.getMinimized()) {
 					s.setMinimized(false);
 				}
-                s.moveAbove(null);
+// RAP [rh] Shell#moveAbove(null) throws NullPointerException                
+//                s.moveAbove(null);
                 p.getWorkbenchWindow().setActivePage(p);
                 p.activate(editor);
             } else {
@@ -826,7 +781,6 @@ public class WorkbenchEditorsDialog extends SelectionDialog {
             }
         }
 
-        @Override
 		public int compareTo(Object another) {
             Adapter adapter = (Adapter) another;
             int result = collator.compare(getText()[sortColumn], adapter

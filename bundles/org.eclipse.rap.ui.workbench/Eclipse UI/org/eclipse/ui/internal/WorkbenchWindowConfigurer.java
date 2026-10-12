@@ -34,9 +34,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -49,8 +46,8 @@ import org.eclipse.ui.internal.provisional.application.IActionBarConfigurer2;
 /**
  * Internal class providing special access for configuring workbench windows.
  * <p>
- * Note that these objects are only available to the main application
- * (the plug-in that creates and owns the workbench).
+ * Note that these objects are only available to the main application (the
+ * plug-in that creates and owns the workbench).
  * </p>
  * <p>
  * This class is not intended to be instantiated or subclassed by clients.
@@ -58,13 +55,12 @@ import org.eclipse.ui.internal.provisional.application.IActionBarConfigurer2;
  *
  * @since 3.0
  */
-public final class WorkbenchWindowConfigurer implements
-        IWorkbenchWindowConfigurer {
+public final class WorkbenchWindowConfigurer implements IWorkbenchWindowConfigurer {
 
     /**
      * The workbench window associated with this configurer.
      */
-    private WorkbenchWindow window;
+	private final WorkbenchWindow window;
 
     /**
      * The shell style bits to use when the window's shell is being created.
@@ -104,25 +100,25 @@ public final class WorkbenchWindowConfigurer implements
     /**
      * Table to hold arbitrary key-data settings (key type: <code>String</code>,
      * value type: <code>Object</code>).
+	 *
      * @see #setData
      */
-    private Map extraData = new HashMap(1);
+	private final Map extraData = new HashMap(1);
 
     /**
-     * Holds the list drag and drop <code>Transfer</code> for the
-     * editor area
+	 * Holds the list drag and drop <code>Transfer</code> for the editor area
      */
-    private ArrayList transferTypes = new ArrayList(3);
+	private final ArrayList transferTypes = new ArrayList(3);
 
     /**
-     * The <code>DropTargetListener</code> implementation for handling a
-     * drop into the editor area.
+	 * The <code>DropTargetListener</code> implementation for handling a drop into
+	 * the editor area.
      */
     private DropTargetListener dropTargetListener = null;
 
     /**
-     * Object for configuring this workbench window's action bars.
-     * Lazily initialized to an instance unique to this window.
+	 * Object for configuring this workbench window's action bars. Lazily
+	 * initialized to an instance unique to this window.
      */
     private WindowActionBarConfigurer actionBarConfigurer = null;
 
@@ -132,8 +128,8 @@ public final class WorkbenchWindowConfigurer implements
     private Point initialSize = new Point(1024, 768);
 
     /**
-     * Action bar configurer that changes this workbench window.
-     * This implementation keeps track of of cool bar items
+	 * Action bar configurer that changes this workbench window. This implementation
+	 * keeps track of of cool bar items
      */
     class WindowActionBarConfigurer implements IActionBarConfigurer2 {
 
@@ -157,8 +153,8 @@ public final class WorkbenchWindowConfigurer implements
          * Returns whether the given id is for a cool item.
          *
          * @param the item id
-         * @return <code>true</code> if it is a cool item,
-         * and <code>false</code> otherwise
+		 * @return <code>true</code> if it is a cool item, and <code>false</code>
+		 *         otherwise
          */
         /* package */boolean containsCoolItem(String id) {
             ICoolBarManager cbManager = getCoolBarManager();
@@ -225,8 +221,8 @@ public final class WorkbenchWindowConfigurer implements
     /**
      * Creates a new workbench window configurer.
      * <p>
-     * This method is declared package-private. Clients obtain instances
-     * via {@link WorkbenchAdvisor#getWindowConfigurer
+	 * This method is declared package-private. Clients obtain instances via
+	 * {@link WorkbenchAdvisor#getWindowConfigurer
      * WorkbenchAdvisor.getWindowConfigurer}
      * </p>
      *
@@ -255,7 +251,8 @@ public final class WorkbenchWindowConfigurer implements
     }
 
     /**
-     * Returns the title as set by <code>setTitle</code>, without consulting the shell.
+	 * Returns the title as set by <code>setTitle</code>, without consulting the
+	 * shell.
      *
      * @return the window title as set, or <code>null</code> if not set
      */
@@ -318,16 +315,6 @@ public final class WorkbenchWindowConfigurer implements
         // @issue need to be able to reconfigure after window's controls created
     }
 
-    @Override
-    public boolean getShowFastViewBars() {
-        // not supported anymore
-        return false;
-    }
-
-    @Override
-    public void setShowFastViewBars(boolean show) {
-        // not supported anymore
-    }
 
     @Override
 	public boolean getShowPerspectiveBar() {
@@ -391,8 +378,7 @@ public final class WorkbenchWindowConfigurer implements
     }
 
     @Override
-	public void configureEditorAreaDropListener(
-            DropTargetListener dropTargetListener) {
+	public void configureEditorAreaDropListener(DropTargetListener dropTargetListener) {
 		this.dropTargetListener = dropTargetListener;
     }
 
@@ -425,8 +411,8 @@ public final class WorkbenchWindowConfigurer implements
      * Returns whether the given id is for a cool item.
      *
      * @param the item id
-     * @return <code>true</code> if it is a cool item,
-     * and <code>false</code> otherwise
+	 * @return <code>true</code> if it is a cool item, and <code>false</code>
+	 *         otherwise
      */
     /* package */boolean containsCoolItem(String id) {
         // trigger lazy initialization
@@ -463,26 +449,6 @@ public final class WorkbenchWindowConfigurer implements
 
     }
 
-    @Override
-	public Menu createMenuBar() {
-		return null;
-    }
-
-    @Override
-	public Control createCoolBarControl(Composite parent) {
-
-        return null;
-    }
-
-    @Override
-	public Control createStatusLineControl(Composite parent) {
-		return null;
-    }
-
-    @Override
-	public Control createPageComposite(Composite parent) {
-		return null;
-    }
 
 	@Override
 	public IStatus saveState(IMemento memento) {

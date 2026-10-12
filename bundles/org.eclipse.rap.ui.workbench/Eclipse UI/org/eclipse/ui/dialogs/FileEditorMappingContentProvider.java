@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -28,12 +25,13 @@ import org.eclipse.ui.IFileEditorMapping;
  *
  * @see org.eclipse.jface.viewers.IContentProvider
  */
-public class FileEditorMappingContentProvider implements IStructuredContentProvider {
+public class FileEditorMappingContentProvider implements
+        IStructuredContentProvider {
 
     /**
      * Singleton instance accessor.
      */
-    public static final FileEditorMappingContentProvider INSTANCE = new FileEditorMappingContentProvider();
+    public final static FileEditorMappingContentProvider INSTANCE = new FileEditorMappingContentProvider();
 
     /**
      * Creates an instance of this class.  The private visibility of this
@@ -43,18 +41,23 @@ public class FileEditorMappingContentProvider implements IStructuredContentProvi
         super();
     }
     
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IContentProvider.
+     */
     public void dispose() {
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IStructuredContentProvider.
+     */
 	public Object[] getElements(Object element) {
         IFileEditorMapping[] array = (IFileEditorMapping[]) element;
         return array == null ? new Object[0] : array;
     }
     
-    @Override
+    /* (non-Javadoc)
+     * Method declared on IContentProvider.
+     */
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
     }
-
 }

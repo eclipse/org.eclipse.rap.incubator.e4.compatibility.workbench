@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -16,6 +13,7 @@
 package org.eclipse.ui.dialogs;
 
 import java.util.Arrays;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -35,7 +33,7 @@ import org.eclipse.ui.internal.MessageLine;
  * an error, warning or ok. The OK button is enabled or disabled depending
  * on the status.
  *
- * @since 2.0
+ * @since 1.1
  */
 public abstract class SelectionStatusDialog extends SelectionDialog {
 
@@ -105,7 +103,9 @@ public abstract class SelectionStatusDialog extends SelectionDialog {
      */
     protected abstract void computeResult();
 
-    @Override
+    /*
+     * @see Window#configureShell(shell)
+     */
 	protected void configureShell(Shell shell) {
         super.configureShell(shell);
         if (fImage != null) {
@@ -138,13 +138,17 @@ public abstract class SelectionStatusDialog extends SelectionDialog {
 		}
     }
 
-    @Override
+    /*
+     * @see Dialog#okPressed()
+     */
 	protected void okPressed() {
         computeResult();
         super.okPressed();
     }
 
-    @Override
+    /*
+     * @see Window#create()
+     */
 	public void create() {
         super.create();
         if (fLastStatus != null) {
@@ -152,7 +156,9 @@ public abstract class SelectionStatusDialog extends SelectionDialog {
 		}
     }
 
-    @Override
+    /*
+     * @see Dialog#createButtonBar(Composite)
+     */
 	protected Control createButtonBar(Composite parent) {
         Font font = parent.getFont();
         Composite composite = new Composite(parent, SWT.NULL);

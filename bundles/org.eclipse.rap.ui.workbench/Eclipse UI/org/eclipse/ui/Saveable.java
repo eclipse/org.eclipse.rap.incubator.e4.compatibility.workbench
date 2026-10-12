@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2006, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -22,6 +19,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.internal.graphics.Graphics;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.internal.InternalSaveable;
@@ -43,14 +41,10 @@ import org.eclipse.ui.progress.IJobRunnable;
  * </p>
  *
  * @see ISaveablesSource
- * @since 3.2
+ * @since 1.0
  */
 public abstract class Saveable extends InternalSaveable implements IAdaptable {
 
-	/**
-	 * Either {@code null} or the System's {@link SWT#CURSOR_WAIT} cursor
-	 * instance. Should never be disposed.
-	 */
 	private Cursor waitCursor;
 	private Cursor originalCursor;
 
@@ -62,7 +56,6 @@ public abstract class Saveable extends InternalSaveable implements IAdaptable {
 	 * @param page
 	 *            the workbench page in which to show this saveable
 	 * @return <code>true</code> if this saveable is now visible to the user
-	 * @since 3.3
 	 */
 	public boolean show(IWorkbenchPage page) {
 		if (page == null) {
@@ -141,7 +134,6 @@ public abstract class Saveable extends InternalSaveable implements IAdaptable {
 	 * @param object
 	 * @return true if this Saveable is equal to the given object
 	 */
-	@Override
 	public abstract boolean equals(Object object);
 
 	/**
@@ -166,7 +158,6 @@ public abstract class Saveable extends InternalSaveable implements IAdaptable {
 	 *
 	 * @return a hash code
 	 */
-	@Override
 	public abstract int hashCode();
 
 	/**
@@ -216,7 +207,6 @@ public abstract class Saveable extends InternalSaveable implements IAdaptable {
 	 * @throws CoreException
 	 *             if the save fails; it is the caller's responsibility to
 	 *             report the failure to the user
-	 * @since 3.3
 	 */
 	public IJobRunnable doSave(IProgressMonitor monitor,
 			IShellProvider shellProvider) throws CoreException {
@@ -250,24 +240,21 @@ public abstract class Saveable extends InternalSaveable implements IAdaptable {
 	 *            a boolean flag indicating whether the save was triggered by a
 	 *            request to close a workbench part, and all of the given parts
 	 *            will be closed after the save operation finishes successfully.
-	 *
-	 * @since 3.3
 	 */
 	public void disableUI(IWorkbenchPart[] parts, boolean closing) {
-		for (IWorkbenchPart workbenchPart : parts) {
-			Composite paneComposite = (Composite) ((PartSite) workbenchPart.getSite()).getModel().getWidget();
+		for (int i = 0; i < parts.length; i++) {
+			IWorkbenchPart workbenchPart = parts[i];
+			Composite paneComposite = (Composite) ((PartSite) workbenchPart
+					.getSite()).getPane().getControl();
 			Control[] paneChildren = paneComposite.getChildren();
 			Composite toDisable = ((Composite) paneChildren[0]);
 			toDisable.setEnabled(false);
 			if (waitCursor == null) {
-				waitCursor = workbenchPart.getSite().getWorkbenchWindow().getShell().getDisplay()
-						.getSystemCursor(SWT.CURSOR_WAIT);
+				waitCursor = new Cursor(workbenchPart.getSite().getWorkbenchWindow().getShell().getDisplay(), SWT.CURSOR_WAIT);
 			}
-			if (waitCursor.equals(paneComposite.getCursor())) {
 				originalCursor = paneComposite.getCursor();
 				paneComposite.setCursor(waitCursor);
 			}
-		}
 	}
 
 	/**
@@ -281,20 +268,17 @@ public abstract class Saveable extends InternalSaveable implements IAdaptable {
 	 *
 	 * @param parts
 	 *            the workbench parts containing this saveable
-	 *
-	 * @since 3.3
 	 */
 	public void enableUI(IWorkbenchPart[] parts) {
-		for (IWorkbenchPart workbenchPart : parts) {
-			Composite paneComposite = (Composite) ((PartSite) workbenchPart.getSite()).getModel().getWidget();
+		for (int i = 0; i < parts.length; i++) {
+			IWorkbenchPart workbenchPart = parts[i];
+			Composite paneComposite = (Composite) ((PartSite) workbenchPart
+					.getSite()).getPane().getControl();
 			Control[] paneChildren = paneComposite.getChildren();
 			Composite toEnable = ((Composite) paneChildren[0]);
 			paneComposite.setCursor(originalCursor);
-			if (waitCursor != null) {
-				/*
-				 * waitCursor is always the System SWT.CURSOR_WAIT instance and
-				 * should never be disposed
-				 */
+			if (waitCursor!=null && !waitCursor.isDisposed()) {
+				waitCursor.dispose();
 				waitCursor = null;
 			}
 			toEnable.setEnabled(true);
@@ -307,11 +291,8 @@ public abstract class Saveable extends InternalSaveable implements IAdaptable {
 	 * subclasses of Saveable to implement {@link #equals(Object)} and
 	 * {@link #hashCode()} based on an underlying implementation class that is
 	 * shared by both Saveable subclasses.
-	 *
-	 * @since 3.3
 	 */
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
+	public Object getAdapter(Class adapter) {
 		return null;
 	}
 }

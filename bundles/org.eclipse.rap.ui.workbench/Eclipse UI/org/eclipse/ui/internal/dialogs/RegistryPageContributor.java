@@ -1,47 +1,38 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Jan-Hendrik Diederich, Bredex GmbH - bug 201052
  *     Oakland Software (Francis Upton) <francisu@ieee.org> - bug 223808
- *     James Blackburn (Broadcom Corp.) - Bug 294628 multiple selection
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
+
 import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.core.expressions.EvaluationResult;
 import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.expressions.ExpressionConverter;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.IPluginContribution;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.IWorkbenchPropertyPageMulti;
 import org.eclipse.ui.SelectionEnabler;
 import org.eclipse.ui.internal.IWorkbenchConstants;
 import org.eclipse.ui.internal.LegacyResourceSupport;
@@ -49,6 +40,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.CategorizedPageRegistryReader;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.eclipse.ui.internal.registry.PropertyPagesRegistryReader;
+import org.eclipse.ui.internal.util.Util;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
@@ -74,14 +66,9 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 
 	private boolean adaptable = false;
 
-	/**
-	 * Flag which indicates if this property page supports multiple selection
-	 */
-	private final boolean supportsMultiSelect;
-
 	private IConfigurationElement pageElement;
 
-	private SoftReference<Map<String, String>> filterProperties;
+	private SoftReference filterProperties;
 
 	private Expression enablementExpression;
 
@@ -101,12 +88,15 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 						pageElement
 								.getAttribute(PropertyPagesRegistryReader.ATT_ADAPTABLE))
 				.booleanValue();
-		supportsMultiSelect = PropertyPagesRegistryReader.ATT_SELECTION_FILTER_MULTI
-				.equals(pageElement.getAttribute(PropertyPagesRegistryReader.ATT_SELECTION_FILTER));
 		initializeEnablement(element);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.dialogs.IPropertyPageContributor#contributePropertyPage(org.eclipse.ui.internal.dialogs.PropertyPageManager,
+	 *      java.lang.Object)
+	 */
 	public PreferenceNode contributePropertyPage(PropertyPageManager mng,
 			Object element) {
 		PropertyPageNode node = new PropertyPageNode(this, element);
@@ -124,45 +114,29 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 	 * @throws CoreException
 	 *             thrown if there is a problem creating the apge
 	 */
-	public IPreferencePage createPage(Object element)
+	public IWorkbenchPropertyPage createPage(Object element)
 			throws CoreException {
-		IPreferencePage ppage = null;
-		ppage = (IPreferencePage) WorkbenchPlugin.createExtension(
+		IWorkbenchPropertyPage ppage = null;
+		ppage = (IWorkbenchPropertyPage) WorkbenchPlugin.createExtension(
 				pageElement, IWorkbenchRegistryConstants.ATT_CLASS);
 
 		ppage.setTitle(getPageName());
 
-		Object[] elements = getObjects(element);
-		IAdaptable[] adapt = new IAdaptable[elements.length];
-
-		for (int i = 0; i < elements.length; i++) {
-			Object adapted = elements[i];
+		Object adapted = element;
 			if (adaptable) {
-				adapted = getAdaptedElement(adapted);
+			adapted = getAdaptedElement(element);
 				if (adapted == null) {
 					String message = "Error adapting selection to Property page " + pageId + " is being ignored"; //$NON-NLS-1$ //$NON-NLS-2$
 					throw new CoreException(new Status(IStatus.ERROR,
-							WorkbenchPlugin.PI_WORKBENCH, IStatus.ERROR,
-							message, null));
-				}
+						WorkbenchPlugin.PI_WORKBENCH, IStatus.ERROR, message,
+						null));
 			}
-			adapt[i] = (IAdaptable) ((adapted instanceof IAdaptable) ? adapted
-					: new AdaptableForwarder(adapted));
 		}
 
-		if (supportsMultiSelect) {
-			if ((ppage instanceof IWorkbenchPropertyPageMulti))
-				((IWorkbenchPropertyPageMulti) ppage).setElements(adapt);
+		if (adapted instanceof IAdaptable)
+			ppage.setElement((IAdaptable) adapted);
 			else
-				throw new CoreException(
-						new Status(
-								IStatus.ERROR,
-								WorkbenchPlugin.PI_WORKBENCH,
-								IStatus.ERROR,
-								"Property page must implement IWorkbenchPropertyPageMulti: " + getPageName(), //$NON-NLS-1$
-								null));
-		} else
-			((IWorkbenchPropertyPage) ppage).setElement(adapt[0]);
+			ppage.setElement(new AdaptableForwarder(adapted));
 
 		return ppage;
 	}
@@ -227,40 +201,21 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 	}
 
 	/**
-	 * Calculate whether the Property page is applicable to the current
-	 * selection. Checks:
-	 * <ul>
-	 * <li>multiSelect</li>
-	 * <li>enabledWhen enablement expression/li>
-	 * <li>nameFilter</li>
-	 * <li>custom Filter</li>
-	 * <li>checks legacy resource support</li>
-	 * </ul>
-	 * <p>
-	 * For multipleSelection pages, considers all elements in the selection for
-	 * enablement.
+	 * Return true if name filter is not defined in the registry for this page,
+	 * or if name of the selected object matches the name filter.
 	 */
-	@Override
 	public boolean isApplicableTo(Object object) {
-		Object[] objs = getObjects(object);
 
-		// If not a multi-select page not applicable to multiple selection
-		if (objs.length > 1 && !supportsMultiSelect)
-			return false;
-
-		if (failsEnablement(objs))
+		if (failsEnablement(object))
 			return false;
 
 		// Test name filter
 		String nameFilter = pageElement
 				.getAttribute(PropertyPagesRegistryReader.ATT_NAME_FILTER);
-
-		for (Object obj : objs) {
-			object = obj;
-			// Name filter
 			if (nameFilter != null) {
 				String objectName = object.toString();
-				IWorkbenchAdapter adapter = Adapters.adapt(object, IWorkbenchAdapter.class);
+			IWorkbenchAdapter adapter = (IWorkbenchAdapter) Util.getAdapter(object, 
+                    IWorkbenchAdapter.class);
 				if (adapter != null) {
 					String elementName = adapter.getLabel(object);
 					if (elementName != null) {
@@ -277,33 +232,29 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 			IActionFilter filter = null;
 
 			// Do the free IResource adapting
-			Object adaptedObject = LegacyResourceSupport
-					.getAdaptedResource(object);
+		Object adaptedObject = LegacyResourceSupport.getAdaptedResource(object);
 			if (adaptedObject != null) {
 				object = adaptedObject;
 			}
 
-			filter = Adapters.adapt(object, IActionFilter.class);
+        filter = (IActionFilter)Util.getAdapter(object, IActionFilter.class);
 
-			if (filter != null && !testCustom(object, filter))
-				return false;
-		}
+		if (filter != null)
+			return testCustom(object, filter);
 
 		return true;
 	}
 
 	/**
-	 * Return whether or not object fails the enabledWhen enablement criterea.
-	 * For multi-select pages, evaluate the enabledWhen expression using the
-	 * structured selection as a Collection (which should be iterated over).
+	 * Return whether or not object fails the enablement criterea.
+	 * 
+	 * @param object
 	 * @return boolean <code>true</code> if it fails the enablement test
 	 */
-	private boolean failsEnablement(Object[] objs) {
+	private boolean failsEnablement(Object object) {
 		if (enablementExpression == null)
 			return false;
 		try {
-			// If multi-select property page, always pass a collection for iteration
-			Object object = (supportsMultiSelect) ? Arrays.asList(objs) : objs[0];
 			EvaluationContext context = new EvaluationContext(null, object);
 			context.setAllowPluginActivation(true);
 			return enablementExpression.evaluate(
@@ -313,20 +264,6 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 			WorkbenchPlugin.log(e);
 			return false;
 		}
-	}
-
-	/**
-	 * Returns an object array for the passed in object. If the object is an
-	 * IStructuredSelection, then return its array otherwise return a 1 element
-	 * Object[] containing the passed in object
-	 *
-	 * @param obj
-	 * @return an object array representing the passed in object
-	 */
-	private Object[] getObjects(Object obj) {
-		if (obj instanceof IStructuredSelection)
-			return ((IStructuredSelection) obj).toArray();
-		return new Object[] { obj };
 	}
 
 	/**
@@ -356,13 +293,14 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 	 * by a matcher.
 	 */
 	private boolean testCustom(Object object, IActionFilter filter) {
-		Map<String, String> filterProperties = getFilterProperties();
+		Map filterProperties = getFilterProperties();
 
 		if (filterProperties == null)
 			return false;
-		for (Entry<String, String> entry : filterProperties.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
+		Iterator iter = filterProperties.keySet().iterator();
+		while (iter.hasNext()) {
+			String key = (String) iter.next();
+			String value = (String) filterProperties.get(key);
 			if (!filter.testAttribute(object, key, value))
 				return false;
 		}
@@ -372,7 +310,6 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 	/*
 	 * @see IObjectContributor#canAdapt()
 	 */
-	@Override
 	public boolean canAdapt() {
 		return adaptable;
 	}
@@ -381,7 +318,6 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 	 * Get the id of the category.
 	 *
 	 * @return String
-	 * @since 3.1
 	 */
 	public String getCategory() {
 		return pageElement
@@ -406,16 +342,16 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 		subPages.add(child);
 	}
 
-	private Map<String, String> getFilterProperties() {
+	private Map getFilterProperties() {
 		if (filterProperties == null || filterProperties.get() == null) {
-			Map<String, String> map = new HashMap<>();
-			filterProperties = new SoftReference<>(map);
+			Map map = new HashMap();
+			filterProperties = new SoftReference(map);
 			IConfigurationElement[] children = pageElement.getChildren();
-			for (IConfigurationElement element : children) {
-				processChildElement(map, element);
+			for (int i = 0; i < children.length; i++) {
+				processChildElement(map, children[i]);
 			}
 		}
-		return filterProperties.get();
+		return (Map) filterProperties.get();
 	}
 
 	/**
@@ -438,9 +374,8 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 	/**
 	 * Parses child element and processes it.
 	 *
-	 * @since 3.1
 	 */
-	private void processChildElement(Map<String, String> map, IConfigurationElement element) {
+	private void processChildElement(Map map, IConfigurationElement element) {
 		String tag = element.getName();
 		if (tag.equals(PropertyPagesRegistryReader.TAG_FILTER)) {
 			String key = element
@@ -453,36 +388,30 @@ public class RegistryPageContributor implements IPropertyPageContributor,
 		}
 	}
 
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
+	 * @since 3.1
+	 */
+	public Object getAdapter(Class adapter) {
 		if (adapter.equals(IConfigurationElement.class)) {
-			return adapter.cast(getConfigurationElement());
+			return getConfigurationElement();
 		}
 		return null;
 	}
 
 	/**
-	 * @return boolean indicating if this page supports multiple selection
-	 * @since 3.7
-	 */
-	boolean supportsMultipleSelection() {
-		return supportsMultiSelect;
-	}
-
-	/**
 	 * @return the configuration element
-	 * @since 3.1
 	 */
 	IConfigurationElement getConfigurationElement() {
 		return pageElement;
 	}
 
-	@Override
 	public String getLocalId() {
 		return pageId;
 	}
 
-    @Override
 	public String getPluginId() {
     	return pageElement.getContributor().getName();
     }

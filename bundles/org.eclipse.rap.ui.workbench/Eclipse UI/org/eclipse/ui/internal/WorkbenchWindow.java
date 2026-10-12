@@ -23,6 +23,9 @@
 
 package org.eclipse.ui.internal;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,9 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.expressions.ExpressionInfo;
@@ -797,9 +797,9 @@ public class WorkbenchWindow implements IWorkbenchWindow {
 //			getShell().addListener(SWT.ZoomChanged, event -> {
 //				if (getShell().getDisplay().getPrimaryMonitor().equals(getShell().getMonitor())) {
 //					int dialogResponse = MessageDialog.open(MessageDialog.QUESTION, getShell(),
-//							WorkbenchMessages.Workbench_zoomChangedTitle,
-//							WorkbenchMessages.Workbench_zoomChangedMessage, SWT.NONE,
-//							WorkbenchMessages.Workbench_zoomChangedRestart, IDialogConstants.NO_LABEL);
+//							WorkbenchMessages.get().Workbench_zoomChangedTitle,
+//							WorkbenchMessages.get().Workbench_zoomChangedMessage, SWT.NONE,
+//							WorkbenchMessages.get().Workbench_zoomChangedRestart, IDialogConstants.NO_LABEL);
 //					if (event.doit && dialogResponse == 0) {
 //						getWorkbenchImpl().restart(true);
 //					}
@@ -818,9 +818,6 @@ public class WorkbenchWindow implements IWorkbenchWindow {
 			mainMenu = null;
 		}
 		renderer = null;
-		// RAP [DM]:
-		HandlerServiceImpl.handlerGenerator = null;
-		// RAPEND: [DM]
 	}
 
 	private void configureShell(Shell shell, IEclipseContext context) {
@@ -1867,6 +1864,17 @@ STATUS_LINE_ID, model);
 		return page;
 	}
 
+    /**
+     * Returns the active workbench page.
+     *
+     * @return the active workbench page
+     */
+    /* package */
+    WorkbenchPage getActiveWorkbenchPage()
+    {
+        return page;
+    }
+
 	@Override
 	public IWorkbenchPage[] getPages() {
 		return page == null ? new IWorkbenchPage[0] : new IWorkbenchPage[] { page };
@@ -2842,7 +2850,7 @@ STATUS_LINE_ID, model);
 		IMenuService parent = getWorkbench().getService(IMenuService.class);
 		IMenuService msvs = new SlaveMenuService(parent, model);
 		serviceLocator.registerService(IMenuService.class, msvs);
-		
+
 		// RAP [DM]:  Singleton initialization moved from AbstractSaveHandler.java
 		windowContext.set(DirtyStateTracker.class, new DirtyStateTracker());
 		// RAPEND: [DM]

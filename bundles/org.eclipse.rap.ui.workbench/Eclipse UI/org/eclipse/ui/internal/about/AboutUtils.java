@@ -1,13 +1,10 @@
-// RAP [rh] AboutDialog left out for now
+// RAP [bm] AboutDialog left out for now
 ///*******************************************************************************
-// * Copyright (c) 2000, 2018 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2000, 2009 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -23,6 +20,7 @@
 //import java.net.URL;
 //import java.util.ArrayList;
 //import java.util.StringTokenizer;
+//
 //import org.eclipse.core.runtime.IPath;
 //import org.eclipse.core.runtime.IStatus;
 //import org.eclipse.core.runtime.Platform;
@@ -44,7 +42,7 @@
 //
 //public class AboutUtils {
 //
-//	private static final String ERROR_LOG_COPY_FILENAME = "log"; //$NON-NLS-1$
+//	private final static String ERROR_LOG_COPY_FILENAME = "log"; //$NON-NLS-1$
 //
 //	/**
 //	 * Scan the contents of the about text
@@ -53,8 +51,8 @@
 //	 * @return
 //	 */
 //	public static AboutItem scan(String s) {
-//		ArrayList<int[]> linkRanges = new ArrayList<>();
-//		ArrayList<String> links = new ArrayList<>();
+//		ArrayList linkRanges = new ArrayList();
+//		ArrayList links = new ArrayList();
 //
 //		// slightly modified version of jface url detection
 //		// see org.eclipse.jface.text.hyperlink.URLHyperlinkDetector
@@ -104,8 +102,8 @@
 //
 //			urlSeparatorOffset = s.indexOf("://", urlOffset + urlLength + 1); //$NON-NLS-1$
 //		}
-//		return new AboutItem(s, linkRanges.toArray(new int[linkRanges
-//				.size()][2]), links
+//		return new AboutItem(s, (int[][]) linkRanges.toArray(new int[linkRanges
+//				.size()][2]), (String[]) links
 //				.toArray(new String[links.size()]));
 //	}
 //
@@ -167,12 +165,12 @@
 //	 * @since 3.0.2
 //	 */
 //	private static String urlEncodeForSpaces(char[] input) {
-//		StringBuilder retu = new StringBuilder(input.length);
-//		for (char element : input) {
-//			if (element == ' ') {
+//		StringBuffer retu = new StringBuffer(input.length);
+//		for (int i = 0; i < input.length; i++) {
+//			if (input[i] == ' ') {
 //				retu.append("%20"); //$NON-NLS-1$
 //			} else {
-//				retu.append(element);
+//				retu.append(input[i]);
 //			}
 //		}
 //		return retu.toString();

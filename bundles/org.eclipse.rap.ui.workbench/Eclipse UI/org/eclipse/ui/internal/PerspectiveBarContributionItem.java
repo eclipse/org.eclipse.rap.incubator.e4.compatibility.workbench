@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -20,6 +17,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+//import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.ToolBar;
@@ -60,20 +58,24 @@ public class PerspectiveBarContributionItem extends ContributionItem {
         this.workbenchPage = workbenchPage;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.action.ContributionItem#dispose()
+     */
 	public void dispose() {
         super.dispose();
-        if (image != null && !image.isDisposed()) {
-            image.dispose();
+// RAP [rh] Image#dispose() missing        
+//        if (image != null && !image.isDisposed()) {
+//            image.dispose();
+//            image = null;
+//        }
             image = null;
-        }
+// RAP [rh] end         
         apiPreferenceStore = null;
         workbenchPage = null;
         perspective = null;
 
     }
 
-    @Override
 	public void fill(ToolBar parent, int index) {
         if (toolItem == null && parent != null && !parent.isDisposed()) {
 
@@ -89,12 +91,9 @@ public class PerspectiveBarContributionItem extends ContributionItem {
             toolItem.setImage(image);
 
             toolItem.setToolTipText(NLS.bind(WorkbenchMessages.get().PerspectiveBarContributionItem_toolTip, perspective.getLabel()));
-            toolItem.addSelectionListener(new SelectionAdapter()
-            {
-                /** {@inheritDoc} */
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            toolItem.addSelectionListener(new SelectionAdapter() {
+
+                public void widgetSelected(SelectionEvent event) {
                     select();
                 }
             });
@@ -132,7 +131,6 @@ public class PerspectiveBarContributionItem extends ContributionItem {
 		}
     }
 
-    @Override
 	public void update() {
         if (toolItem != null && !toolItem.isDisposed()) {
             toolItem

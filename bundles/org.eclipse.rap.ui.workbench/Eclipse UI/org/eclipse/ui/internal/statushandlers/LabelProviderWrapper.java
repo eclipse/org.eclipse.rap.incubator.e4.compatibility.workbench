@@ -1,24 +1,20 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2009, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  ******************************************************************************/
 package org.eclipse.ui.internal.statushandlers;
 
+import com.ibm.icu.text.DateFormat;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -41,8 +37,6 @@ import org.eclipse.ui.progress.IProgressConstants;
 import org.eclipse.ui.statushandlers.IStatusAdapterConstants;
 import org.eclipse.ui.statushandlers.StatusAdapter;
 
-import com.ibm.icu.text.DateFormat;
-
 
 /**
  * This is an utility class which is responsible for text and icon decorators in
@@ -59,22 +53,38 @@ public class LabelProviderWrapper extends ViewerComparator implements
 		ResourceManager manager = new LocalResourceManager(JFaceResources
 				.getResources());
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse
+		 * .jface.viewers.ILabelProviderListener)
+		 */
 		public void addListener(ILabelProviderListener listener) {
 			// Do nothing
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.jface.viewers.IBaseLabelProvider#dispose()
+		 */
 		public void dispose() {
 			manager.dispose();
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java
+		 * .lang.Object, int)
+		 */
 		public Image getColumnImage(Object element, int columnIndex) {
 			Image result = null;
 			if (element != null) {
 				StatusAdapter statusAdapter = ((StatusAdapter) element);
-				Job job = Adapters.adapt(statusAdapter, Job.class);
+				Job job = (Job) (statusAdapter.getAdapter(Job.class));
 				if (job != null) {
 					result = getIcon(job);
 				}
@@ -86,19 +96,25 @@ public class LabelProviderWrapper extends ViewerComparator implements
 			return result;
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.
+		 * lang.Object, int)
+		 */
 		public String getColumnText(Object element, int columnIndex) {
 			StatusAdapter statusAdapter = (StatusAdapter) element;
 			String text = WorkbenchMessages.get().WorkbenchStatusDialog_ProblemOccurred;
 			if (!isMulti()) {
-				Job job = Adapters.adapt(statusAdapter, Job.class);
+				Job job = (Job) (statusAdapter.getAdapter(Job.class));
 				if (job != null) {
 					text = getPrimaryMessage(statusAdapter);
 				} else {
 					text = getSecondaryMessage(statusAdapter);
 				}
 			} else {
-				Job job = Adapters.adapt(statusAdapter, Job.class);
+				Job job = (Job) (statusAdapter.getAdapter(Job.class));
 				if (job != null) {
 					text = job.getName();
 				} else {
@@ -140,12 +156,24 @@ public class LabelProviderWrapper extends ViewerComparator implements
 			return null;
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.eclipse.jface.viewers.IBaseLabelProvider#isLabelProperty(java
+		 * .lang.Object, java.lang.String)
+		 */
 		public boolean isLabelProperty(Object element, String property) {
 			return false;
 		}
 
-		@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.eclipse.jface.viewers.IBaseLabelProvider#removeListener(org.eclipse
+		 * .jface.viewers.ILabelProviderListener)
+		 */
 		public void removeListener(ILabelProviderListener listener) {
 			// Do nothing
 		}
@@ -168,17 +196,35 @@ public class LabelProviderWrapper extends ViewerComparator implements
 		this.dialogState = dialogState;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang
+	 * .Object, int)
+	 */
 	public Image getColumnImage(Object element, int columnIndex) {
 		return labelProvider.getColumnImage(element, columnIndex);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang
+	 * .Object, int)
+	 */
 	public String getColumnText(Object element, int columnIndex) {
 		return getLabelProvider().getColumnText(element, columnIndex);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse.
+	 * jface.viewers.ILabelProviderListener)
+	 */
 	public void addListener(ILabelProviderListener listener) {
 		getLabelProvider().addListener(listener);
 	}
@@ -189,7 +235,6 @@ public class LabelProviderWrapper extends ViewerComparator implements
 	 *
 	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#dispose()
 	 */
-	@Override
 	public void dispose() {
 		boolean modalitySwitch = ((Boolean) dialogState.get(IStatusDialogConstants.MODALITY_SWITCH))
 				.booleanValue();
@@ -198,12 +243,24 @@ public class LabelProviderWrapper extends ViewerComparator implements
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IBaseLabelProvider#isLabelProperty(java.lang
+	 * .Object, java.lang.String)
+	 */
 	public boolean isLabelProperty(Object element, String property) {
 		return getLabelProvider().isLabelProperty(element, property);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IBaseLabelProvider#removeListener(org.eclipse
+	 * .jface.viewers.ILabelProviderListener)
+	 */
 	public void removeListener(ILabelProviderListener listener) {
 		getLabelProvider().removeListener(listener);
 	}
@@ -273,7 +330,7 @@ public class LabelProviderWrapper extends ViewerComparator implements
 	 */
 	public String getMainMessage(StatusAdapter statusAdapter) {
 		if (!isMulti()) {
-			Job job = Adapters.adapt(statusAdapter, Job.class);
+			Job job = (Job) (statusAdapter.getAdapter(Job.class));
 			// job
 			if (job != null) {
 				return NLS
@@ -288,7 +345,7 @@ public class LabelProviderWrapper extends ViewerComparator implements
 		// with timestamp if available).
 		// we display secondary message or status
 		if (isMulti()) {
-			Job job = Adapters.adapt(statusAdapter, Job.class);
+			Job job = (Job) (statusAdapter.getAdapter(Job.class));
 			// job
 			if (job != null) {
 				return getPrimaryMessage(statusAdapter);
@@ -442,7 +499,13 @@ public class LabelProviderWrapper extends ViewerComparator implements
 		return 0;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ViewerComparator#compare(org.eclipse.jface.
+	 * viewers.Viewer, java.lang.Object, java.lang.Object)
+	 */
 	public int compare(Viewer testViewer, Object o1, Object o2) {
 		if (o1 instanceof StatusAdapter && o2 instanceof StatusAdapter) {
 			return compare((StatusAdapter) o1, (StatusAdapter) o2);

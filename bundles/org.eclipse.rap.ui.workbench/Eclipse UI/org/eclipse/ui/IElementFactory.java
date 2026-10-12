@@ -20,14 +20,15 @@ import org.eclipse.core.runtime.IAdaptable;
  * <p>
  * Clients should implement this interface and include the name of their class
  * in an extension to the platform extension point named
- * <code>"org.eclipse.ui.elementFactories"</code>.
- * For example, the plug-in's XML markup might contain:
- * <pre>
- * &LT;extension point="org.eclipse.ui.elementFactories"&GT;
- *    &LT;factory id="com.example.myplugin.MyFactory" class="com.example.myplugin.MyFactory" /&GT;
- * &LT;/extension&GT;
- * </pre>
+ * <code>"org.eclipse.ui.elementFactories"</code>. For example, the plug-in's
+ * XML markup might contain:
  * </p>
+ *
+ * <pre>
+ * &lt;extension point="org.eclipse.ui.elementFactories"&gt;
+ *    &lt;factory id="com.example.myplugin.MyFactory" class="com.example.myplugin.MyFactory" /&gt;
+ * &lt;/extension&gt;
+ * </pre>
  *
  * @see IPersistableElement
  * @see IMemento
@@ -39,16 +40,17 @@ public interface IElementFactory {
 	 * memento.
 	 * <p>
 	 * If the result is not null, it should be persistable; that is,
+	 * </p>
+	 *
 	 * <pre>
 	 * result.getAdapter(org.eclipse.ui.IPersistableElement.class)
 	 * </pre>
+	 * <p>
 	 * should not return <code>null</code>.
 	 * </p>
 	 *
-	 * @param memento
-	 *            a memento containing the state for the object
-	 * @return an object, or <code>null</code> if the element could not be
-	 *         created
+	 * @param memento a memento containing the state for the object
+	 * @return an object, or <code>null</code> if the element could not be created
 	 */
     IAdaptable createElement(IMemento memento);
 }

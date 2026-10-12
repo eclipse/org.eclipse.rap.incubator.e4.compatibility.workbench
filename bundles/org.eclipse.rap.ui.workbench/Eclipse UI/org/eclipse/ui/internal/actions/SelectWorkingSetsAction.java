@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2005, 2007 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -21,8 +18,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.bindings.keys.IKeyLookup;
-import org.eclipse.jface.bindings.keys.KeyLookupFactory;
+//import org.eclipse.jface.bindings.keys.IKeyLookup;
+//import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
@@ -33,8 +30,6 @@ import org.eclipse.ui.internal.dialogs.SimpleWorkingSetSelectionDialog;
 
 /**
  * Action to select the visible working sets for a given workbench page.
- *
- * @since 3.2
  */
 public class SelectWorkingSetsAction extends AbstractWorkingSetPulldownDelegate  {
 
@@ -44,7 +39,6 @@ public class SelectWorkingSetsAction extends AbstractWorkingSetPulldownDelegate 
 			super(WorkbenchMessages.get().Edit);
 		}
 
-		@Override
 		public void run() {
 			SelectWorkingSetsAction.this.run(this);
 		}
@@ -60,21 +54,21 @@ public class SelectWorkingSetsAction extends AbstractWorkingSetPulldownDelegate 
 			setChecked(isWorkingSetEnabled(set));
 		}
 
-		@Override
 		public void runWithEvent(Event event) {
 
 			Set newList = new HashSet(Arrays.asList(getWindow().getActivePage()
 					.getWorkingSets()));
 
 			if (isChecked()) {
-				// if the primary modifier key is down then clear the list
-				// first. this makes the selection exclusive rather than
-				// additive.
-				boolean modified = (event.stateMask & KeyLookupFactory
-						.getDefault().formalModifierLookup(IKeyLookup.M1_NAME)) != 0;
-
-				if (modified)
-					newList.clear();
+// RAP [rh] missing key events			  
+//				// if the primary modifier key is down then clear the list
+//				// first. this makes the selection exclusive rather than
+//				// additive.
+//				boolean modified = (event.stateMask & KeyLookupFactory
+//						.getDefault().formalModifierLookup(IKeyLookup.M1_NAME)) != 0;
+//				
+//				if (modified) 
+//					newList.clear();
 				newList.add(set);
 			} else {
 				newList.remove(set);
@@ -86,12 +80,14 @@ public class SelectWorkingSetsAction extends AbstractWorkingSetPulldownDelegate 
 		}
 	}
 
-	@Override
 	protected void fillMenu(Menu menu) {
 		IWorkingSet[][] typedSets = splitSets();
 
-		for (IWorkingSet[] sets : typedSets) {
-			for (IWorkingSet set : sets) {
+		for (int i = 0; i < typedSets.length; i++) {
+			IWorkingSet[] sets = typedSets[i];
+			for (int j = 0; j < sets.length; j++) {
+				IWorkingSet set = sets[j];
+
 				// only add visible sets
 				// if (set.isVisible()) {
 				ActionContributionItem item = new ActionContributionItem(
@@ -115,15 +111,14 @@ public class SelectWorkingSetsAction extends AbstractWorkingSetPulldownDelegate 
 
 	private boolean isWorkingSetEnabled(IWorkingSet set) {
 		IWorkingSet[] enabledSets = getEnabledSets();
-		for (IWorkingSet enabledSet : enabledSets) {
-			if (enabledSet.equals(set)) {
+		for (int i = 0; i < enabledSets.length; i++) {
+			if (enabledSets[i].equals(set)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	@Override
 	public void run(IAction action) {
 		ConfigureWindowWorkingSetsDialog dialog = new ConfigureWindowWorkingSetsDialog(
 				getWindow());
@@ -145,7 +140,6 @@ class ConfigureWindowWorkingSetsDialog extends SimpleWorkingSetSelectionDialog {
 		setMessage(WorkbenchMessages.get().WorkingSetSelectionDialog_message_multiSelect);
 	}
 
-	@Override
 	protected void okPressed() {
 		super.okPressed();
 		window.getActivePage().setWorkingSets(getSelection());

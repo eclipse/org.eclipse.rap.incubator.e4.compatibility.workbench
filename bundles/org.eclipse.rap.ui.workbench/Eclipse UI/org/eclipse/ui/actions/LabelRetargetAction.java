@@ -19,9 +19,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.PropertyChangeEvent;
 
 /**
- * A <code>LabelRetargetAction</code> extends the behavior of
- * RetargetAction.  It will track the enable state, label, and
- * tool tip text of the target action..
+ * A <code>LabelRetargetAction</code> extends the behavior of RetargetAction. It
+ * will track the enable state, label, and tool tip text of the target action..
  * <p>
  * This class may be instantiated. It is not intented to be subclassed.
  * </p>
@@ -57,8 +56,9 @@ public class LabelRetargetAction extends RetargetAction {
      *
      * @param actionID the retargetable action id
      * @param text the action's text, or <code>null</code> if there is no text
-     * @param style one of <code>AS_PUSH_BUTTON</code>, <code>AS_CHECK_BOX</code>,
-     * 		<code>AS_DROP_DOWN_MENU</code>, <code>AS_RADIO_BUTTON</code>, and
+	 * @param style    one of <code>AS_PUSH_BUTTON</code>,
+	 *                 <code>AS_CHECK_BOX</code>, <code>AS_DROP_DOWN_MENU</code>,
+	 *                 <code>AS_RADIO_BUTTON</code>, and
      * 		<code>AS_UNSPECIFIED</code>.
      * @since 3.0
      */
@@ -102,7 +102,7 @@ public class LabelRetargetAction extends RetargetAction {
         } else {
             // If no text is specified by the handler, use the default text.  Fixes 22529.
             String handlerText = handler.getText();
-            if (handlerText == null || handlerText.length() == 0) {
+			if (handlerText == null || handlerText.isEmpty()) {
                 handlerText = defaultText;
             }
             super.setText(appendAccelerator(handlerText));
@@ -140,8 +140,8 @@ public class LabelRetargetAction extends RetargetAction {
     }
 
     /**
-     * Sets the tooltip text to the given text.
-     * The value <code>null</code> clears the tooltip text.
+	 * Sets the tooltip text to the given text. The value <code>null</code> clears
+	 * the tooltip text.
      */
     @Override
 	public void setToolTipText(String text) {
@@ -150,8 +150,8 @@ public class LabelRetargetAction extends RetargetAction {
     }
 
     /**
-     * Ensures the accelerator is correct in the text (handlers are not
-     * allowed to change the accelerator).
+	 * Ensures the accelerator is correct in the text (handlers are not allowed to
+	 * change the accelerator).
      */
     private String appendAccelerator(String newText) {
         if (newText == null) {
@@ -181,8 +181,7 @@ public class LabelRetargetAction extends RetargetAction {
             // use the default images if the handler has no images set
             ImageDescriptor hoverImage = handler.getHoverImageDescriptor();
             ImageDescriptor image = handler.getImageDescriptor();
-            ImageDescriptor disabledImage = handler
-                    .getDisabledImageDescriptor();
+			ImageDescriptor disabledImage = handler.getDisabledImageDescriptor();
             if (hoverImage != null || image != null || disabledImage != null) {
                 super.setHoverImageDescriptor(hoverImage);
                 super.setImageDescriptor(image);

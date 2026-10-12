@@ -16,13 +16,13 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.registry;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
@@ -32,8 +32,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.services.log.Logger;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.descriptor.basic.MPartDescriptor;
+import org.eclipse.e4.ui.workbench.IPresentationEngine;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.rap.rwt.SingletonUtil;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.activities.WorkbenchActivityHelper;
@@ -52,16 +52,14 @@ public class ViewRegistry implements IViewRegistry {
 	public static final String VIEW_TAG = "View"; //$NON-NLS-1$
 
 	/**
-	 * This constant is used as key for persisting the original class for a
-	 * legacy {@link ViewPart} in the persisted state of a
-	 * {@link MPartDescriptor}.
+	 * This constant is used as key for persisting the original class for a legacy
+	 * {@link ViewPart} in the persisted state of a {@link MPartDescriptor}.
 	 */
 	public static final String ORIGINAL_COMPATIBILITY_VIEW_CLASS = "originalCompatibilityViewClass"; //$NON-NLS-1$
 
 	/**
-	 * This constant is used as key for persisting the original bundle for a
-	 * legacy {@link ViewPart} in the persisted state of a
-	 * {@link MPartDescriptor}.
+	 * This constant is used as key for persisting the original bundle for a legacy
+	 * {@link ViewPart} in the persisted state of a {@link MPartDescriptor}.
 	 */
 	public static final String ORIGINAL_COMPATIBILITY_VIEW_BUNDLE = "originalCompatibilityViewBundle"; //$NON-NLS-1$
 
@@ -80,13 +78,13 @@ public class ViewRegistry implements IViewRegistry {
 	@Inject
 	Logger logger;
 
-	private Map<String, IViewDescriptor> descriptors = new HashMap<>();
+	private final Map<String, IViewDescriptor> descriptors = new HashMap<>();
 
-	private List<IStickyViewDescriptor> stickyDescriptors = new ArrayList<>();
+	private final List<IStickyViewDescriptor> stickyDescriptors = new ArrayList<>();
 
-	private HashMap<String, ViewCategory> categories = new HashMap<>();
+	private final HashMap<String, ViewCategory> categories = new HashMap<>();
 
-	private Category miscCategory = new Category();
+	private final Category miscCategory = new Category();
 
 	@PostConstruct
 	void postConstruct() {
@@ -95,8 +93,7 @@ public class ViewRegistry implements IViewRegistry {
 			// find the category first
 			for (IConfigurationElement element : extension.getConfigurationElements()) {
 				if (element.getName().equals(IWorkbenchRegistryConstants.TAG_CATEGORY)) {
-					ViewCategory category = new ViewCategory(
-							element.getAttribute(IWorkbenchRegistryConstants.ATT_ID),
+					ViewCategory category = new ViewCategory(element.getAttribute(IWorkbenchRegistryConstants.ATT_ID),
 							element.getAttribute(IWorkbenchRegistryConstants.ATT_NAME));
 					categories.put(category.getId(), category);
 				} else if (element.getName().equals(IWorkbenchRegistryConstants.TAG_STICKYVIEW)) {
@@ -110,8 +107,7 @@ public class ViewRegistry implements IViewRegistry {
 			}
 		}
 		if (!categories.containsKey(miscCategory.getId())) {
-			categories.put(miscCategory.getId(), new ViewCategory(miscCategory.getId(),
-					miscCategory.getLabel()));
+			categories.put(miscCategory.getId(), new ViewCategory(miscCategory.getId(), miscCategory.getLabel()));
 		}
 
 		for (IExtension extension : point.getExtensions()) {
@@ -149,8 +145,8 @@ public class ViewRegistry implements IViewRegistry {
 		tags.add(VIEW_TAG);
 
 		descriptor.setCloseable(true);
-		descriptor.setAllowMultiple(Boolean.parseBoolean(element
-				.getAttribute(IWorkbenchRegistryConstants.ATT_ALLOW_MULTIPLE)));
+		descriptor.setAllowMultiple(
+				Boolean.parseBoolean(element.getAttribute(IWorkbenchRegistryConstants.ATT_ALLOW_MULTIPLE)));
 
 		// make view description available as tooltip
 		String viewDescription = RegistryReader.getDescription(element);
@@ -183,8 +179,8 @@ public class ViewRegistry implements IViewRegistry {
 
 		String iconURI = MenuHelper.getIconURI(element, IWorkbenchRegistryConstants.ATT_ICON);
 		if (iconURI == null) {
-			descriptor.setIconURI(MenuHelper.getImageUrl(workbench.getSharedImages()
-					.getImageDescriptor(ISharedImages.IMG_DEF_VIEW)));
+			descriptor.setIconURI(
+					MenuHelper.getImageUrl(workbench.getSharedImages().getImageDescriptor(ISharedImages.IMG_DEF_VIEW)));
 		} else {
 			descriptor.setIconURI(iconURI);
 		}
@@ -200,7 +196,8 @@ public class ViewRegistry implements IViewRegistry {
 		}
 		String restorable = element.getAttribute(IWorkbenchRegistryConstants.ATT_RESTORABLE);
 		if (!(restorable == null ? true : Boolean.parseBoolean(restorable))) {
-			descriptor.getTags().add("NoRestore"); // IPresentationEngine.NO_RESTORE
+			// Keep compatibility with RAP E4 targets predating the public constant.
+			descriptor.getTags().add("NoRestore"); //$NON-NLS-1$
 		}
 		// ==> End of update descriptor
 		ViewDescriptor viewDescriptor = new ViewDescriptor(application, descriptor, element);
@@ -226,24 +223,22 @@ public class ViewRegistry implements IViewRegistry {
 
 	@Override
 	public IViewDescriptor[] getViews() {
-		Collection<?> allowedViews = WorkbenchActivityHelper.restrictCollection(
-				descriptors.values(), new ArrayList<>());
+		Collection<?> allowedViews = WorkbenchActivityHelper.restrictCollection(descriptors.values(),
+				new ArrayList<>());
 		return allowedViews.toArray(new IViewDescriptor[allowedViews.size()]);
 	}
 
 	@Override
 	public IStickyViewDescriptor[] getStickyViews() {
-		Collection<?> allowedViews = WorkbenchActivityHelper.restrictCollection(stickyDescriptors,
-				new ArrayList<>());
+		Collection<?> allowedViews = WorkbenchActivityHelper.restrictCollection(stickyDescriptors, new ArrayList<>());
 		return allowedViews.toArray(new IStickyViewDescriptor[allowedViews.size()]);
 	}
 
 	/**
-	 * Returns the {@link ViewCategory} for the given id or <code>null</code> if
-	 * one cannot be found or the id is <code>null</code>
+	 * Returns the {@link ViewCategory} for the given id or <code>null</code> if one
+	 * cannot be found or the id is <code>null</code>
 	 *
-	 * @param id
-	 *            the {@link ViewCategory} id
+	 * @param id the {@link ViewCategory} id
 	 * @return the {@link ViewCategory} with the given id or <code>null</code>
 	 */
 	public ViewCategory findCategory(String id) {
@@ -257,14 +252,4 @@ public class ViewRegistry implements IViewRegistry {
 		return miscCategory;
 	}
 
-	// RAP [bm]:
-	/**
-	 * Returns a session scoped instance of the ViewRegistry
-	 * 
-	 * @return the session singleton instance
-	 */
-	public static ViewRegistry getInstance() {
-		return SingletonUtil.getSessionInstance(ViewRegistry.class);
-	}
-	// RAPEND: [bm]
 }

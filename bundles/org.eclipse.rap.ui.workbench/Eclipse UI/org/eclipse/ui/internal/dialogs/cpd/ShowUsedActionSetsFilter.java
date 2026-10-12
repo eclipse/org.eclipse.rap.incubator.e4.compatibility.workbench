@@ -19,13 +19,13 @@ import org.eclipse.ui.internal.dialogs.cpd.CustomizePerspectiveDialog.ActionSet;
 import org.eclipse.ui.internal.dialogs.cpd.CustomizePerspectiveDialog.DisplayItem;
 
 /**
- * A filter which will only show action sets which contribute items in the
- * given tree structure.
+ * A filter which will only show action sets which contribute items in the given
+ * tree structure.
  *
  * @since 3.5
  */
 final class ShowUsedActionSetsFilter extends ViewerFilter {
-	private DisplayItem rootItem;
+	private final DisplayItem rootItem;
 
 	public ShowUsedActionSetsFilter(DisplayItem rootItem) {
 		this.rootItem = rootItem;

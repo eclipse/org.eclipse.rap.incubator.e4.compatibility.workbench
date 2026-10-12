@@ -41,8 +41,7 @@ import org.eclipse.jface.commands.ToggleState;
  *
  * @since 3.2
  */
-public final class RegistryToggleState extends ToggleState implements
-		IExecutableExtension {
+public final class RegistryToggleState extends ToggleState implements IExecutableExtension {
 
 	/**
 	 * The state ID for a toggle state understood by the system.
@@ -52,12 +51,10 @@ public final class RegistryToggleState extends ToggleState implements
 	public static final String STATE_ID = "org.eclipse.ui.commands.toggleState";  //$NON-NLS-1$
 
 	/**
-	 * Reads the <code>default</code> parameter from the given string. This
-	 * converts the string to a boolean, using <code>true</code> as the
-	 * default.
+	 * Reads the <code>default</code> parameter from the given string. This converts
+	 * the string to a boolean, using <code>true</code> as the default.
 	 *
-	 * @param defaultString
-	 *            The string to parse; may be <code>null</code>.
+	 * @param defaultString The string to parse; may be <code>null</code>.
 	 */
 	private void readDefault(final String defaultString) {
 		if ("true".equalsIgnoreCase(defaultString)) { //$NON-NLS-1$
@@ -67,11 +64,9 @@ public final class RegistryToggleState extends ToggleState implements
 
 	/**
 	 * Reads the <code>persisted</code> parameter from the given string. This
-	 * converts the string to a boolean, using <code>true</code> as the
-	 * default.
+	 * converts the string to a boolean, using <code>true</code> as the default.
 	 *
-	 * @param persistedString
-	 *            The string to parse; may be <code>null</code>.
+	 * @param persistedString The string to parse; may be <code>null</code>.
 	 */
 	private void readPersisted(final String persistedString) {
 		if ("false".equalsIgnoreCase(persistedString)) { //$NON-NLS-1$
@@ -82,16 +77,14 @@ public final class RegistryToggleState extends ToggleState implements
 	}
 
 	@Override
-	public void setInitializationData(
-			final IConfigurationElement configurationElement,
-			final String propertyName, final Object data) {
+	public void setInitializationData(final IConfigurationElement configurationElement, final String propertyName,
+			final Object data) {
 		if (data instanceof String) {
 			// This is the default value.
 			readDefault((String) data);
 			setShouldPersist(true);
 
-		} else if (data instanceof Hashtable) {
-			final Hashtable parameters = (Hashtable) data;
+		} else if (data instanceof final Hashtable parameters) {
 			final Object defaultObject = parameters.get("default"); //$NON-NLS-1$
 			if (defaultObject instanceof String) {
 				readDefault((String) defaultObject);

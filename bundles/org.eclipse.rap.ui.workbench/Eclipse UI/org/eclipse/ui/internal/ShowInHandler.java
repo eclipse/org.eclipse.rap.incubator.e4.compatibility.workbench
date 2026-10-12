@@ -1,25 +1,21 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2008, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 440810
  ******************************************************************************/
 
 package org.eclipse.ui.internal;
 
 import java.util.Map;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISources;
@@ -29,10 +25,10 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.services.WorkbenchSourceProvider;
+import org.eclipse.ui.internal.util.Util;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IShowInTarget;
 import org.eclipse.ui.part.ShowInContext;
@@ -43,18 +39,15 @@ import org.eclipse.ui.views.IViewRegistry;
 /**
  * The show in command, which only needs a target id.
  *
- * @since 3.4
  */
 public class ShowInHandler extends AbstractHandler implements IElementUpdater {
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		IWorkbenchPage p = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		WorkbenchPartReference r = (WorkbenchPartReference) p.getActivePartReference();
-		if (p != null && r != null && r.getModel() != null) {
-			((WorkbenchPage) p).updateShowInSources(r.getModel());
-		}
-
 		String targetId = event
 				.getParameter(IWorkbenchCommandConstants.NAVIGATE_SHOW_IN_PARM_TARGET);
 		if (targetId == null) {
@@ -62,7 +55,7 @@ public class ShowInHandler extends AbstractHandler implements IElementUpdater {
 		}
 
 		final IWorkbenchWindow activeWorkbenchWindow = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		ISourceProviderService sps = activeWorkbenchWindow.getService(ISourceProviderService.class);
+		ISourceProviderService sps = (ISourceProviderService)activeWorkbenchWindow.getService(ISourceProviderService.class);
 		if (sps != null) {
 			ISourceProvider sp = sps.getSourceProvider(ISources.SHOW_IN_SELECTION);
 			if (sp instanceof WorkbenchSourceProvider) {
@@ -119,10 +112,15 @@ public class ShowInHandler extends AbstractHandler implements IElementUpdater {
 	 * @return the <code>IShowInTarget</code> or <code>null</code>
 	 */
 	private IShowInTarget getShowInTarget(IWorkbenchPart targetPart) {
-		return Adapters.adapt(targetPart, IShowInTarget.class);
+		return (IShowInTarget) Util.getAdapter(targetPart, IShowInTarget.class);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.commands.IElementUpdater#updateElement(org.eclipse.ui.menus.UIElement,
+	 *      java.util.Map)
+	 */
 	public void updateElement(UIElement element, Map parameters) {
 		String targetId = (String) parameters
 				.get(IWorkbenchCommandConstants.NAVIGATE_SHOW_IN_PARM_TARGET);

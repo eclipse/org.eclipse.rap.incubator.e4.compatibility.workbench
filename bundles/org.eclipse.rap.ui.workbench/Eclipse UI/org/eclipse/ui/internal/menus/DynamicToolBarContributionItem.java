@@ -32,12 +32,10 @@ import org.eclipse.ui.services.IServiceLocator;
  * <p>
  * It currently supports placement in menus.
  * </p>
- * <p>
  *
  * @author Prakash G.R.
  *
  * @since 3.6
- *
  */
 public class DynamicToolBarContributionItem extends WorkbenchWindowControlContribution {
 
@@ -49,16 +47,11 @@ public class DynamicToolBarContributionItem extends WorkbenchWindowControlContri
 	/**
 	 * Creates a DynamicToolBarContributionItem
 	 *
-	 * @param id
-	 *            - Id of the menu item
-	 * @param locator
-	 *            - The Service Locator
-	 * @param dynamicAddition
-	 *            - The Configuration Element defined in the plugin.xml
-	 *
+	 * @param id              - Id of the menu item
+	 * @param locator         - The Service Locator
+	 * @param dynamicAddition - The Configuration Element defined in the plugin.xml
 	 */
-	public DynamicToolBarContributionItem(String id, IServiceLocator locator,
-			IConfigurationElement dynamicAddition) {
+	public DynamicToolBarContributionItem(String id, IServiceLocator locator, IConfigurationElement dynamicAddition) {
 		super(id);
 
 		this.locator = locator;
@@ -132,22 +125,22 @@ public class DynamicToolBarContributionItem extends WorkbenchWindowControlContri
 	@Override
 	public void fill(CoolBar parent, int index) {
 		IContributionItem contributionItem = getContributionItem();
-		if (contributionItem != null)
+		if (contributionItem != null) {
 			contributionItem.fill(parent, index);
+	}
 	}
 
 	private WorkbenchWindowControlContribution getContributionItem() {
-		if (loadedDynamicContribution == null && !alreadyFailed)
+		if (loadedDynamicContribution == null && !alreadyFailed) {
 			createContributionItem();
+		}
 		return loadedDynamicContribution;
 	}
 
 	private void createContributionItem() {
 
-		loadedDynamicContribution = (WorkbenchWindowControlContribution) Util
-				.safeLoadExecutableExtension(dynamicAddition,
-						IWorkbenchRegistryConstants.ATT_CLASS,
-						WorkbenchWindowControlContribution.class);
+		loadedDynamicContribution = (WorkbenchWindowControlContribution) Util.safeLoadExecutableExtension(
+				dynamicAddition, IWorkbenchRegistryConstants.ATT_CLASS, WorkbenchWindowControlContribution.class);
 
 		if (loadedDynamicContribution == null) {
 			alreadyFailed = true;
@@ -159,8 +152,7 @@ public class DynamicToolBarContributionItem extends WorkbenchWindowControlContri
 		loadedDynamicContribution.setWorkbenchWindow(getWorkbenchWindow());
 		loadedDynamicContribution.setCurSide(getCurSide());
 		if (loadedDynamicContribution instanceof IWorkbenchContribution) {
-			((IWorkbenchContribution) loadedDynamicContribution)
-					.initialize(locator);
+			((IWorkbenchContribution) loadedDynamicContribution).initialize(locator);
 		}
 	}
 
@@ -210,12 +202,14 @@ public class DynamicToolBarContributionItem extends WorkbenchWindowControlContri
 			loadedDynamicContribution.setCurSide(curSide);
 		}
 	}
+
 	@Override
 	public Control createControl(Composite parent) {
 
 		WorkbenchWindowControlContribution contributionItem = getContributionItem();
-		if (contributionItem != null)
+		if (contributionItem != null) {
 			return contributionItem.delegateCreateControl(parent);
+		}
 		return null;
 	}
 

@@ -18,8 +18,7 @@ import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 
 /**
- * A WorkingSetFactory is used to recreate a persisted WorkingSet
- * object.
+ * A WorkingSetFactory is used to recreate a persisted WorkingSet object.
  */
 public class WorkingSetFactory implements IElementFactory {
 
@@ -30,12 +29,9 @@ public class WorkingSetFactory implements IElementFactory {
         if (label == null) {
 			label = workingSetName;
 		}
-        String workingSetEditPageId = memento
-                .getString(IWorkbenchConstants.TAG_EDIT_PAGE_ID);
-        String aggregateString = memento
-				.getString(AbstractWorkingSet.TAG_AGGREGATE);
-		boolean isAggregate = aggregateString != null
-				&& Boolean.valueOf(aggregateString).booleanValue();
+		String workingSetEditPageId = memento.getString(IWorkbenchConstants.TAG_EDIT_PAGE_ID);
+		String aggregateString = memento.getString(AbstractWorkingSet.TAG_AGGREGATE);
+		boolean isAggregate = aggregateString != null && Boolean.parseBoolean(aggregateString);
 
 		if (workingSetName == null) {
 			return null;

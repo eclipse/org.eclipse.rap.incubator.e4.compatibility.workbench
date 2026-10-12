@@ -24,7 +24,6 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
  */
 public class WorkingSetRegistryReader extends RegistryReader {
 
-
     private WorkingSetRegistry registry;
 
     /**
@@ -57,9 +56,7 @@ public class WorkingSetRegistryReader extends RegistryReader {
                 registry.addWorkingSetDescriptor(desc);
             } catch (CoreException e) {
                 // log an error since its not safe to open a dialog here
-                WorkbenchPlugin
-                        .log(
-                                "Unable to create working set descriptor.", e.getStatus());//$NON-NLS-1$
+				WorkbenchPlugin.log("Unable to create working set descriptor.", e.getStatus());//$NON-NLS-1$
             }
             return true;
         }
@@ -74,8 +71,7 @@ public class WorkingSetRegistryReader extends RegistryReader {
      * @param out the working set registry to store read entries in.
      */
     public void readWorkingSets(IExtensionRegistry in, WorkingSetRegistry out) {
-        // RAP [bm]: namespace
-        readRegistry(in, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
-                IWorkbenchRegistryConstants.PL_WORKINGSETS);
+		registry = out;
+		readRegistry(in, PlatformUI.PLUGIN_EXTENSION_NAME_SPACE, IWorkbenchRegistryConstants.PL_WORKINGSETS);
     }
 }

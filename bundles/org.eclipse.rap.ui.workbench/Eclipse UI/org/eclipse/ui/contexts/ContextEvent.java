@@ -57,19 +57,15 @@ public final class ContextEvent {
     /**
      * Creates a new instance of this class.
      *
-     * @param context
-     *            the instance of the interface that changed.
-     * @param definedChanged
-     *            true, iff the defined property changed.
-     * @param enabledChanged
-     *            true, iff the enabled property changed.
-     * @param nameChanged
-     *            true, iff the name property changed.
-     * @param parentIdChanged
-     *            true, iff the parentId property changed.
+	 * @param context         the instance of the interface that changed.
+	 * @param definedChanged  true, iff the defined property changed.
+	 * @param enabledChanged  true, iff the enabled property changed.
+	 * @param nameChanged     true, iff the name property changed.
+	 * @param parentIdChanged true, iff the parentId property changed.
      */
-    public ContextEvent(IContext context, boolean definedChanged,
-            boolean enabledChanged, boolean nameChanged, boolean parentIdChanged) {
+	@Deprecated
+	public ContextEvent(IContext context, boolean definedChanged, boolean enabledChanged, boolean nameChanged,
+			boolean parentIdChanged) {
         if (context == null) {
 			throw new NullPointerException();
 		}
@@ -87,6 +83,7 @@ public final class ContextEvent {
      * @return the instance of the interface that changed. Guaranteed not to be
      *         <code>null</code>.
      */
+	@Deprecated
     public IContext getContext() {
         return context;
     }
@@ -96,6 +93,7 @@ public final class ContextEvent {
      *
      * @return true, iff the defined property changed.
      */
+	@Deprecated
     public boolean hasDefinedChanged() {
         return definedChanged;
     }
@@ -105,6 +103,7 @@ public final class ContextEvent {
      *
      * @return true, iff the enabled property changed.
      */
+	@Deprecated
     public boolean hasEnabledChanged() {
         return enabledChanged;
     }
@@ -114,6 +113,7 @@ public final class ContextEvent {
      *
      * @return true, iff the name property changed.
      */
+	@Deprecated
     public boolean hasNameChanged() {
         return nameChanged;
     }
@@ -123,6 +123,7 @@ public final class ContextEvent {
      *
      * @return true, iff the parentId property changed.
      */
+	@Deprecated
     public boolean hasParentIdChanged() {
         return parentIdChanged;
     }

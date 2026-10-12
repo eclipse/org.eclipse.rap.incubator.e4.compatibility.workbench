@@ -22,12 +22,12 @@ import java.util.Map;
 import java.util.Set;
 import org.eclipse.core.commands.contexts.Context;
 import org.eclipse.core.commands.contexts.IContextManagerListener;
+import org.eclipse.core.expressions.AndExpression;
 import org.eclipse.core.expressions.Expression;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
-import org.eclipse.ui.internal.expressions.AndExpression;
 
 /**
  * A context service which delegates almost all responsibility to the parent
@@ -38,7 +38,6 @@ import org.eclipse.ui.internal.expressions.AndExpression;
  * </p>
  *
  * @since 3.2
- *
  */
 public class SlaveContextService implements IContextService {
 
@@ -48,69 +47,65 @@ public class SlaveContextService implements IContextService {
 	protected IContextService fParentService;
 
 	/**
-	 * The default expression used when {@link #activateContext(String) } is
-	 * called. Contexts contributed that use this expression will only be active
-	 * with this service is active.
+	 * The default expression used when {@link #activateContext(String) } is called.
+	 * Contexts contributed that use this expression will only be active with this
+	 * service is active.
 	 */
 	protected Expression fDefaultExpression;
 
 	/**
 	 * Our contexts that are currently active with the parent context service.
 	 */
-	protected Set fParentActivations;
+	protected Set<IContextActivation> fParentActivations;
 
 	/**
-	 * A map of the local activation to the parent activations. If this service
-	 * is inactive, then all parent activations are <code>null</code>.
-	 * Otherwise, they point to the corresponding activation in the parent
-	 * service.
+	 * A map of the local activation to the parent activations. If this service is
+	 * inactive, then all parent activations are <code>null</code>. Otherwise, they
+	 * point to the corresponding activation in the parent service.
 	 */
-	protected Map fLocalActivations;
+	protected Map<IContextActivation, IContextActivation> fLocalActivations;
 
 	/**
 	 * A collection of context manager listeners. The listeners are not
 	 * activated/deactivated, but they will be removed when this service is
 	 * disposed.
 	 */
-	private Collection fContextManagerListeners;
+	private final Collection<IContextManagerListener> fContextManagerListeners;
 
 	/**
 	 * A collection of source providers. The listeners are not
 	 * activated/deactivated, but they will be removed when this service is
 	 * disposed.
 	 */
-	private Collection fSourceProviders;
+	private final Collection<ISourceProvider> fSourceProviders;
 
 	/**
-	 * A collection of shells registered through this service. The listeners are
-	 * not activated/deactivated, but they will be removed when this service is
+	 * A collection of shells registered through this service. The listeners are not
+	 * activated/deactivated, but they will be removed when this service is
 	 * disposed.
 	 */
-	private Collection fRegisteredShells;
+	private final Collection<Shell> fRegisteredShells;
 
 	/**
 	 * Construct the new slave.
 	 *
-	 * @param parentService
-	 *            the parent context service; must not be <code>null</code>.
-	 * @param defaultExpression
-	 *            A default expression to use to determine viability. It's
-	 *            mainly used for conflict resolution. It can be
+	 * @param parentService     the parent context service; must not be
+	 *                          <code>null</code>.
+	 * @param defaultExpression A default expression to use to determine viability.
+	 *                          It's mainly used for conflict resolution. It can be
 	 *            <code>null</code>.
 	 */
-	public SlaveContextService(IContextService parentService,
-			Expression defaultExpression) {
+	public SlaveContextService(IContextService parentService, Expression defaultExpression) {
 		if (parentService == null) {
-			throw new NullPointerException(
-					"The parent context service must not be null"); //$NON-NLS-1$
+			throw new NullPointerException("The parent context service must not be null"); //$NON-NLS-1$
 		}
 		fParentService = parentService;
 		fDefaultExpression = defaultExpression;
-		fParentActivations = new HashSet();
-		fLocalActivations = new HashMap();
-		fContextManagerListeners = new ArrayList();
-		fSourceProviders = new ArrayList();
-		fRegisteredShells = new ArrayList();
+		fParentActivations = new HashSet<>();
+		fLocalActivations = new HashMap<>();
+		fContextManagerListeners = new ArrayList<>();
+		fSourceProviders = new ArrayList<>();
+		fRegisteredShells = new ArrayList<>();
 	}
 
 	@Override
@@ -121,23 +116,19 @@ public class SlaveContextService implements IContextService {
 	@Override
 	public IContextActivation activateContext(String contextId) {
 
-		ContextActivation activation = new ContextActivation(contextId,
-				fDefaultExpression, this);
+		ContextActivation activation = new ContextActivation(contextId, fDefaultExpression, this);
 		return doActivateContext(activation);
 	}
 
 	@Override
-	public IContextActivation activateContext(String contextId,
-			Expression expression) {
+	public IContextActivation activateContext(String contextId, Expression expression) {
 		return activateContext(contextId, expression, false);
 	}
 
 	@Override
-	public IContextActivation activateContext(String contextId,
-			Expression expression, boolean global) {
+	public IContextActivation activateContext(String contextId, Expression expression, boolean global) {
 		if (global) {
-			IContextActivation activation = fParentService.activateContext(
-					contextId, expression, global);
+			IContextActivation activation = fParentService.activateContext(contextId, expression, global);
 			fParentActivations.add(activation);
 			return activation;
 		}
@@ -152,14 +143,12 @@ public class SlaveContextService implements IContextService {
 			aExpression = expression;
 		}
 
-		ContextActivation activation = new ContextActivation(contextId,
-				aExpression, this);
+		ContextActivation activation = new ContextActivation(contextId, aExpression, this);
 		return doActivateContext(activation);
 	}
 
 	@Override
-	public IContextActivation activateContext(String contextId,
-			Expression expression, int sourcePriorities) {
+	public IContextActivation activateContext(String contextId, Expression expression, int sourcePriorities) {
 		return activateContext(contextId, expression);
 	}
 
@@ -183,8 +172,7 @@ public class SlaveContextService implements IContextService {
 	public void deactivateContext(IContextActivation activation) {
 		IContextActivation parentActivation = null;
 		if (fLocalActivations.containsKey(activation)) {
-			parentActivation = (IContextActivation) fLocalActivations
-					.remove(activation);
+			parentActivation = fLocalActivations.remove(activation);
 		} else {
 			parentActivation = activation;
 		}
@@ -212,8 +200,8 @@ public class SlaveContextService implements IContextService {
 		// Remove any "resource", like listeners, that were associated
 		// with this service.
 		if (!fContextManagerListeners.isEmpty()) {
-			for (Object element : fContextManagerListeners.toArray()) {
-				removeContextManagerListener((IContextManagerListener) element);
+			for (IContextManagerListener element : fContextManagerListeners.toArray(new IContextManagerListener[0])) {
+				removeContextManagerListener(element);
 			}
 			fContextManagerListeners.clear();
 		}
@@ -234,15 +222,11 @@ public class SlaveContextService implements IContextService {
 	/**
 	 * Activate the context with respect to this slave service.
 	 *
-	 * @param contextId
-	 *            the context id
-	 * @param expression
-	 *            the expression to use
 	 * @return the activated context
 	 */
 	protected IContextActivation doActivateContext(IContextActivation activation) {
-		IContextActivation parentActivation = fParentService.activateContext(
-				activation.getContextId(), activation.getExpression());
+		IContextActivation parentActivation = fParentService.activateContext(activation.getContextId(),
+				activation.getExpression());
 		fParentActivations.add(parentActivation);
 		fLocalActivations.put(activation, parentActivation);
 		return activation;

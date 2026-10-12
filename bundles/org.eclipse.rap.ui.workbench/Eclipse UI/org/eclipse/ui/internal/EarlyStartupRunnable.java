@@ -14,7 +14,7 @@
  *******************************************************************************/
 package org.eclipse.ui.internal;
 
-import com.ibm.icu.text.MessageFormat;
+import java.text.MessageFormat;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IStatus;
@@ -32,11 +32,10 @@ import org.eclipse.ui.internal.misc.UIStats;
  */
 public class EarlyStartupRunnable extends SafeRunnable {
 
-    private IExtension extension;
+	private final IExtension extension;
 
     /**
-     * @param extension
-     *            must not be null
+	 * @param extension must not be null
      */
     public EarlyStartupRunnable(IExtension extension) {
         this.extension = extension;
@@ -82,13 +81,12 @@ public class EarlyStartupRunnable extends SafeRunnable {
 				UIStats.end(UIStats.EARLY_STARTUP, executableExtension, methodName);
 			}
 		} else {
-			String message = executableExtension == null ?
-					"The org.eclipse.ui.IStartup extension from '" + extension.getContributor().getName() //$NON-NLS-1$
-					+ "' does not provide a valid class attribute." : //$NON-NLS-1$
-					MessageFormat.format("Startup class {0} must implement org.eclipse.ui.IStartup", //$NON-NLS-1$
+			String message = executableExtension == null
+					? "The org.eclipse.ui.IStartup extension from '" + extension.getContributor().getName() //$NON-NLS-1$
+							+ "' does not provide a valid class attribute." //$NON-NLS-1$
+					: MessageFormat.format("Startup class {0} must implement org.eclipse.ui.IStartup", //$NON-NLS-1$
 							executableExtension.getClass().getName());
-			IStatus status =
-					new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, 0, message, null);
+			IStatus status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, 0, message, null);
 			WorkbenchPlugin.log(status);
         }
     }

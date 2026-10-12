@@ -19,13 +19,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import org.eclipse.ui.internal.util.Util;
 
 public final class CategoryDefinition implements Comparable<CategoryDefinition> {
     private static final int HASH_FACTOR = 89;
 
-    private static final int HASH_INITIAL = CategoryDefinition.class.getName()
-            .hashCode();
+	private static final int HASH_INITIAL = CategoryDefinition.class.getName().hashCode();
 
 	static Map<String, CategoryDefinition> categoryDefinitionsById(Collection<CategoryDefinition> categoryDefinitions,
             boolean allowNullIds) {
@@ -49,8 +49,7 @@ public final class CategoryDefinition implements Comparable<CategoryDefinition> 
     }
 
 	static Map<String, Collection<CategoryDefinition>> categoryDefinitionsByName(
-			Collection<CategoryDefinition> categoryDefinitions,
-            boolean allowNullNames) {
+			Collection<CategoryDefinition> categoryDefinitions, boolean allowNullNames) {
         if (categoryDefinitions == null) {
 			throw new NullPointerException();
 		}
@@ -79,18 +78,17 @@ public final class CategoryDefinition implements Comparable<CategoryDefinition> 
 
     private transient int hashCode = HASH_INITIAL;
 
-    private String id;
+	private final String id;
 
-    private String name;
+	private final String name;
 
-    private String sourceId;
+	private final String sourceId;
 
     private transient String string;
 
-    private String description;
+	private final String description;
 
-    public CategoryDefinition(String id, String name, String sourceId,
-            String description) {
+	public CategoryDefinition(String id, String name, String sourceId, String description) {
         this.id = id;
         this.name = name;
         this.sourceId = sourceId;
@@ -114,20 +112,12 @@ public final class CategoryDefinition implements Comparable<CategoryDefinition> 
 
     @Override
 	public boolean equals(Object object) {
-        if (!(object instanceof CategoryDefinition)) {
+		if (!(object instanceof final CategoryDefinition castedObject)) {
 			return false;
 		}
 
-        final CategoryDefinition castedObject = (CategoryDefinition) object;
-        if (!Util.equals(id, castedObject.id)) {
-            return false;
-        }
-
-        if (!Util.equals(name, castedObject.name)) {
-            return false;
-        }
-
-        return Util.equals(sourceId, castedObject.sourceId);
+		return Objects.equals(id, castedObject.id) && Objects.equals(name, castedObject.name)
+				&& Objects.equals(sourceId, castedObject.sourceId);
     }
 
     public String getId() {
@@ -145,9 +135,9 @@ public final class CategoryDefinition implements Comparable<CategoryDefinition> 
     @Override
 	public int hashCode() {
         if (hashCode == HASH_INITIAL) {
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(id);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(name);
-            hashCode = hashCode * HASH_FACTOR + Util.hashCode(sourceId);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(id);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(name);
+			hashCode = hashCode * HASH_FACTOR + Objects.hashCode(sourceId);
             if (hashCode == HASH_INITIAL) {
 				hashCode++;
 			}

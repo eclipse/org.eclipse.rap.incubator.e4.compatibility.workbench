@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -62,8 +59,9 @@ public abstract class WorkbenchWizardSelectionPage extends WizardSelectionPage {
      *	@param searchId the id to search on
      */
     protected WorkbenchWizardElement findWizard(String searchId) {
-		for (Object element : wizardElements.getChildren()) {
-            WorkbenchWizardElement currentWizard = (WorkbenchWizardElement) element;
+        Object[] children = wizardElements.getChildren();
+        for (int i = 0; i < children.length; ++i) {
+            WorkbenchWizardElement currentWizard = (WorkbenchWizardElement) children[i];
             if (currentWizard.getId().equals(searchId)) {
 				return currentWizard;
 			}
@@ -92,7 +90,9 @@ public abstract class WorkbenchWizardSelectionPage extends WizardSelectionPage {
         setSelectedNode(node);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.wizard.IWizardPage#getNextPage()
+     */
 	public IWizardPage getNextPage() {
         ITriggerPoint triggerPoint = getWorkbench().getActivitySupport()
         .getTriggerPointManager().getTriggerPoint(triggerPointId);

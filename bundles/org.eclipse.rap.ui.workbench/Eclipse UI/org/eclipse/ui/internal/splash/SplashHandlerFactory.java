@@ -36,23 +36,23 @@ import org.eclipse.ui.splash.AbstractSplashHandler;
 public final class SplashHandlerFactory {
 
 	/**
-	 * Find the splash handler for the given product or <code>null</code> if
-	 * it cannot be found.
+	 * Find the splash handler for the given product or <code>null</code> if it
+	 * cannot be found.
 	 *
-	 * @param product
-	 *            the product
+	 * @param product the product
 	 * @return the splash or <code>null</code>
 	 */
 	public static AbstractSplashHandler findSplashHandlerFor(IProduct product) {
-		if (product == null)
+		if (product == null) {
 			return null;
+		}
 
-		IExtensionPoint point = Platform.getExtensionRegistry()
-				.getExtensionPoint(PlatformUI.PLUGIN_ID,
+		IExtensionPoint point = Platform.getExtensionRegistry().getExtensionPoint(PlatformUI.PLUGIN_EXTENSION_NAME_SPACE,
 						IWorkbenchRegistryConstants.PL_SPLASH_HANDLERS);
 
-		if (point == null)
+		if (point == null) {
 			return null;
+		}
 
 		IExtension[] extensions = point.getExtensions();
 		Map idToSplash = new HashMap(); // String->ConfigurationElement
@@ -61,8 +61,9 @@ public final class SplashHandlerFactory {
 			IConfigurationElement[] children = extension.getConfigurationElements();
 			for (IConfigurationElement element : children) {
 				AbstractSplashHandler handler = processElement(element, idToSplash, targetId, product);
-				if (handler != null)
+				if (handler != null) {
 					return handler;
+				}
 
 			}
 		}
@@ -72,26 +73,21 @@ public final class SplashHandlerFactory {
 	/**
 	 * Process a given element.
 	 *
-	 * @param configurationElement
-	 *            the element to process
-	 * @param idToSplash
-	 *            the map of current splash elements
-	 * @param targetId
-	 *            the target id if known
-	 * @param product
-	 *            the product to search for
+	 * @param configurationElement the element to process
+	 * @param idToSplash           the map of current splash elements
+	 * @param targetId             the target id if known
+	 * @param product              the product to search for
 	 * @return a splash matching the target id from this element or
 	 *         <code>null</code>
 	 */
-	private static AbstractSplashHandler processElement(
-			IConfigurationElement configurationElement, Map idToSplash,
+	private static AbstractSplashHandler processElement(IConfigurationElement configurationElement, Map idToSplash,
 			String[] targetId, IProduct product) {
 		String type = configurationElement.getName();
 		if (IWorkbenchRegistryConstants.TAG_SPLASH_HANDLER.equals(type)) {
-			String id = configurationElement
-					.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
-			if (id == null)
+			String id = configurationElement.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
+			if (id == null) {
 				return null;
+			}
 
 			// we know the target and this element is it
 			if (targetId[0] != null && id.equals(targetId[0])) {
@@ -100,20 +96,17 @@ public final class SplashHandlerFactory {
 			// store for later examination
 			idToSplash.put(id, configurationElement);
 
-		} else if (IWorkbenchRegistryConstants.TAG_SPLASH_HANDLER_PRODUCT_BINDING
-				.equals(type)) {
-			String productId = configurationElement
-					.getAttribute(IWorkbenchRegistryConstants.ATT_PRODUCTID);
+		} else if (IWorkbenchRegistryConstants.TAG_SPLASH_HANDLER_PRODUCT_BINDING.equals(type)) {
+			String productId = configurationElement.getAttribute(IWorkbenchRegistryConstants.ATT_PRODUCTID);
 			if (product.getId().equals(productId) && targetId[0] == null) { // we
 				// found the target ID
-				targetId[0] = configurationElement
-						.getAttribute(IWorkbenchRegistryConstants.ATT_SPLASH_ID);
+				targetId[0] = configurationElement.getAttribute(IWorkbenchRegistryConstants.ATT_SPLASH_ID);
 				// check all currently located splashes
-				IConfigurationElement splashElement = (IConfigurationElement) idToSplash
-						.get(targetId[0]);
-				if (splashElement != null)
+				IConfigurationElement splashElement = (IConfigurationElement) idToSplash.get(targetId[0]);
+				if (splashElement != null) {
 					return create(splashElement);
 			}
+		}
 		}
 
 		return null;
@@ -122,26 +115,22 @@ public final class SplashHandlerFactory {
 	/**
 	 * Create the splash implementation.
 	 *
-	 * @param splashElement
-	 *            the element to create from
+	 * @param splashElement the element to create from
 	 * @return the element or <code>null</code> if it couldn't be created
 	 */
-	private static AbstractSplashHandler create(
-			final IConfigurationElement splashElement) {
+	private static AbstractSplashHandler create(final IConfigurationElement splashElement) {
 		final AbstractSplashHandler[] handler = new AbstractSplashHandler[1];
 		SafeRunner.run(new SafeRunnable() {
 
 			@Override
 			public void run() throws Exception {
-				handler[0] = (AbstractSplashHandler) WorkbenchPlugin
-						.createExtension(splashElement,
+				handler[0] = (AbstractSplashHandler) WorkbenchPlugin.createExtension(splashElement,
 								IWorkbenchRegistryConstants.ATT_CLASS);
 			}
 
 			@Override
 			public void handleException(Throwable e) {
-				WorkbenchPlugin
-						.log("Problem creating splash implementation", e); //$NON-NLS-1$
+				WorkbenchPlugin.log("Problem creating splash implementation", e); //$NON-NLS-1$
 			}
 		});
 

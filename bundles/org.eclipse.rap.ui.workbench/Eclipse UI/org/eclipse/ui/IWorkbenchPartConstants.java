@@ -15,7 +15,8 @@
 package org.eclipse.ui;
 
 /**
- * This interface describes the constants used for <link>IWorkbenchPart</link> properties.
+ * This interface describes the constants used for
+ * {@link org.eclipse.ui.IWorkbenchPart IWorkbenchPart} properties.
  * <p>
  * <b>Note:</b>This interface should not be implemented or extended.
  * </p>
@@ -26,8 +27,8 @@ package org.eclipse.ui;
 public interface IWorkbenchPartConstants {
 
     /**
-     * The property id for <code>getTitle</code>, <code>getTitleImage</code>
-     * and <code>getTitleToolTip</code>.
+	 * The property id for <code>getTitle</code>, <code>getTitleImage</code> and
+	 * <code>getTitleToolTip</code>.
      */
     int PROP_TITLE = 0x001;
 
@@ -52,7 +53,9 @@ public interface IWorkbenchPartConstants {
     int PROP_CONTENT_DESCRIPTION = 0x105;
 
     /**
-     * The property id for any method on the optional <code>ISizeProvider</code> interface
+	 * The property id for any method on the optional <code>ISizeProvider</code>
+	 * interface
+	 *
      * @since 3.4
      */
     int PROP_PREFERRED_SIZE = 0x303;

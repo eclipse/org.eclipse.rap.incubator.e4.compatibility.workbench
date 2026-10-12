@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2015 IBM Corporation and others.
+ * Copyright (c) 2010, 2024 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -41,47 +41,48 @@ import org.eclipse.ui.internal.keys.BindingService;
 
 public class BindingToModelProcessor {
 
-	private Map<String, MBindingContext> contexts = new HashMap<>();
-	private Map<String, MCommand> commands = new HashMap<>();
-	private Map<String, MBindingTable> tables = new HashMap<>();
-	private Set<MKeyBinding> keys = new HashSet<>();
+	private final Map<String, MBindingContext> contexts = new HashMap<>();
+	private final Map<String, MCommand> commands = new HashMap<>();
+	private final Map<String, MBindingTable> tables = new HashMap<>();
+	private final Set<MKeyBinding> keys = new HashSet<>();
 
 	@Execute
 	void process(final MApplication application, IEclipseContext context) {
+		clearCaches();
 		gatherContexts(application.getRootContext());
 		gatherCommands(application.getCommands());
 		gatherTables(application.getBindingTables());
 
 		CommandManager commandManager = context.get(CommandManager.class);
 		if (commandManager == null) {
-			WorkbenchPlugin
-					.log("Command manager was null in org.eclipse.ui.internal.BindingToModelProcessor"); //$NON-NLS-1$
+			WorkbenchPlugin.log("Command manager was null in org.eclipse.ui.internal.BindingToModelProcessor"); //$NON-NLS-1$
 		}
 		ContextManager contextManager = context.get(ContextManager.class);
 		if (contextManager == null) {
-			WorkbenchPlugin
-					.log("Context manager was null in org.eclipse.ui.internal.BindingToModelProcessor"); //$NON-NLS-1$
+			WorkbenchPlugin.log("Context manager was null in org.eclipse.ui.internal.BindingToModelProcessor"); //$NON-NLS-1$
 		}
 		BindingManager bindingManager = new BindingManager(contextManager, commandManager);
 		context.set(BindingManager.class, bindingManager);
 		BindingPersistence persistence = new BindingPersistence(bindingManager, commandManager);
-		persistence.read();
+		try {
+			persistence.read();
 
-		// we'll make this available, although I doubt we have a use for it
-//		application.getTags().add(
-//				EBindingService.ACTIVE_SCHEME_TAG + ':' + bindingManager.getActiveScheme().getId());
+			String activeSchemeTag = EBindingService.ACTIVE_SCHEME_TAG + ':' + bindingManager.getActiveScheme().getId();
+			application.getTags().removeIf(tag -> tag.startsWith(EBindingService.ACTIVE_SCHEME_TAG + ':'));
+			application.getTags().add(activeSchemeTag);
 
-		Collection<?> activeBindingsForScheme = bindingManager
-				.getActiveBindingsDisregardingContextFlat();
-
-		for (Object obj : activeBindingsForScheme) {
-			Binding binding = (Binding) obj;
-			addBinding(application, binding);
+			Collection<?> activeBindingsForScheme = bindingManager.getActiveBindingsDisregardingContextFlat();
+			for (Object obj : activeBindingsForScheme) {
+				addBinding(application, (Binding) obj);
+			}
+			removeBindings();
+		} finally {
+			persistence.dispose();
+			clearCaches();
 		}
+	}
 
-		removeBindings();
-
-		persistence.dispose();
+	private void clearCaches() {
 		contexts.clear();
 		commands.clear();
 		tables.clear();
@@ -97,12 +98,11 @@ public class BindingToModelProcessor {
 
 	public final void addBinding(final MApplication application, final Binding binding) {
 
-
 		MBindingTable table = tables.get(binding.getContextId());
 		if (table == null) {
 			table = createTable(application, binding.getContextId());
 		}
-		MKeyBinding model = BindingService.createORupdateMKeyBinding(application, table, binding);
+		MKeyBinding model = BindingService.createOrUpdateMKeyBinding(application, table, binding);
 		keys.remove(model);
 	}
 
@@ -110,8 +110,7 @@ public class BindingToModelProcessor {
 		for (MKeyBinding key : keys) {
 			if (!key.getTags().contains("type:user")) { //$NON-NLS-1$
 				EObject obj = ((EObject) key).eContainer();
-				if (obj instanceof MBindingTable) {
-					MBindingTable table = (MBindingTable) obj;
+				if (obj instanceof MBindingTable table) {
 					table.getBindings().remove(key);
 				}
 			}

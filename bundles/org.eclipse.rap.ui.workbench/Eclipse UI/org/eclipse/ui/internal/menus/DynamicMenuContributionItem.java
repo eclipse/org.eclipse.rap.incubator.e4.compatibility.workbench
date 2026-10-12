@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -65,7 +62,11 @@ public class DynamicMenuContributionItem extends ContributionItem {
 		this.dynamicAddition = dynamicAddition;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.action.ContributionItem#isDynamic()
+	 */
 	public boolean isDynamic() {
 		if (loadedDynamicContribution != null) {
 			return loadedDynamicContribution.isDynamic();
@@ -73,7 +74,11 @@ public class DynamicMenuContributionItem extends ContributionItem {
 		return true;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.action.ContributionItem#isDirty()
+	 */
 	public boolean isDirty() {
 		if (loadedDynamicContribution != null) {
 			return loadedDynamicContribution.isDirty();
@@ -81,76 +86,52 @@ public class DynamicMenuContributionItem extends ContributionItem {
 		return super.isDirty();
 	}
 
-	@Override
-	public boolean isEnabled() {
-		if (loadedDynamicContribution != null) {
-			return loadedDynamicContribution.isEnabled();
-		}
-		return super.isEnabled();
-	}
-
-	@Override
-	public boolean isGroupMarker() {
-		if (loadedDynamicContribution != null) {
-			return loadedDynamicContribution.isGroupMarker();
-		}
-		return super.isGroupMarker();
-	}
-
-	@Override
-	public boolean isSeparator() {
-		if (loadedDynamicContribution != null) {
-			return loadedDynamicContribution.isSeparator();
-		}
-		return super.isSeparator();
-	}
-
-	@Override
-	public boolean isVisible() {
-		if (loadedDynamicContribution != null) {
-			return loadedDynamicContribution.isVisible();
-		}
-		return super.isVisible();
-	}
-
-	@Override
-	public void saveWidgetState() {
-		if (loadedDynamicContribution != null) {
-			loadedDynamicContribution.saveWidgetState();
-		}
-		super.saveWidgetState();
-	}
-
-	@Override
-	public void setVisible(boolean visible) {
-		if (loadedDynamicContribution != null) {
-			loadedDynamicContribution.setVisible(visible);
-		}
-		super.setVisible(visible);
-	}
-
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.action.ContributionItem#fill(org.eclipse.swt.widgets
+	 * .Composite)
+	 */
 	public void fill(Composite parent) {
 		IContributionItem contributionItem = getContributionItem();
 		if (contributionItem != null)
 			contributionItem.fill(parent);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.action.ContributionItem#fill(org.eclipse.swt.widgets
+	 * .CoolBar, int)
+	 */
 	public void fill(CoolBar parent, int index) {
 		IContributionItem contributionItem = getContributionItem();
 		if (contributionItem != null)
 			contributionItem.fill(parent, index);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.action.ContributionItem#fill(org.eclipse.swt.widgets
+	 * .Menu, int)
+	 */
 	public void fill(Menu menu, int index) {
 		IContributionItem contributionItem = getContributionItem();
 		if (contributionItem != null)
 			contributionItem.fill(menu, index);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.action.ContributionItem#fill(org.eclipse.swt.widgets
+	 * .ToolBar, int)
+	 */
 	public void fill(ToolBar parent, int index) {
 		IContributionItem contributionItem = getContributionItem();
 		if (contributionItem != null)
@@ -183,7 +164,11 @@ public class DynamicMenuContributionItem extends ContributionItem {
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.action.ContributionItem#dispose()
+	 */
 	public void dispose() {
 		if (loadedDynamicContribution != null) {
 			loadedDynamicContribution.dispose();
@@ -192,21 +177,30 @@ public class DynamicMenuContributionItem extends ContributionItem {
 		super.dispose();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.action.ContributionItem#update()
+	 */
 	public void update() {
 		if (loadedDynamicContribution != null) {
 			loadedDynamicContribution.update();
 		}
 	}
 
-	@Override
 	public void update(String id) {
 		if (loadedDynamicContribution != null) {
 			loadedDynamicContribution.update(id);
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.action.ContributionItem#setParent(org.eclipse.jface
+	 * .action.IContributionManager)
+	 */
 	public void setParent(IContributionManager parent) {
 		super.setParent(parent);
 		if (loadedDynamicContribution != null) {

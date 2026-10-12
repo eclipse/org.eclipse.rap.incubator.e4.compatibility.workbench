@@ -24,9 +24,9 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
  */
 public class RegistryTriggerPoint extends AbstractTriggerPoint {
 
-    private String id;
+	private final String id;
 
-    private IConfigurationElement element;
+	private final IConfigurationElement element;
 
 	private Map<String, String> hints;
 
@@ -53,7 +53,7 @@ public class RegistryTriggerPoint extends AbstractTriggerPoint {
 
     @Override
 	public boolean getBooleanHint(String key) {
-        return Boolean.valueOf(getStringHint(key)).booleanValue();
+		return Boolean.parseBoolean(getStringHint(key));
     }
 
     /**
@@ -65,13 +65,10 @@ public class RegistryTriggerPoint extends AbstractTriggerPoint {
         if (hints == null) {
 			hints = new HashMap<>();
 
-            IConfigurationElement[] hintElements = element
-                    .getChildren(IWorkbenchRegistryConstants.TAG_HINT);
+			IConfigurationElement[] hintElements = element.getChildren(IWorkbenchRegistryConstants.TAG_HINT);
             for (IConfigurationElement hintElement : hintElements) {
-                String id = hintElement
-                        .getAttribute(IWorkbenchRegistryConstants.ATT_ID);
-                String value = hintElement
-                        .getAttribute(IWorkbenchRegistryConstants.ATT_VALUE);
+				String id = hintElement.getAttribute(IWorkbenchRegistryConstants.ATT_ID);
+				String value = hintElement.getAttribute(IWorkbenchRegistryConstants.ATT_VALUE);
 
                 if (id == null || value == null) {
 					Persistence.log(element, Persistence.ACTIVITY_TRIGGER_HINT_DESC, "hint must contain ID and value"); //$NON-NLS-1$

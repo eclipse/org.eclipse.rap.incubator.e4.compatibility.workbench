@@ -18,7 +18,7 @@ import java.util.List;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.rap.ui.internal.progress.ProgressUtil;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * The ProgressAnimationProcessor is the processor for the animation using the
@@ -29,10 +29,7 @@ class ProgressAnimationProcessor implements IAnimationProcessor {
     AnimationManager manager;
 
     /**
-     * Create a new instance of the receiver and listen to the animation
-     * manager.
-     *
-     * @param animationManager
+	 * Create a new instance of the receiver and listen to the animation manager.
      */
     ProgressAnimationProcessor(AnimationManager animationManager) {
         manager = animationManager;
@@ -47,11 +44,7 @@ class ProgressAnimationProcessor implements IAnimationProcessor {
         if (items.isEmpty()) {
 			return;
 		}
-// RAP [fappel]: use session aware approach
-//      if (!PlatformUI.isWorkbenchRunning()) {
-//			return;
-//		}
-		if (!ProgressUtil.isWorkbenchRunning(manager.display)) {
+		if (!PlatformUI.isWorkbenchRunning()) {
 			return;
 		}
 

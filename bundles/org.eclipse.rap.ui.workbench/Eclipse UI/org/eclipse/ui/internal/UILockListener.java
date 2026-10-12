@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 IBM Corporation and others.
+ * Copyright (c) 2003, 2025 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -24,8 +24,8 @@ import org.eclipse.core.runtime.jobs.LockListener;
 import org.eclipse.swt.widgets.Display;
 
 /**
- * The UI lock listener is used to prevent the UI thread from deadlocking on
- * a lock when the thread owning the lock is attempting to syncExec.
+ * The UI lock listener is used to prevent the UI thread from deadlocking on a
+ * lock when the thread owning the lock is attempting to syncExec.
  */
 public class UILockListener extends LockListener {
 
@@ -43,7 +43,6 @@ public class UILockListener extends LockListener {
 
         /**
          * Add the semaphore to the queue.
-         * @param element
          */
         public synchronized void add(PendingSyncExec element) {
             int newTail = increment(tail);
@@ -63,8 +62,7 @@ public class UILockListener extends LockListener {
 			} else {
                 int newHead = newSize - (elements.length - head);
                 System.arraycopy(elements, 0, newElements, 0, tail + 1);
-                System.arraycopy(elements, head, newElements, newHead,
-                        (newSize - newHead));
+				System.arraycopy(elements, head, newElements, newHead, (newSize - newHead));
                 head = newHead;
             }
             elements = newElements;
@@ -76,7 +74,6 @@ public class UILockListener extends LockListener {
 
         /**
          * Remove the next semaphore to be woken up.
-         * @return
          */
         public synchronized PendingSyncExec remove() {
             if (tail == head) {
@@ -94,8 +91,7 @@ public class UILockListener extends LockListener {
         }
 
         private int size() {
-            return tail > head ? (tail - head)
-                    : ((elements.length - head) + tail);
+			return tail > head ? (tail - head) : ((elements.length - head) + tail);
         }
     }
 
@@ -112,7 +108,6 @@ public class UILockListener extends LockListener {
 
     /**
      * Create a new instance of the receiver.
-     * @param display
      */
     public UILockListener(Display display) {
         this.display = display;
@@ -120,7 +115,8 @@ public class UILockListener extends LockListener {
 
     @Override
 	public void aboutToRelease() {
-        if (isUI()) {
+		Thread uiThread = ui;
+		if (uiThread != null && uiThread == Thread.currentThread()) {
 			ui = null;
 		}
     }
@@ -130,8 +126,7 @@ public class UILockListener extends LockListener {
         if (isUI()) {
             // If a syncExec was executed from the current operation, it
             // has already acquired the lock. So, just return true.
-            if (currentWork != null
-                    && currentWork.getOperationThread() == lockOwner) {
+			if (currentWork != null && currentWork.getOperationThread() == lockOwner) {
 				return true;
 			}
             ui = Thread.currentThread();
@@ -185,8 +180,11 @@ public class UILockListener extends LockListener {
     }
 
     boolean isUI() {
-        return (!display.isDisposed())
-                && (display.getThread() == Thread.currentThread());
+		try {
+			return display.getThread() == Thread.currentThread();
+		} catch (Exception e) {
+			return false;
+		}
     }
 
 	boolean isUIWaiting() {
@@ -195,8 +193,8 @@ public class UILockListener extends LockListener {
 	}
 
 	/**
-	 * Adds a 'UI thread interrupted' message to the log with extra lock state
-	 * and thread stack information.
+	 * Adds a 'UI thread interrupted' message to the log with extra lock state and
+	 * thread stack information.
 	 */
 	private void reportInterruption(Runnable runnable) {
 		Thread nonUiThread = Thread.currentThread();
@@ -206,11 +204,12 @@ public class UILockListener extends LockListener {
 				+ " will interrupt UI thread."; //$NON-NLS-1$
 		MultiStatus main = new MultiStatus(WorkbenchPlugin.PI_WORKBENCH, IStatus.ERROR, msg, null);
 
-		ThreadInfo[] threads = ManagementFactory.getThreadMXBean().getThreadInfo(new long[] { nonUiThread.getId(), display.getThread().getId() }, true, true);
+		ThreadInfo[] threads = ManagementFactory.getThreadMXBean()
+				.getThreadInfo(new long[] { nonUiThread.threadId(), display.getThread().threadId() }, true, true);
 
 		for (ThreadInfo info : threads) {
 			String childMsg;
-			if (info.getThreadId() == nonUiThread.getId()) {
+			if (info.getThreadId() == nonUiThread.threadId()) {
 				// see org.eclipse.core.internal.jobs.LockManager.isLockOwner()
 				childMsg = nonUiThread.getName() + " thread is an instance of Worker or owns an ILock"; //$NON-NLS-1$
 			} else {

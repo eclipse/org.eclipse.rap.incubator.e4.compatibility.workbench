@@ -18,7 +18,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.internal.util.Util;
 
 /**
- * </p>
+ * <p>
  * An instance of this class represents a request to enabled a context. An
  * enabled submission specifies a list of conditions under which it would be
  * appropriate for a particular context to be enabled. These conditions include
@@ -39,17 +39,15 @@ import org.eclipse.ui.internal.util.Util;
  *
  * @since 3.0
  * @see IWorkbenchContextSupport
- * @deprecated Please use <code>IContextService.activateContext</code>
- *             instead.
+ * @deprecated Please use <code>IContextService.activateContext</code> instead.
  * @see org.eclipse.ui.contexts.IContextService
  */
 @Deprecated
 public final class EnabledSubmission implements Comparable {
 
     /**
-     * The identifier of the part in which this context should be enabled. If
-     * this value is <code>null</code>, this means it should be active in any
-     * part.
+	 * The identifier of the part in which this context should be enabled. If this
+	 * value is <code>null</code>, this means it should be active in any part.
      */
     private final String activePartId;
 
@@ -66,37 +64,36 @@ public final class EnabledSubmission implements Comparable {
     private final IWorkbenchPartSite activeWorkbenchPartSite;
 
     /**
-     * The identifier for the context that should be enabled by this
-     * submissions. This value should never be <code>null</code>.
+	 * The identifier for the context that should be enabled by this submissions.
+	 * This value should never be <code>null</code>.
      */
     private final String contextId;
 
     /**
      * The cached string representation of this instance. This value is computed
-     * lazily on the first call to retrieve the string representation, and the
-     * cache is used for all future calls. If this value is <code>null</code>,
-     * then the value has not yet been computed.
+	 * lazily on the first call to retrieve the string representation, and the cache
+	 * is used for all future calls. If this value is <code>null</code>, then the
+	 * value has not yet been computed.
      */
     private transient String string = null;
 
     /**
      * Creates a new instance of this class.
      *
-     * @param activePartId
-     *            the identifier of the part that must be active for this
-     *            request to be considered. May be <code>null</code>.
-     * @param activeShell
-     *            the shell that must be active for this request to be
-     *            considered. May be <code>null</code>.
-     * @param activeWorkbenchPartSite
-     *            the workbench part site of the part that must be active for
-     *            this request to be considered. May be <code>null</code>.
-     * @param contextId
-     *            the identifier of the context to be enabled. Must not be
+	 * @param activePartId            the identifier of the part that must be active
+	 *                                for this request to be considered. May be
      *            <code>null</code>.
+	 * @param activeShell             the shell that must be active for this request
+	 *                                to be considered. May be <code>null</code>.
+	 * @param activeWorkbenchPartSite the workbench part site of the part that must
+	 *                                be active for this request to be considered.
+	 *                                May be <code>null</code>.
+	 * @param contextId               the identifier of the context to be enabled.
+	 *                                Must not be <code>null</code>.
      */
-    public EnabledSubmission(String activePartId, Shell activeShell,
-            IWorkbenchPartSite activeWorkbenchPartSite, String contextId) {
+	@Deprecated
+	public EnabledSubmission(String activePartId, Shell activeShell, IWorkbenchPartSite activeWorkbenchPartSite,
+			String contextId) {
         if (contextId == null) {
 			throw new NullPointerException();
 		}
@@ -110,11 +107,11 @@ public final class EnabledSubmission implements Comparable {
     /**
      * @see Comparable#compareTo(java.lang.Object)
      */
+	@Deprecated
     @Override
 	public int compareTo(Object object) {
         EnabledSubmission castedObject = (EnabledSubmission) object;
-        int compareTo = Util.compare(activeWorkbenchPartSite,
-                castedObject.activeWorkbenchPartSite);
+		int compareTo = Util.compare(activeWorkbenchPartSite, castedObject.activeWorkbenchPartSite);
 
         if (compareTo == 0) {
             compareTo = Util.compare(activePartId, castedObject.activePartId);
@@ -132,12 +129,13 @@ public final class EnabledSubmission implements Comparable {
     }
 
     /**
-     * Returns the identifier of the part that must be active for this request
-     * to be considered.
+	 * Returns the identifier of the part that must be active for this request to be
+	 * considered.
      *
-     * @return the identifier of the part that must be active for this request
-     *         to be considered. May be <code>null</code>.
+	 * @return the identifier of the part that must be active for this request to be
+	 *         considered. May be <code>null</code>.
      */
+	@Deprecated
     public String getActivePartId() {
         return activePartId;
     }
@@ -145,9 +143,10 @@ public final class EnabledSubmission implements Comparable {
     /**
      * Returns the shell that must be active for this request to be considered.
      *
-     * @return the shell that must be active for this request to be considered.
-     *         May be <code>null</code>.
+	 * @return the shell that must be active for this request to be considered. May
+	 *         be <code>null</code>.
      */
+	@Deprecated
     public Shell getActiveShell() {
         return activeShell;
     }
@@ -159,6 +158,7 @@ public final class EnabledSubmission implements Comparable {
      * @return the workbench part site of the part that must be active for this
      *         request to be considered. May be <code>null</code>.
      */
+	@Deprecated
     public IWorkbenchPartSite getActiveWorkbenchPartSite() {
         return activeWorkbenchPartSite;
     }
@@ -169,6 +169,7 @@ public final class EnabledSubmission implements Comparable {
      * @return the identifier of the context to be enabled. Guaranteed not to be
      *         <code>null</code>.
      */
+	@Deprecated
     public String getContextId() {
         return contextId;
     }
@@ -176,6 +177,7 @@ public final class EnabledSubmission implements Comparable {
     /**
      * @see Object#toString()
      */
+	@Deprecated
     @Override
 	public String toString() {
         if (string == null) {

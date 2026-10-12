@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *   IBM Corporation - initial API and implementation
@@ -18,17 +15,21 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
+//import org.eclipse.swt.SWTException;
+//import org.eclipse.swt.accessibility.Accessible;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+//import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
@@ -42,7 +43,7 @@ import org.eclipse.ui.progress.WorkbenchJob;
  * elements are sorted alphabetically. Optionally, the elements can be filtered
  * and duplicate entries can be hidden (folding).
  *
- * @since 2.0
+ * @since 1.1
  */
 public class FilteredList extends Composite {
 	/**
@@ -78,14 +79,12 @@ public class FilteredList extends Composite {
 	private class DefaultFilterMatcher implements FilterMatcher {
 		private StringMatcher fMatcher;
 
-		@Override
 		public void setFilter(String pattern, boolean ignoreCase,
 				boolean ignoreWildCards) {
 			fMatcher = new StringMatcher(pattern + '*', ignoreCase,
 					ignoreWildCards);
 		}
 
-		@Override
 		public boolean match(Object element) {
 			return fMatcher.match(fLabelProvider.getText(element));
 		}
@@ -186,7 +185,6 @@ public class FilteredList extends Composite {
 			labelIgnoreCase = ignoreCase;
 		}
 
-		@Override
 		public int compare(Object left, Object right) {
 			Label leftLabel = (Label) left;
 			Label rightLabel = (Label) right;
@@ -242,10 +240,12 @@ public class FilteredList extends Composite {
 		fList = new Table(this, style);
 		fList.setLayoutData(new GridData(GridData.FILL_BOTH));
 		fList.setFont(parent.getFont());
-		fList.addDisposeListener(e -> {
+		fList.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
 			fLabelProvider.dispose();
 			if (fUpdateJob != null) {
 				fUpdateJob.cancel();
+			}
 			}
 		});
 		fLabelProvider = labelProvider;
@@ -279,7 +279,6 @@ public class FilteredList extends Composite {
 			fLabels[i] = new Label(text, image);
 			imageSet.add(image);
 		}
-		fList.deselectAll();
 		fImages.clear();
 		fImages.addAll(imageSet);
 		fSorter.sort(fLabels, fElements);
@@ -567,7 +566,11 @@ public class FilteredList extends Composite {
 			fCount = count;
 		}
 
-@Override
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.ui.progress.UIJob#runInUIThread(org.eclipse.core.runtime.IProgressMonitor)
+		 */
 public IStatus runInUIThread(IProgressMonitor monitor) {
             if (fTable.isDisposed()) {
 				return Status.CANCEL_STATUS;
@@ -770,7 +773,6 @@ public IStatus runInUIThread(IProgressMonitor monitor) {
 //	 *
 //	 * @since 3.3
 //	 */
-//	@Override
 //	public Accessible getAccessible() {
 //		return fList.getAccessible();
 //	}

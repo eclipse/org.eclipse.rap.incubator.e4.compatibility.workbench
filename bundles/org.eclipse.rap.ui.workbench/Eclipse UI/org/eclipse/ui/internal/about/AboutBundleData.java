@@ -1,13 +1,10 @@
 // RAP [rh] AboutDialog left out for now
 ///*******************************************************************************
-// * Copyright (c) 2004, 2015 IBM Corporation and others.
-// *
-// * This program and the accompanying materials
-// * are made available under the terms of the Eclipse Public License 2.0
+// * Copyright (c) 2004, 2010 IBM Corporation and others.
+// * All rights reserved. This program and the accompanying materials
+// * are made available under the terms of the Eclipse Public License v1.0
 // * which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-2.0/
-// *
-// * SPDX-License-Identifier: EPL-2.0
+// * http://www.eclipse.org/legal/epl-v10.html
 // *
 // * Contributors:
 // *     IBM Corporation - initial API and implementation
@@ -16,7 +13,6 @@
 //
 //import java.io.IOException;
 //import java.security.GeneralSecurityException;
-//
 //import org.eclipse.core.runtime.Platform;
 //import org.eclipse.osgi.signedcontent.SignedContent;
 //import org.eclipse.osgi.signedcontent.SignedContentFactory;
@@ -56,8 +52,8 @@
 //    }
 //
 //    /**
-//    * @return a string representation of the argument state.
-//    *         Does not return null.
+//     * Return a string representation of the arugment state. Does not return
+//     * null.
 //    */
 //    public String getStateName() {
 //        switch (getState()) {
@@ -87,7 +83,7 @@
 //     * @return the string or null if the string cannot be found
 //     */
 //    private static String getResourceString(Bundle bundle, String headerName) {
-//        String value = bundle.getHeaders().get(headerName);
+//        String value = (String) bundle.getHeaders().get(headerName);
 //        return value == null ? null : Platform.getResourceString(bundle, value);
 //    }
 //
@@ -102,28 +98,28 @@
 //
 //		BundleContext bundleContext = WorkbenchPlugin.getDefault()
 //				.getBundleContext();
-//		ServiceReference<?> factoryRef = bundleContext
+//		ServiceReference factoryRef = bundleContext
 //				.getServiceReference(SignedContentFactory.class.getName());
 //		if (factoryRef == null)
 //			throw new IllegalStateException();
 //		SignedContentFactory contentFactory = (SignedContentFactory) bundleContext
 //				.getService(factoryRef);
 //		try {
+//			isSignedDetermined = true;
 //			SignedContent signedContent = contentFactory.getSignedContent(bundle);
 //			isSigned = signedContent != null && signedContent.isSigned();
-//			isSignedDetermined = true;
-//			return isSigned;
 //		} catch (IOException e) {
-//			throw (IllegalStateException) new IllegalStateException().initCause(e);
+//			isSigned = false;
 //		} catch (GeneralSecurityException e){
-//			throw (IllegalStateException) new IllegalStateException().initCause(e);
+//			isSigned = false;
 //		} finally {
 //			bundleContext.ungetService(factoryRef);
 //		}
+//		return isSigned;
 //	}
 //
 //	/**
-//	 * @return current bundle
+//	 * @return
 //	 */
 //	public Bundle getBundle() {
 //		return bundle;
@@ -189,40 +185,40 @@
 ////					{
 ////						checked++;
 ////						JarEntry je = (JarEntry)list.get(index);
-////						Certificate[] certs = je.getCertificates();
-////						if( certs != null )
-////						{
-////							//Something in this jar is signed by something!!
-////							signed = true;
-////							infoLine[5] = "Signed by "+certs[0].toString();
-////							break;
-////						}
-////
-////					}
-////					if( !signed )
-////					{
-////						infoLine[5] = "Not signed";
-////					}
-////
-////			boolean isSigned = false;
-////        	while( e.hasMoreElements() )
-////        	{
-////        		JarEntry entry = (JarEntry)e.nextElement();
-////
-////        		if( entry.getName().matches("[mM][eE][tT][aA][-][iI][nN][fF]/.*[.][sS][fF]"))
-////        		{
-////        			isSigned = true;
-////        			break;
-////        		}
-////        		if( !entry.getName().matches("[mM][eE][tT][aA][-][iI][nN][fF].*"))
-////        		{
-////        			break;
-////        		}
-////        	}
-////        	return isSigned ? "Signed!" : "Not Signed.";
-////
-////		} catch (IOException e) {
-////			return "Couldn't open jar file: " + e.toString();
-////		} */
-////    }
+//						Certificate[] certs = je.getCertificates();
+//						if( certs != null )
+//						{
+//							//Something in this jar is signed by something!!
+//							signed = true;
+//							infoLine[5] = "Signed by "+certs[0].toString();
+//							break;
+//						}
+//						
+//					}
+//					if( !signed )
+//					{
+//						infoLine[5] = "Not signed";
+//					}
+//        		
+//			boolean isSigned = false;
+//        	while( e.hasMoreElements() )
+//        	{
+//        		JarEntry entry = (JarEntry)e.nextElement();
+//        		
+//        		if( entry.getName().matches("[mM][eE][tT][aA][-][iI][nN][fF]/.*[.][sS][fF]"))
+//        		{
+//        			isSigned = true;
+//        			break;
+//        		}
+//        		if( !entry.getName().matches("[mM][eE][tT][aA][-][iI][nN][fF].*"))
+//        		{
+//        			break;
+//        		}
+//        	}
+//        	return isSigned ? "Signed!" : "Not Signed.";
+//
+//		} catch (IOException e) {
+//			return "Couldn't open jar file: " + e.toString();
+//		} */
+//    }
 //}

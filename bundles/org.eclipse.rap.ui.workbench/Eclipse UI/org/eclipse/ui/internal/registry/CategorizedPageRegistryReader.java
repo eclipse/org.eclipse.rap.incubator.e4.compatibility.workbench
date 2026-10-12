@@ -24,8 +24,8 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.misc.StatusUtil;
 
 /**
- * The CategorizedPageRegistryReader is the abstract super class
- * of registry readers for page that have categorization.
+ * The CategorizedPageRegistryReader is the abstract super class of registry
+ * readers for page that have categorization.
  */
 public abstract class CategorizedPageRegistryReader extends RegistryReader {
 
@@ -33,13 +33,13 @@ public abstract class CategorizedPageRegistryReader extends RegistryReader {
 
 	static final String PREFERENCE_SEPARATOR = "/"; //$NON-NLS-1$
 
-	List topLevelNodes;
+	List<Object> topLevelNodes;
 
 	/**
-	 * Internal class used to sort all the preference page nodes
-	 * based on the category.
+	 * Internal class used to sort all the preference page nodes based on the
+	 * category.
 	 */
-	abstract class CategoryNode {
+	abstract static class CategoryNode {
 		/**
 		 * Comment for <code>reader</code>
 		 */
@@ -71,13 +71,14 @@ public abstract class CategorizedPageRegistryReader extends RegistryReader {
 
 		/**
 		 * Get the label text for this node.
+		 *
 		 * @return String
 		 */
 		abstract String getLabelText();
 
 		/*
-		 * Initialize the flat category to include the parents'
-		 * category names and the current node's label
+		 * Initialize the flat category to include the parents' category names and the
+		 * current node's label
 		 */
 		private void initialize() {
 			String category = reader.getCategory(getNode());
@@ -109,13 +110,14 @@ public abstract class CategorizedPageRegistryReader extends RegistryReader {
 
 		/**
 		 * Return the label text for the passed element.
-		 * @param element
+		 *
 		 * @return String
 		 */
 		abstract String getLabelText(Object element);
 
 		/**
 		 * Get the node the receiver represents.
+		 *
 		 * @return Object
 		 */
 		abstract Object getNode();
@@ -132,13 +134,12 @@ public abstract class CategorizedPageRegistryReader extends RegistryReader {
 	 * Process the preference page nodes.
 	 */
 	void processNodes() {
-		topLevelNodes = new ArrayList();
+		topLevelNodes = new ArrayList<>();
 		//root nodes (which contain subnodes)
 
 		//Add root nodes to the contributions vector
 		StringTokenizer tokenizer;
 		String currentToken;
-
 
 		CategoryNode[] nodes = createCategoryNodes(getNodes());
 		// flag to indicate that some work was done in the inner loop over the nodes
@@ -146,7 +147,7 @@ public abstract class CategorizedPageRegistryReader extends RegistryReader {
 		do {
 			//reset the flag
 			workDone = false;
-			List deferred = new ArrayList();
+			List<CategoryNode> deferred = new ArrayList<>();
 			for (CategoryNode categoryNode : nodes) {
 				Object node = categoryNode.getNode();
 
@@ -183,15 +184,13 @@ public abstract class CategorizedPageRegistryReader extends RegistryReader {
 				}
 			}
 			// reset the nodes to all that have yet to find their proper parent
-			nodes = (CategoryNode[]) deferred.toArray(new CategoryNode[deferred
-					.size()]);
+			nodes = deferred.toArray(new CategoryNode[deferred.size()]);
 		} while (nodes.length > 0 && workDone); // loop while we still have nodes to work on and the list is shrinking
 
 		// log anything left over.
 		for (CategoryNode categoryNode : nodes) {
 			// Could not find the parent - log
-			WorkbenchPlugin.log(StatusUtil.newStatus(IStatus.WARNING,
-					invalidCategoryNodeMessage(categoryNode), null));
+			WorkbenchPlugin.log(StatusUtil.newStatus(IStatus.WARNING, invalidCategoryNodeMessage(categoryNode), null));
 			topLevelNodes.add(categoryNode.getNode());
 		}
 	}
@@ -199,8 +198,7 @@ public abstract class CategorizedPageRegistryReader extends RegistryReader {
 	/**
 	 * Return a warning message for an invalid category path.
 	 *
-	 * @param categoryNode
-	 *            the unknown category node
+	 * @param categoryNode the unknown category node
 	 * @return an english string suitable for logging
 	 */
 	protected abstract String invalidCategoryNodeMessage(CategoryNode categoryNode);
@@ -209,65 +207,56 @@ public abstract class CategorizedPageRegistryReader extends RegistryReader {
 	 * Get the category for the node if there is one. If there isn't return
 	 * <code>null</code>.
 	 *
-	 * @param node
 	 * @return String or <code>null</code>.
 	 */
 	abstract String getCategory(Object node);
 
 	/**
 	 * Add the node to the parent.
-	 * @param parent
-	 * @param node
 	 */
 	abstract void add(Object parent, Object node);
 
 	/**
 	 * Get the nodes for the receiver.
+	 *
 	 * @return Collection of Object
 	 */
-	abstract Collection getNodes();
+	abstract Collection<?> getNodes();
 
 	/**
-	 * Sort the nodes based on full category + name. Category used for sorting
-	 * is created by substituting node IDs with labels of the referenced
-	 * nodes. workbench node is excluded from sorting because it always
-	 * appears first in the dialog.
+	 * Sort the nodes based on full category + name. Category used for sorting is
+	 * created by substituting node IDs with labels of the referenced nodes.
+	 * workbench node is excluded from sorting because it always appears first in
+	 * the dialog.
 	 */
-	CategoryNode[] createCategoryNodes(Collection nodesToCategorize) {
+	CategoryNode[] createCategoryNodes(Collection<?> nodesToCategorize) {
 		//sort by categories
-		List nodes = new ArrayList();
+		List<CategoryNode> nodes = new ArrayList<>();
 
-		Iterator nodesIterator = nodesToCategorize.iterator();
+		Iterator<?> nodesIterator = nodesToCategorize.iterator();
 		while (nodesIterator.hasNext()) {
 			nodes.add(createCategoryNode(this, nodesIterator.next()));
 		}
 
-		return (CategoryNode[]) nodes.toArray(new CategoryNode[nodes.size()]);
+		return nodes.toArray(new CategoryNode[nodes.size()]);
 	}
 
 	/**
-	 * Create a node for categorization from the reader
-	 * and the supplied object.
-	 * @param reader
-	 * @param object
+	 * Create a node for categorization from the reader and the supplied object.
+	 *
 	 * @return CategoryNode
 	 */
 	abstract CategoryNode createCategoryNode(CategorizedPageRegistryReader reader, Object object);
 
 	/**
 	 * Searches for the top-level node with the given id.
-	 * @param id
-	 * @return Object of the type being categorized or
-	 * <code>null</code>
+	 *
+	 * @return Object of the type being categorized or <code>null</code>
 	 */
 	abstract Object findNode(String id);
 
 	/**
-	 * Find the node with the given parent with the id
-	 * of currentToken.
-	 * @param parent
-	 * @param currentToken
-	 * @return
+	 * Find the node with the given parent with the id of currentToken.
 	 */
 	abstract Object findNode(Object parent, String currentToken);
 

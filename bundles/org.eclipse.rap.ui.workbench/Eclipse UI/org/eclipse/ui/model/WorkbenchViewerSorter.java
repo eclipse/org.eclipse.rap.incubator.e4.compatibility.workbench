@@ -19,9 +19,9 @@ import org.eclipse.jface.viewers.IBasicPropertyConstants;
 import org.eclipse.jface.viewers.ViewerSorter;
 
 /**
- * A viewer sorter that sorts elements with registered workbench adapters by their text property.
- * Note that capitalization differences are not considered by this
- * sorter, so a &gt; B &gt; c
+ * A viewer sorter that sorts elements with registered workbench adapters by
+ * their text property. Note that capitalization differences are not considered
+ * by this sorter, so a &gt; B &gt; c
  *
  * @see IWorkbenchAdapter
  * @deprecated as of 3.3, use {@link WorkbenchViewerComparator} instead
@@ -32,6 +32,7 @@ public class WorkbenchViewerSorter extends ViewerSorter {
     /**
      * Creates a workbench viewer sorter using the default collator.
      */
+	@Deprecated
     public WorkbenchViewerSorter() {
         super();
     }
@@ -41,10 +42,12 @@ public class WorkbenchViewerSorter extends ViewerSorter {
      *
      * @param collator the collator to use to sort strings
      */
+	@Deprecated
     public WorkbenchViewerSorter(Collator collator) {
         super(collator);
     }
 
+	@Deprecated
     @Override
 	public boolean isSorterProperty(Object element, String propertyId) {
         return propertyId.equals(IBasicPropertyConstants.P_TEXT);

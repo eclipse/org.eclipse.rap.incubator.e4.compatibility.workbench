@@ -218,7 +218,7 @@ public class ProgressAnimationItem extends AnimationItem implements
 //		if (!PlatformUI.isWorkbenchRunning()) {
 //			return;
 //		}
-		Display display = AnimationManager.getInstance().display;
+		Display display = toolbar.getDisplay();
 		if (!ProgressUtil.isWorkbenchRunning(display)) {
 			return;
 		}
@@ -414,3 +414,4 @@ public class ProgressAnimationItem extends AnimationItem implements
 	}
 
 }
+

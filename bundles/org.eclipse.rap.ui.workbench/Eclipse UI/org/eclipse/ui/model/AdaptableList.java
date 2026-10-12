@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2003, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -17,6 +14,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IAdaptable;
 
@@ -28,7 +26,7 @@ import org.eclipse.core.runtime.IAdaptable;
  * This class is not intended to be subclassed.
  * </p>
  *
- * @since 3.0
+ * @since 1.0
  * @see org.eclipse.ui.model.IWorkbenchAdapter
  * @noextend This class is not intended to be subclassed by clients.
  */
@@ -61,8 +59,8 @@ public class AdaptableList extends WorkbenchAdapter implements IAdaptable {
      */
     public AdaptableList(IAdaptable[] newChildren) {
         this(newChildren.length);
-        for (IAdaptable adaptable : newChildren) {
-            children.add(adaptable);
+        for (int i = 0; i < newChildren.length; i++) {
+            children.add(newChildren[i]);
         }
     }
 
@@ -110,15 +108,19 @@ public class AdaptableList extends WorkbenchAdapter implements IAdaptable {
         return children.size();
     }
 
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
+    /* (non-Javadoc)
+     * @see IAdaptable#getAdapter
+     */
+    public Object getAdapter(Class adapter) {
         if (adapter == IWorkbenchAdapter.class) {
-			return adapter.cast(this);
+            return this;
         }
         return null;
     }
 
-    @Override
+    /* (non-Javadoc)
+     * @see IWorkbenchAdapter
+     */
 	public Object[] getChildren(Object o) {
         // @issue suspicious - does not reference parameter
         return children.toArray();
@@ -145,7 +147,9 @@ public class AdaptableList extends WorkbenchAdapter implements IAdaptable {
 				.size()));
 	}
 
-    @Override
+    /* (non-javadoc)
+     * For debugging purposes only.
+     */
 	public String toString() {
         return children.toString();
     }

@@ -13,20 +13,21 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.misc;
 
+import java.util.HashMap;
 import org.eclipse.core.runtime.PerformanceStats;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * This class is used for monitoring performance events.  Each performance
- * event has an associated option in the org.eclipse.ui plugin's .options file
- * that specifies an maximum acceptable duration for that event.
+ * This class is used for monitoring performance events. Each performance event
+ * has an associated option in the org.eclipse.ui plugin's .options file that
+ * specifies an maximum acceptable duration for that event.
  *
  * @see org.eclipse.core.runtime.PerformanceStats
  */
 public class UIStats {
 
-// RAP [rh] unused field
-//	 private static HashMap operations = new HashMap();
+	private static HashMap operations = new HashMap();
 
     public static final int CREATE_PART = 0;
 
@@ -99,13 +100,11 @@ public class UIStats {
      * Returns whether tracing of the given debug event is turned on.
      *
      * @param event The event id
-     * @return <code>true</code> if tracing of this event is turned on,
-     * and <code>false</code> otherwise.
+	 * @return <code>true</code> if tracing of this event is turned on, and
+	 *         <code>false</code> otherwise.
      */
     public static boolean isDebugging(int event) {
-// RAP [rh] keep public methods but disable their functionality
         return debug[event];
-//        return false;
     }
 
     /**
@@ -115,32 +114,30 @@ public class UIStats {
      * @param label The event label
      */
     public static void start(int event, String label) {
-// RAP [rh] keep public methods but disable their functionality
-//      if (debug[event]) {
-//			operations.put(event + label, new Long(System.currentTimeMillis()));
-//		}
+		if (debug[event]) {
+			operations.put(event + label, Long.valueOf(System.currentTimeMillis()));
+		}
     }
 
     /**
      * Indicates the end of a performance operation
      *
      * @param event The event id
-     * @param blame An object that is responsible for the event that occurred,
-     * or that uniquely describes the event that occurred
+	 * @param blame An object that is responsible for the event that occurred, or
+	 *              that uniquely describes the event that occurred
      * @param label The event label
      */
    	public static void end(int event, Object blame, String label) {
-// RAP [rh] keep public methods but disable their functionality
-//        if (debug[event]) {
-//            Long startTime = (Long) operations.remove(event + label);
-//            if (startTime == null) {
-//				return;
-//			}
-//            final long elapsed = System.currentTimeMillis() - startTime.longValue();
-////			System.out.println("Time - " + //$NON-NLS-1$
-////                    elapsed + events[event] + label);
-//            PerformanceStats.getStats(events[event], blame).addRun(elapsed, label);
-//        }
+		if (debug[event]) {
+			Long startTime = (Long) operations.remove(event + label);
+			if (startTime == null) {
+				return;
+			}
+			final long elapsed = System.currentTimeMillis() - startTime.longValue();
+//			System.out.println("Time - " + //$NON-NLS-1$
+//                    elapsed + events[event] + label);
+			PerformanceStats.getStats(events[event], blame).addRun(elapsed, label);
+		}
     }
 
    	/**
@@ -148,23 +145,22 @@ public class UIStats {
    	 * loop has started running.
    	 */
    	public static void startupComplete() {
-// RAP [rh] keep public methods but disable their functionality
-//   		// We use a runtime debug option here for backwards compatibility (bug 96672)
-//		// Note that this value is only relevant if the workspace chooser is not used.
-//   		String option = Platform.getDebugOption(Platform.PI_RUNTIME + "/debug"); //$NON-NLS-1$
-//		if (option == null || !"true".equalsIgnoreCase(option)) { //$NON-NLS-1$
-//			return;
-//		}
-//		String startString = System.getProperty("eclipse.startTime"); //$NON-NLS-1$
-//		if (startString == null) {
-//			return;
-//		}
-//		try {
-//			long start = Long.parseLong(startString);
-//			long end = System.currentTimeMillis();
-//			System.out.println("Startup complete: " + (end - start) + "ms"); //$NON-NLS-1$ //$NON-NLS-2$
-//		} catch (NumberFormatException e) {
-//			//this is just debugging code -- ok to swallow exception
-//		}
+		// We use a runtime debug option here for backwards compatibility (bug 96672)
+		// Note that this value is only relevant if the workspace chooser is not used.
+		String option = Platform.getDebugOption(Platform.PI_RUNTIME + "/debug"); //$NON-NLS-1$
+		if (option == null || !"true".equalsIgnoreCase(option)) { //$NON-NLS-1$
+			return;
+		}
+		String startString = System.getProperty("eclipse.startTime"); //$NON-NLS-1$
+		if (startString == null) {
+			return;
+		}
+		try {
+			long start = Long.parseLong(startString);
+			long end = System.currentTimeMillis();
+			System.out.println("Startup complete: " + (end - start) + "ms"); //$NON-NLS-1$ //$NON-NLS-2$
+		} catch (NumberFormatException e) {
+			// this is just debugging code -- ok to swallow exception
+		}
 	}
 }

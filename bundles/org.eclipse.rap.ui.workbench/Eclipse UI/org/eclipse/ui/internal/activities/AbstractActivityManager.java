@@ -22,12 +22,13 @@ import org.eclipse.ui.activities.IActivityManagerListener;
 public abstract class AbstractActivityManager implements IActivityManager {
 	private ListenerList<IActivityManagerListener> activityManagerListeners;
 
+	private boolean disposed;
+
     protected AbstractActivityManager() {
     }
 
     @Override
-	public void addActivityManagerListener(
-            IActivityManagerListener activityManagerListener) {
+	public void addActivityManagerListener(IActivityManagerListener activityManagerListener) {
         if (activityManagerListener == null) {
 			throw new NullPointerException();
 		}
@@ -39,8 +40,7 @@ public abstract class AbstractActivityManager implements IActivityManager {
 		activityManagerListeners.add(activityManagerListener);
     }
 
-    protected void fireActivityManagerChanged(
-            ActivityManagerEvent activityManagerEvent) {
+	protected void fireActivityManagerChanged(ActivityManagerEvent activityManagerEvent) {
         if (activityManagerEvent == null) {
 			throw new NullPointerException();
 		}
@@ -53,8 +53,7 @@ public abstract class AbstractActivityManager implements IActivityManager {
     }
 
     @Override
-	public void removeActivityManagerListener(
-            IActivityManagerListener activityManagerListener) {
+	public void removeActivityManagerListener(IActivityManagerListener activityManagerListener) {
         if (activityManagerListener == null) {
 			throw new NullPointerException();
 		}
@@ -63,4 +62,15 @@ public abstract class AbstractActivityManager implements IActivityManager {
 			activityManagerListeners.remove(activityManagerListener);
 		}
     }
+
+	@Override
+	public void dispose() {
+		activityManagerListeners.clear();
+		disposed = true;
+	}
+
+	protected boolean isDisposed() {
+		return disposed;
+	}
+
 }

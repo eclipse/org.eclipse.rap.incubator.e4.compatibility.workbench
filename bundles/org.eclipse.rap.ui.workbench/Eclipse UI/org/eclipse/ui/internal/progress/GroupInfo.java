@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2003, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -15,9 +12,7 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.progress;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.*;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
@@ -27,32 +22,47 @@ import org.eclipse.osgi.util.NLS;
  */
 
 class GroupInfo extends JobTreeElement implements IProgressMonitor {
-	private List<JobInfo> infos = new ArrayList<>();
+
+	private List infos = new ArrayList();
+
 	private Object lock = new Object();
-	private String taskName = ProgressMessages.get().SubTaskInfo_UndefinedTaskName;
-	boolean isActive;
+
+	private String taskName;
+
+	boolean isActive = false;
+
 	double total = -1;
+
 	double currentWork;
 
-	public GroupInfo() {
-		super();
-	}
-
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.progress.JobTreeElement#hasChildren()
+	 */
 	boolean hasChildren() {
 		synchronized (lock) {
 			return !infos.isEmpty();
 		}
+
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.progress.JobTreeElement#getChildren()
+	 */
 	Object[] getChildren() {
 		synchronized (lock) {
 			return infos.toArray();
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.progress.JobTreeElement#getDisplayString()
+	 */
 	String getDisplayString() {
 		if (total < 0) {
 			return taskName;
@@ -60,11 +70,13 @@ class GroupInfo extends JobTreeElement implements IProgressMonitor {
 		String[] messageValues = new String[2];
 		messageValues[0] = taskName;
 		messageValues[1] = String.valueOf(getPercentDone());
-		return NLS.bind(ProgressMessages.get().JobInfo_NoTaskNameDoneMessage, messageValues);
+		return NLS.bind(ProgressMessages.get().JobInfo_NoTaskNameDoneMessage,
+				messageValues);
+
 	}
 
 	/**
-	 * Returns an integer representing the amount of work completed.
+	 * Return an integer representing the amount of work completed.
 	 *
 	 * @return int
 	 */
@@ -72,90 +84,146 @@ class GroupInfo extends JobTreeElement implements IProgressMonitor {
 		return (int) (currentWork * 100 / total);
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.progress.JobTreeElement#isJobInfo()
+	 */
 	boolean isJobInfo() {
 		return false;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	public int compareTo(Object arg0) {
+		return getDisplayString().compareTo(
+				((JobTreeElement) arg0).getDisplayString());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.core.runtime.IProgressMonitor#beginTask(java.lang.String,
+	 * int)
+	 */
 	public void beginTask(String name, int totalWork) {
-		taskName = name != null && !name.isEmpty() ? name : ProgressMessages.get().SubTaskInfo_UndefinedTaskName;
+		if (name == null)
+			name = ProgressMessages.get().SubTaskInfo_UndefinedTaskName;
+		else
+			taskName = name;
 		total = totalWork;
 		synchronized (lock) {
 			isActive = true;
 		}
 		ProgressManager.getInstance().refreshGroup(this);
+
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.IProgressMonitor#done()
+	 */
 	public void done() {
 		synchronized (lock) {
 			isActive = false;
 		}
 		updateInProgressManager();
+
 	}
 
 	/**
-	 * Updates the receiver in the progress manager. If all of the jobs are
+	 * Update the receiver in the progress manager. If all of the jobs are
 	 * finished and the receiver is not being kept then remove it.
 	 */
 	private void updateInProgressManager() {
-		for (JobInfo info : infos) {
-			if (!(info.getJob().getState() == Job.NONE)) {
+		Iterator infoIterator = infos.iterator();
+		while (infoIterator.hasNext()) {
+			JobInfo next = (JobInfo) infoIterator.next();
+			if (!(next.getJob().getState() == Job.NONE)) {
 				ProgressManager.getInstance().refreshGroup(this);
 				return;
 			}
 		}
 
-		if (FinishedJobs.getInstance().isKept(this)) {
+		if (FinishedJobs.getInstance().isKept(this))
 			ProgressManager.getInstance().refreshGroup(this);
-		} else {
+		else
 			ProgressManager.getInstance().removeGroup(this);
-		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.IProgressMonitor#internalWorked(double)
+	 */
 	public void internalWorked(double work) {
 		synchronized (lock) {
 			currentWork += work;
 		}
+
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.IProgressMonitor#isCanceled()
+	 */
 	public boolean isCanceled() {
-		// Just a group so no cancel state.
+		// Just a group so no cancel state
 		return false;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.IProgressMonitor#setCanceled(boolean)
+	 */
 	public void setCanceled(boolean value) {
 		cancel();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.core.runtime.IProgressMonitor#setTaskName(java.lang.String)
+	 */
 	public void setTaskName(String name) {
 		synchronized (this) {
 			isActive = true;
 		}
-		if (name == null) {
+		if (name == null)
 			taskName = ProgressMessages.get().SubTaskInfo_UndefinedTaskName;
-		} else {
+		else
 			taskName = name;
-		}
+
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.IProgressMonitor#subTask(java.lang.String)
+	 */
 	public void subTask(String name) {
-		// Not interesting for this monitor.
+		// Not interesting for this monitor
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.core.runtime.IProgressMonitor#worked(int)
+	 */
 	public void worked(int work) {
 		internalWorked(work);
 	}
 
 	/**
-	 * Removes the job from the list of jobs.
+	 * Remove the job from the list of jobs.
 	 *
 	 * @param job
 	 */
@@ -169,7 +237,7 @@ class GroupInfo extends JobTreeElement implements IProgressMonitor {
 	}
 
 	/**
-	 * Removes the job from the list of jobs.
+	 * Remove the job from the list of jobs.
 	 *
 	 * @param job
 	 */
@@ -179,21 +247,34 @@ class GroupInfo extends JobTreeElement implements IProgressMonitor {
 		}
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.progress.JobTreeElement#isActive()
+	 */
 	boolean isActive() {
 		return isActive;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.progress.JobTreeElement#cancel()
+	 */
 	public void cancel() {
-		for (Object jobInfo : getChildren()) {
-			((JobInfo) jobInfo).cancel();
+		Object[] jobInfos = getChildren();
+		for (int i = 0; i < jobInfos.length; i++) {
+			((JobInfo) jobInfos[i]).cancel();
 		}
 		// Call the refresh so that this is updated immediately
 		updateInProgressManager();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.internal.progress.JobTreeElement#isCancellable()
+	 */
 	public boolean isCancellable() {
 		return true;
 	}

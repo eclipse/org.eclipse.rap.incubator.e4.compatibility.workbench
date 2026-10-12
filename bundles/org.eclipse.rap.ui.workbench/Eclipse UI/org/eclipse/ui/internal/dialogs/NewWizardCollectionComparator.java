@@ -19,13 +19,13 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.ui.internal.registry.WizardsRegistryReader;
 
 /**
- *	A Viewer element sorter that sorts Elements by their name attribute.
- *	Note that capitalization differences are not considered by this
- *	sorter, so a < B < c.
+ * A Viewer element sorter that sorts Elements by their name attribute. Note
+ * that capitalization differences are not considered by this sorter, so a &lt;
+ * B &lt; c.
  *
- *	NOTE one exception to the above: an element with the system's reserved
- *	name for base Wizards will always be sorted such that it will
- *	ultimately be placed at the beginning of the sorted result.
+ * NOTE one exception to the above: an element with the system's reserved name
+ * for base Wizards will always be sorted such that it will ultimately be placed
+ * at the beginning of the sorted result.
  */
 class NewWizardCollectionComparator extends ViewerComparator {
 	/**
@@ -33,10 +33,9 @@ class NewWizardCollectionComparator extends ViewerComparator {
 	 */
     public static final NewWizardCollectionComparator INSTANCE = new NewWizardCollectionComparator();
 
-
     /**
-     * Creates an instance of <code>NewWizardCollectionSorter</code>.  Since this
-     * is a stateless sorter, it is only accessible as a singleton; the private
+	 * Creates an instance of <code>NewWizardCollectionSorter</code>. Since this is
+	 * a stateless sorter, it is only accessible as a singleton; the private
      * visibility of this constructor ensures this.
      */
     private NewWizardCollectionComparator() {
@@ -65,8 +64,8 @@ class NewWizardCollectionComparator extends ViewerComparator {
 	}
 
 	/**
-     *	Return true if this sorter is affected by a property
-     *	change of propertyName on the specified element.
+	 * Return true if this sorter is affected by a property change of propertyName
+	 * on the specified element.
      */
     @Override
 	public boolean isSorterProperty(Object object, String propertyId) {

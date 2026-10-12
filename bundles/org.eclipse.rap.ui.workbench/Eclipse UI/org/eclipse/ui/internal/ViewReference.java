@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2016 IBM Corporation and others.
+ * Copyright (c) 2005, 2020 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -11,6 +11,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Friederike Schertel <friederike@schertel.org> - Bug 478336
+ *     Christoph Läubrich - fix Bug 541228
  *******************************************************************************/
 package org.eclipse.ui.internal;
 
@@ -35,11 +36,10 @@ import org.eclipse.ui.internal.registry.ViewDescriptor;
 
 public class ViewReference extends WorkbenchPartReference implements IViewReference {
 
-	private ViewDescriptor descriptor;
+	private final ViewDescriptor descriptor;
 	private IMemento memento;
 
-	public ViewReference(IEclipseContext windowContext, IWorkbenchPage page, MPart part,
-			ViewDescriptor descriptor) {
+	public ViewReference(IEclipseContext windowContext, IWorkbenchPage page, MPart part, ViewDescriptor descriptor) {
 		super(windowContext, page, part);
 		this.descriptor = descriptor;
 
@@ -53,7 +53,7 @@ public class ViewReference extends WorkbenchPartReference implements IViewRefere
 		}
 	}
 
-	void persist() {
+	public void persist() {
 		IViewPart view = getView(false);
 		if (view != null) {
 			XMLMemento root = XMLMemento.createWriteRoot("view"); //$NON-NLS-1$
@@ -70,7 +70,7 @@ public class ViewReference extends WorkbenchPartReference implements IViewRefere
 
 	@Override
 	public String getPartName() {
-		return descriptor.getLabel();
+		return descriptor == null ? "" : descriptor.getLabel(); //$NON-NLS-1$
 	}
 
 	@Override
@@ -78,8 +78,9 @@ public class ViewReference extends WorkbenchPartReference implements IViewRefere
 		MPart part = getModel();
 
 		int colonIndex = part.getElementId().indexOf(':');
-		if (colonIndex == -1 || colonIndex == (part.getElementId().length() - 1))
+		if (colonIndex == -1 || colonIndex == (part.getElementId().length() - 1)) {
 			return null;
+		}
 
 		return part.getElementId().substring(colonIndex + 1);
 	}
@@ -104,15 +105,15 @@ public class ViewReference extends WorkbenchPartReference implements IViewRefere
 			return descriptor.createView();
 		} catch (CoreException e) {
 			IStatus status = e.getStatus();
-			throw new PartInitException(new Status(IStatus.ERROR, WorkbenchPlugin.PI_WORKBENCH,
-					status.getCode(), status.getMessage(), e));
+			throw new PartInitException(
+					new Status(IStatus.ERROR, WorkbenchPlugin.PI_WORKBENCH, status.getCode(), status.getMessage(), e));
 		}
 	}
 
 	@Override
 	IWorkbenchPart createErrorPart() {
-		IStatus status = new Status(IStatus.ERROR, WorkbenchPlugin.PI_WORKBENCH, NLS.bind(
-				WorkbenchMessages.get().ViewFactory_initException, getModel().getElementId()), new Exception());
+		IStatus status = new Status(IStatus.ERROR, WorkbenchPlugin.PI_WORKBENCH,
+				NLS.bind(WorkbenchMessages.get().ViewFactory_initException, getModel().getElementId()), new Exception());
 		return createErrorPart(status);
 	}
 
@@ -123,8 +124,8 @@ public class ViewReference extends WorkbenchPartReference implements IViewRefere
 
 	@Override
 	public void initialize(IWorkbenchPart part) throws PartInitException {
-		ViewSite viewSite = new ViewSite(getModel(), part, this, descriptor == null ? null
-				: descriptor.getConfigurationElement());
+		ViewSite viewSite = new ViewSite(getModel(), part, this,
+				descriptor == null ? null : descriptor.getConfigurationElement());
 		IViewPart view = (IViewPart) part;
 		view.init(viewSite, memento);
 

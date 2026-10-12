@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
+ * Copyright (c) 2000, 2020 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -14,7 +14,6 @@
 package org.eclipse.ui.internal.dialogs;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IProgressMonitorWithBlocking;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ProgressMonitorWrapper;
 import org.eclipse.jface.dialogs.Dialog;
@@ -22,15 +21,14 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.internal.ExceptionHandler;
 
 /**
- * Used to run an event loop whenever progress monitor methods
- * are invoked.  <p>
+ * Used to run an event loop whenever progress monitor methods are invoked.
+ * <p>
  * This is needed since editor save operations are done in the UI thread.
- * Although save operations should be written to do the work in the non-UI thread,
- * this was not done for 1.0, so this was added to keep the UI live
+ * Although save operations should be written to do the work in the non-UI
+ * thread, this was not done for 1.0, so this was added to keep the UI live
  * (including allowing the cancel button to work).
  */
-public class EventLoopProgressMonitor extends ProgressMonitorWrapper implements
-        IProgressMonitorWithBlocking {
+public class EventLoopProgressMonitor extends ProgressMonitorWrapper implements IProgressMonitor {
     /**
      * Threshold for how often the event loop is spun, in ms.
      */
@@ -47,14 +45,12 @@ public class EventLoopProgressMonitor extends ProgressMonitorWrapper implements
     private long lastTime = System.currentTimeMillis();
 
     /**
-     * The task name is the name of the current task
-     * in the event loop.
+	 * The task name is the name of the current task in the event loop.
      */
     private String taskName;
 
     /**
      * Constructs a new instance of the receiver and forwards to monitor.
-     * @param monitor
      */
     public EventLoopProgressMonitor(IProgressMonitor monitor) {
         super(monitor);
@@ -113,12 +109,12 @@ public class EventLoopProgressMonitor extends ProgressMonitorWrapper implements
         if (t - lastTime < T_THRESH) {
             return;
         }
-        lastTime = t;
         // Run the event loop.
-        Display disp = Display.getDefault();
+		Display disp = Display.getCurrent();
         if (disp == null) {
             return;
         }
+		lastTime = t;
 
         //Initialize an exception handler from the window class.
         ExceptionHandler handler = ExceptionHandler.getInstance();
@@ -191,6 +187,7 @@ public class EventLoopProgressMonitor extends ProgressMonitorWrapper implements
 
     /**
      * Return the name of the current task.
+	 *
      * @return Returns the taskName.
      */
     protected String getTaskName() {

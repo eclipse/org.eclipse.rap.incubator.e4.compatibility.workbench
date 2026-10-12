@@ -33,12 +33,11 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 /**
  * This class extends regular plugin action with the additional requirement that
  * the delegate has to implement interface
- * {@link org.eclipse.ui.IWorkbenchWindowActionDelegate}. This interface has
- * one additional method (init) whose purpose is to initialize the delegate with
- * the window in which the action is intended to run.
+ * {@link org.eclipse.ui.IWorkbenchWindowActionDelegate}. This interface has one
+ * additional method (init) whose purpose is to initialize the delegate with the
+ * window in which the action is intended to run.
  */
-public class WWinPluginAction extends PluginAction implements
-        IActionSetContributionItem {
+public class WWinPluginAction extends PluginAction implements IActionSetContributionItem {
     /**
      * The help listener assigned to this action, or <code>null</code> if none.
      */
@@ -50,7 +49,7 @@ public class WWinPluginAction extends PluginAction implements
 
     private RetargetAction retargetAction;
 
-    private static ArrayList staticActionList = new ArrayList(50);
+	private static ArrayList<WWinPluginAction> staticActionList = new ArrayList<>(50);
 
     /**
      * Constructs a new <code>WWinPluginAction</code> object.
@@ -60,35 +59,29 @@ public class WWinPluginAction extends PluginAction implements
      * @param id the identifier
      * @param style the style
      */
-    public WWinPluginAction(IConfigurationElement actionElement,
-            IWorkbenchWindow window, String id, int style) {
+	public WWinPluginAction(IConfigurationElement actionElement, IWorkbenchWindow window, String id, int style) {
         super(actionElement, id, style);
         this.window = window;
 
         // If config specifies a retarget action, create it now
-        String retarget = actionElement
-                .getAttribute(IWorkbenchRegistryConstants.ATT_RETARGET);
-        if (retarget != null && Boolean.valueOf(retarget).booleanValue()) {
+		String retarget = actionElement.getAttribute(IWorkbenchRegistryConstants.ATT_RETARGET);
+		if (retarget != null && Boolean.parseBoolean(retarget)) {
             // create a retarget action
-            String allowLabelUpdate = actionElement
-                    .getAttribute(IWorkbenchRegistryConstants.ATT_ALLOW_LABEL_UPDATE);
-            String label = actionElement
-                    .getAttribute(IWorkbenchRegistryConstants.ATT_LABEL);
+			String allowLabelUpdate = actionElement.getAttribute(IWorkbenchRegistryConstants.ATT_ALLOW_LABEL_UPDATE);
+			String label = actionElement.getAttribute(IWorkbenchRegistryConstants.ATT_LABEL);
 
-            if (allowLabelUpdate != null && Boolean.valueOf(allowLabelUpdate).booleanValue()) {
+			if (allowLabelUpdate != null && Boolean.parseBoolean(allowLabelUpdate)) {
 				retargetAction = new LabelRetargetAction(id, label, style);
 			} else {
 				retargetAction = new RetargetAction(id, label, style);
 			}
-            retargetAction
-                    .addPropertyChangeListener(event -> {
+			retargetAction.addPropertyChangeListener(event -> {
 					    if (event.getProperty().equals(IAction.ENABLED)) {
 					        Object val1 = event.getNewValue();
 					        if (val1 instanceof Boolean) {
 					            setEnabled(((Boolean) val1).booleanValue());
 					        }
-					    } else if (event.getProperty().equals(
-					            IAction.CHECKED)) {
+				} else if (event.getProperty().equals(IAction.CHECKED)) {
 					        Object val2 = event.getNewValue();
 					        if (val2 instanceof Boolean) {
 					            setChecked(((Boolean) val2).booleanValue());
@@ -98,8 +91,7 @@ public class WWinPluginAction extends PluginAction implements
 					        if (val3 instanceof String) {
 					            setText((String) val3);
 					        }
-					    } else if (event.getProperty().equals(
-					            IAction.TOOL_TIP_TEXT)) {
+				} else if (event.getProperty().equals(IAction.TOOL_TIP_TEXT)) {
 					        Object val4 = event.getNewValue();
 					        if (val4 instanceof String) {
 					            setToolTipText((String) val4);
@@ -158,9 +150,9 @@ public class WWinPluginAction extends PluginAction implements
      * Creates any actions which belong to an activated plugin.
      */
     public static void refreshActionList() {
-        Iterator iter = staticActionList.iterator();
+		Iterator<WWinPluginAction> iter = staticActionList.iterator();
         while (iter.hasNext()) {
-            WWinPluginAction action = (WWinPluginAction) iter.next();
+			WWinPluginAction action = iter.next();
             if ((action.getDelegate() == null) && action.isOkToCreateDelegate()) {
                 action.createDelegate();
                 // creating the delegate also refreshes its enablement
@@ -169,14 +161,12 @@ public class WWinPluginAction extends PluginAction implements
     }
 
     @Override
-	protected IActionDelegate validateDelegate(Object obj)
-            throws WorkbenchException {
+	protected IActionDelegate validateDelegate(Object obj) throws WorkbenchException {
         if (obj instanceof IWorkbenchWindowActionDelegate) {
 			return (IWorkbenchWindowActionDelegate) obj;
 		}
 
-        throw new WorkbenchException(
-                "Action must implement IWorkbenchWindowActionDelegate"); //$NON-NLS-1$
+		throw new WorkbenchException("Action must implement IWorkbenchWindowActionDelegate"); //$NON-NLS-1$
     }
 
     @Override
@@ -213,15 +203,13 @@ public class WWinPluginAction extends PluginAction implements
     }
 
     /**
-     * Returns true if the window has been set.
-     * The window may be null after the constructor is called and
-     * before the window is stored.  We cannot create the delegate
-     * at that time.
+	 * Returns true if the window has been set. The window may be null after the
+	 * constructor is called and before the window is stored. We cannot create the
+	 * delegate at that time.
      */
     @Override
 	public boolean isOkToCreateDelegate() {
-        return super.isOkToCreateDelegate() && window != null
-                && retargetAction == null;
+		return super.isOkToCreateDelegate() && window != null && retargetAction == null;
     }
 
     @Override
@@ -247,10 +235,9 @@ public class WWinPluginAction extends PluginAction implements
     }
 
     /**
-     * The <code>WWinPluginAction</code> implementation of this method
-     * declared on <code>IAction</code> stores the help listener in
-     * a local field. The supplied listener is only used if there is
-     * no retarget action.
+	 * The <code>WWinPluginAction</code> implementation of this method declared on
+	 * <code>IAction</code> stores the help listener in a local field. The supplied
+	 * listener is only used if there is no retarget action.
      */
     @Override
 	public void setHelpListener(HelpListener listener) {

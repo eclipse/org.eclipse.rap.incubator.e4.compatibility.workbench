@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -38,7 +35,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
  * resources; the current name was retained for historical reasons.
  * </p>
  *
- * @since 2.0
+ * @since 1.1
  * @noextend This class is not intended to be subclassed by clients.
  */
 public class ExportResourcesAction extends BaseSelectionListenerAction
@@ -93,7 +90,6 @@ public class ExportResourcesAction extends BaseSelectionListenerAction
      * @param workbench the workbench
      * @deprecated use the constructor <code>ExportResourcesAction(IWorkbenchWindow)</code>
      */
-    @Deprecated
 	public ExportResourcesAction(IWorkbench workbench) {
         this(workbench.getActiveWorkbenchWindow());
     }
@@ -105,7 +101,6 @@ public class ExportResourcesAction extends BaseSelectionListenerAction
      * @param label the label
      * @deprecated use the constructor <code>ExportResourcesAction(IWorkbenchWindow, String)</code>
      */
-    @Deprecated
 	public ExportResourcesAction(IWorkbench workbench, String label) {
         this(workbench.getActiveWorkbenchWindow(), label);
     }
@@ -113,7 +108,6 @@ public class ExportResourcesAction extends BaseSelectionListenerAction
     /**
      * Invoke the Export wizards selection Wizard.
      */
-    @Override
 	public void run() {
         if (workbenchWindow == null) {
             // action has been disposed
@@ -128,12 +122,13 @@ public class ExportResourcesAction extends BaseSelectionListenerAction
      * @param selection the new selection
      * @deprecated
      */
-    @Deprecated
 	public void setSelection(IStructuredSelection selection) {
         selectionChanged(selection);
     }
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.actions.ActionFactory.IWorkbenchAction#dispose()
+	 */
 	public void dispose() {
 		workbenchWindow = null;
 		if (action!=null) {

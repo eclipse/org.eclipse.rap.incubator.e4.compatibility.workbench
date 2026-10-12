@@ -26,36 +26,41 @@ package org.eclipse.ui;
  */
 public interface IEditorReference extends IWorkbenchPartReference {
     /**
-     * Returns the factory id of the factory used to
-     * restore this editor. Returns null if the editor
-     * is not persistable.
+	 * Returns the factory id of the factory used to restore this editor. Returns
+	 * null if the editor is not persistable.
+	 *
+	 * @return the factory ID
      */
     String getFactoryId();
 
 	/**
-	 * Returns the editor input's name. May return null if the name is not
-	 * available or if the editor failed to be restored.
+	 * Returns the editor input's name. May return null if the name is not available
+	 * or if the editor failed to be restored.
+	 *
+	 * @return the name
 	 */
     String getName();
 
     /**
-     * Returns the editor referenced by this object.
-     * Returns <code>null</code> if the editor was not instantiated or
-     * it failed to be restored. Tries to restore the editor
-     * if <code>restore</code> is true.
+	 * Returns the editor referenced by this object. Returns <code>null</code> if
+	 * the editor was not instantiated or it failed to be restored. Tries to restore
+	 * the editor if <code>restore</code> is true.
+	 *
+	 * @param restore true to try to restore, false otherwise.
+	 * @return the {@link IEditorPart}
      */
     IEditorPart getEditor(boolean restore);
 
 	/**
-	 * Returns true if the editor is pinned, otherwise returns false.
+	 * @return true if the editor is pinned, otherwise returns false.
 	 */
     boolean isPinned();
 
     /**
      * Returns the editor input for the editor referenced by this object.
      * <p>
-     * Unlike most of the other methods on this type, this method
-     * can trigger plug-in activation.
+	 * Unlike most of the other methods on this type, this method can trigger
+	 * plug-in activation.
      * </p>
      *
      * @return the editor input for the editor referenced by this object

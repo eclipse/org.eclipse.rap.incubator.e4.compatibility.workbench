@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -33,6 +30,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
  * the active perspective in the window which this
  * action is running in. The default input for the
  * new window's page is application-specific.
+ * @since 1.1
  */
 public class OpenInNewWindowAction extends Action implements
         ActionFactory.IWorkbenchAction {
@@ -92,7 +90,6 @@ public class OpenInNewWindowAction extends Action implements
      * the active perspective in the window which this
      * action is running in.
      */
-    @Override
 	public void run() {
         if (workbenchWindow == null) {
             // action has been disposed
@@ -119,7 +116,10 @@ public class OpenInNewWindowAction extends Action implements
         }
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on ActionFactory.IWorkbenchAction.
+     * @since 3.0
+     */
 	public void dispose() {
         workbenchWindow = null;
     }

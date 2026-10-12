@@ -15,7 +15,9 @@
 
 package org.eclipse.ui.internal;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
@@ -24,7 +26,6 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.IWorkingSetManager;
-import org.eclipse.ui.internal.util.Util;
 
 /**
  * Abstract baseclass for IWorkingSet implementations.
@@ -39,7 +40,7 @@ public abstract class AbstractWorkingSet implements IAdaptable, IWorkingSet, Clo
 
 	private String name;
 
-	protected ArrayList elements;
+	protected List<IAdaptable> elements;
 
 	private IWorkingSetManager manager;
 
@@ -68,22 +69,21 @@ public abstract class AbstractWorkingSet implements IAdaptable, IWorkingSet, Clo
 		Assert.isNotNull(name, "name must not be null"); //$NON-NLS-1$
 		this.name = name;
 		this.label = label;
-		labelBoundToName = Util.equals(name, label);
-		uniqueId = Long.toString(System.currentTimeMillis()) + "_" + counter++; //$NON-NLS-1$
+		labelBoundToName = Objects.equals(name, label);
+		uniqueId = System.currentTimeMillis() + "_" + counter++; //$NON-NLS-1$
 	}
 
 	/**
-	 * Returns the receiver if the requested type is either IWorkingSet
-	 * or IPersistableElement.
+	 * Returns the receiver if the requested type is either IWorkingSet or
+	 * IPersistableElement.
 	 *
 	 * @param adapter the requested type
-	 * @return the receiver if the requested type is either IWorkingSet
-	 * 	or IPersistableElement.
+	 * @return the receiver if the requested type is either IWorkingSet or
+	 *         IPersistableElement.
 	 */
 	@Override
 	public <T> T getAdapter(Class<T> adapter) {
-	    if (adapter == IWorkingSet.class
-	            || adapter == IPersistableElement.class) {
+		if (adapter == IWorkingSet.class || adapter == IPersistableElement.class) {
 			return adapter.cast(this);
 	    }
 	    return Platform.getAdapterManager().getAdapter(this, adapter);
@@ -100,8 +100,7 @@ public abstract class AbstractWorkingSet implements IAdaptable, IWorkingSet, Clo
 		if (manager != null) {
 			IWorkingSet wSet = manager.getWorkingSet(newName);
 			if (wSet != this) {
-				Assert.isTrue(wSet == null,
-						"working set with same name already registered"); //$NON-NLS-1$
+				Assert.isTrue(wSet == null, "working set with same name already registered"); //$NON-NLS-1$
 			}
 	    }
 
@@ -133,8 +132,7 @@ public abstract class AbstractWorkingSet implements IAdaptable, IWorkingSet, Clo
 	}
 
 	protected void fireWorkingSetChanged(String property, Object oldValue) {
-		AbstractWorkingSetManager receiver= manager != null
-			? (AbstractWorkingSetManager)manager
+		AbstractWorkingSetManager receiver = manager != null ? (AbstractWorkingSetManager) manager
 			: (AbstractWorkingSetManager)WorkbenchPlugin.getDefault().getWorkingSetManager();
 		receiver.workingSetChanged(this, property, oldValue);
 	}
@@ -142,23 +140,18 @@ public abstract class AbstractWorkingSet implements IAdaptable, IWorkingSet, Clo
 	/**
 	 * Create a copy of the elements to store in the receiver.
 	 *
-	 * @param elements the elements to store a copy of in the
-	 * 	receiver.
+	 * @param newElements the elements to store a copy of in the receiver.
 	 */
 	protected void internalSetElements(IAdaptable[] newElements) {
-	    Assert.isNotNull(newElements,
-	            "Working set elements array must not be null"); //$NON-NLS-1$
+		Assert.isNotNull(newElements, "Working set elements array must not be null"); //$NON-NLS-1$
 
-	    elements = new ArrayList(newElements.length);
-	    for (IAdaptable newElement : newElements) {
-	        elements.add(newElement);
-	    }
+		elements = Arrays.asList(newElements);
 	}
 
 	@Override
 	public IAdaptable[] getElements() {
-	    ArrayList list = getElementsArray();
-	    return (IAdaptable[]) list.toArray(new IAdaptable[list.size()]);
+		List<IAdaptable> list = getElementsArray();
+		return list.toArray(new IAdaptable[list.size()]);
 	}
 
 	/**
@@ -167,7 +160,7 @@ public abstract class AbstractWorkingSet implements IAdaptable, IWorkingSet, Clo
 	 *
 	 * @return the elements array list
 	 */
-	protected ArrayList getElementsArray() {
+	protected List<IAdaptable> getElementsArray() {
 	    if (elements == null) {
 	        restoreWorkingSet();
 	        workingSetMemento = null;
@@ -196,7 +189,7 @@ public abstract class AbstractWorkingSet implements IAdaptable, IWorkingSet, Clo
 		AbstractWorkingSet oldWorkingSet = clone();
 
 		this.label = label == null ? getName() : label;
-		labelBoundToName = Util.equals(label, name);  // rebind the label to the name
+		labelBoundToName = Objects.equals(label, name); // rebind the label to the name
 
 		fireWorkingSetChanged(IWorkingSetManager.CHANGE_WORKING_SET_LABEL_CHANGE, oldWorkingSet);
 	}
@@ -210,7 +203,6 @@ public abstract class AbstractWorkingSet implements IAdaptable, IWorkingSet, Clo
 	public final ImageDescriptor getImage() {
         return getImageDescriptor();
     }
-
 
     /*package*/String getUniqueId() {
 		return uniqueId;

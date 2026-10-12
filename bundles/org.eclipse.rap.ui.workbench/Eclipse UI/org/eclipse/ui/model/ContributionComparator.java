@@ -28,15 +28,16 @@ import org.eclipse.jface.viewers.ViewerComparator;
  * {@link ViewerComparator} (for {@link StructuredViewer}s) or as a traditional
  * {@link Comparator}.
  *
- * This class orders contributions by first grouping by priority ({@link IComparableContribution#getPriority()})
- * and then by utilizing the JFace policy comparator to order by label ({@link IComparableContribution#getLabel()}).
+ * This class orders contributions by first grouping by priority
+ * ({@link IComparableContribution#getPriority()}) and then by utilizing the
+ * JFace policy comparator to order by label
+ * ({@link IComparableContribution#getLabel()}).
  *
  * @see IComparableContribution
  *
  * @since 3.4
  */
-public class ContributionComparator extends ViewerComparator implements
-		Comparator {
+public class ContributionComparator extends ViewerComparator implements Comparator {
 
 	/**
 	 * This implementation of {@link Comparator#compare(Object, Object)} does a
@@ -46,11 +47,13 @@ public class ContributionComparator extends ViewerComparator implements
 	public int compare(Object o1, Object o2) {
 		IComparableContribution c1 = null, c2 = null;
 
-		if (o1 instanceof IComparableContribution)
+		if (o1 instanceof IComparableContribution) {
 			c1 = (IComparableContribution) o1;
+		}
 
-		if (o2 instanceof IComparableContribution)
+		if (o2 instanceof IComparableContribution) {
 			c2 = (IComparableContribution) o2;
+		}
 
 		// neither are comparable contributions, we need to be consistent
 		if (c1 == null && c2 == null) {
@@ -61,22 +64,23 @@ public class ContributionComparator extends ViewerComparator implements
 		}
 
 		// if we're in a mixed scenario the comparable contribution wins.
-		if (c1 == null)
+		if (c1 == null) {
 			return 1;
-		if (c2 == null)
+		}
+		if (c2 == null) {
 			return -1;
+		}
 		return compare(c1, c2);
 	}
 
 	/**
 	 * Tries to extract a useful string for comparison from the provided object.
-	 * This method is a workaround for bug 226547. Looking forward we need a
-	 * more sensible answer to this problem.
+	 * This method is a workaround for bug 226547. Looking forward we need a more
+	 * sensible answer to this problem.
 	 *
-	 * @param o
-	 * 		the object to test
-	 * @return the comparison string
-	 * TODO : remove this method and replace it with a sensible solution
+	 * @param o the object to test
+	 * @return the comparison string TODO : remove this method and replace it with a
+	 *         sensible solution
 	 */
 	private String getComparisonString(Object o) {
 		if (o instanceof IPreferenceNode) {
@@ -86,23 +90,21 @@ public class ContributionComparator extends ViewerComparator implements
 	}
 
 	/**
-	 * Returns a negative, zero, or positive number depending on whether the
-	 * first element is less than, equal to, or greater than the second element.
+	 * Returns a negative, zero, or positive number depending on whether the first
+	 * element is less than, equal to, or greater than the second element.
 	 * <p>
-	 * The default implementation of this method is based on comparing the
-	 * elements' categories as computed by the <code>category</code> framework
-	 * method. Elements within the same category are further subjected to a case
-	 * insensitive compare of their label strings. Subclasses may override.
+	 * The default implementation of this method is based on comparing the elements'
+	 * categories as computed by the <code>category</code> framework method.
+	 * Elements within the same category are further subjected to a case insensitive
+	 * compare of their label strings. Subclasses may override.
 	 * </p>
 	 *
-	 * @param c1
-	 *            the first element
-	 * @param c2
-	 *            the second element
+	 * @param c1 the first element
+	 * @param c2 the second element
 	 * @return a negative number if the first element is less than the second
-	 *         element; the value <code>0</code> if the first element is equal
-	 *         to the second element; and a positive number if the first element
-	 *         is greater than the second element
+	 *         element; the value <code>0</code> if the first element is equal to
+	 *         the second element; and a positive number if the first element is
+	 *         greater than the second element
 	 */
 	public int compare(IComparableContribution c1, IComparableContribution c2) {
 		int cat1 = category(c1);
@@ -132,18 +134,16 @@ public class ContributionComparator extends ViewerComparator implements
 	}
 
 	/**
-	 * Returns the category of the given element. The category is a number used
-	 * to allocate elements to bins; the bins are arranged in ascending numeric
-	 * order. The elements within a bin are arranged via a second level sort
-	 * criterion.
+	 * Returns the category of the given element. The category is a number used to
+	 * allocate elements to bins; the bins are arranged in ascending numeric order.
+	 * The elements within a bin are arranged via a second level sort criterion.
 	 * <p>
 	 * The default implementation of this framework method returns the result of
-	 * {@link IComparableContribution#getPriority()}. Subclasses may
-	 * re-implement this method to provide non-trivial categorization.
+	 * {@link IComparableContribution#getPriority()}. Subclasses may re-implement
+	 * this method to provide non-trivial categorization.
 	 * </p>
 	 *
-	 * @param c
-	 *            the element
+	 * @param c the element
 	 * @return the category
 	 */
 	public int category(IComparableContribution c) {

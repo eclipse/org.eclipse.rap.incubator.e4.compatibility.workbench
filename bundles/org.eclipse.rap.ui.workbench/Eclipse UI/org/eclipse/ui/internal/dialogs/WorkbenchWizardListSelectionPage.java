@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -49,7 +46,7 @@ public abstract class WorkbenchWizardListSelectionPage extends
     // id constants
     private static final String DIALOG_SETTING_SECTION_NAME = "WizardListSelectionPage."; //$NON-NLS-1$
 
-    private static final int SIZING_LISTS_HEIGHT = 200;
+    private final static int SIZING_LISTS_HEIGHT = 200;
 
     private static final String STORE_SELECTED_WIZARD_ID = DIALOG_SETTING_SECTION_NAME
             + "STORE_SELECTED_WIZARD_ID"; //$NON-NLS-1$
@@ -77,7 +74,11 @@ public abstract class WorkbenchWizardListSelectionPage extends
         this.message = message;
     }
 
-    @Override
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
+     */
 	public void createControl(Composite parent) {
 
         Font font = parent.getFont();
@@ -136,7 +137,6 @@ public abstract class WorkbenchWizardListSelectionPage extends
     /**
      * An item in a viewer has been double-clicked.
      */
-    @Override
 	public void doubleClick(DoubleClickEvent event) {
         selectionChanged(new SelectionChangedEvent(event.getViewer(), event
                 .getViewer().getSelection()));
@@ -147,7 +147,6 @@ public abstract class WorkbenchWizardListSelectionPage extends
      * Layout the top control.
      *
      * @param control the control.
-     * @since 3.0
      */
     private void layoutTopControl(Control control) {
         GridData data = new GridData(GridData.FILL_BOTH);
@@ -191,7 +190,7 @@ public abstract class WorkbenchWizardListSelectionPage extends
      * that they will persist into the next invocation of this wizard page
      */
     public void saveWidgetValues() {
-		IStructuredSelection sel = viewer.getStructuredSelection();
+        IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
         if (sel.size() > 0) {
             WorkbenchWizardElement selectedWizard = (WorkbenchWizardElement) sel
                     .getFirstElement();
@@ -206,10 +205,10 @@ public abstract class WorkbenchWizardListSelectionPage extends
      *
      * @param event the selection changed event
      */
-    @Override
 	public void selectionChanged(SelectionChangedEvent event) {
         setErrorMessage(null);
-		IStructuredSelection selection = event.getStructuredSelection();
+        IStructuredSelection selection = (IStructuredSelection) event
+                .getSelection();
         WorkbenchWizardElement currentWizardSelection = (WorkbenchWizardElement) selection
                 .getFirstElement();
         if (currentWizardSelection == null) {

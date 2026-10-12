@@ -34,19 +34,20 @@ import org.eclipse.ui.internal.handlers.IActionCommandMappingService;
 /**
  * Public base class for configuring the action bars of a workbench window.
  * <p>
- * An application should declare a subclass of <code>ActionBarAdvisor</code>
- * and override methods to configure a window's action bars to suit the needs of the
+ * An application should declare a subclass of <code>ActionBarAdvisor</code> and
+ * override methods to configure a window's action bars to suit the needs of the
  * particular application.
  * </p>
  * <p>
  * The following advisor methods are called at strategic points in the
- * workbench's lifecycle (all occur within the dynamic scope of the call
- * to {@link PlatformUI#createAndRunWorkbench PlatformUI.createAndRunWorkbench}):
- * <ul>
- * <li><code>fillActionBars</code> - called after <code>WorkbenchWindowAdvisor.preWindowOpen</code>
- * to configure a window's action bars</li>
- * </ul>
+ * workbench's lifecycle (all occur within the dynamic scope of the call to
+ * {@link PlatformUI#createAndRunWorkbench PlatformUI.createAndRunWorkbench}):
  * </p>
+ * <ul>
+ * <li><code>fillActionBars</code> - called after
+ * <code>WorkbenchWindowAdvisor.preWindowOpen</code> to configure a window's
+ * action bars</li>
+ * </ul>
  *
  * @see WorkbenchWindowAdvisor#createActionBarAdvisor(IActionBarConfigurer)
  *
@@ -56,22 +57,20 @@ public class ActionBarAdvisor {
 
     /**
      * Bit flag for {@link #fillActionBars fillActionBars} indicating that the
-     * operation is not filling the action bars of an actual workbench window,
-     * but rather a proxy (used for perspective customization).
+	 * operation is not filling the action bars of an actual workbench window, but
+	 * rather a proxy (used for perspective customization).
      */
     public static final int FILL_PROXY = 0x01;
 
     /**
      * Bit flag for {@link #fillActionBars fillActionBars} indicating that the
-     * operation is supposed to fill (or describe) the workbench window's menu
-     * bar.
+	 * operation is supposed to fill (or describe) the workbench window's menu bar.
      */
     public static final int FILL_MENU_BAR = 0x02;
 
     /**
      * Bit flag for {@link #fillActionBars fillActionBars} indicating that the
-     * operation is supposed to fill (or describe) the workbench window's cool
-     * bar.
+	 * operation is supposed to fill (or describe) the workbench window's cool bar.
      */
     public static final int FILL_COOL_BAR = 0x04;
 
@@ -82,16 +81,15 @@ public class ActionBarAdvisor {
      */
     public static final int FILL_STATUS_LINE = 0x08;
 
+	private final IActionBarConfigurer actionBarConfigurer;
 
-    private IActionBarConfigurer actionBarConfigurer;
-
-    private Map actions = new HashMap();
+	private final Map<String, IAction> actions = new HashMap<>();
 
 	private boolean menuCreated;
 
     /**
-     * Creates a new action bar advisor to configure a workbench
-     * window's action bars via the given action bar configurer.
+	 * Creates a new action bar advisor to configure a workbench window's action
+	 * bars via the given action bar configurer.
      *
      * @param configurer the action bar configurer
      */
@@ -110,44 +108,41 @@ public class ActionBarAdvisor {
     }
 
     /**
-     * Configures the action bars using the given action bar configurer.
-     * Under normal circumstances, <code>flags</code> does not include
-     * <code>FILL_PROXY</code>, meaning this is a request to fill the action
-     * bars of the corresponding workbench window; the
-     * remaining flags indicate which combination of
-     * the menu bar (<code>FILL_MENU_BAR</code>),
-     * the tool bar (<code>FILL_COOL_BAR</code>),
-     * and the status line (<code>FILL_STATUS_LINE</code>) are to be filled.
+	 * Configures the action bars using the given action bar configurer. Under
+	 * normal circumstances, <code>flags</code> does not include
+	 * <code>FILL_PROXY</code>, meaning this is a request to fill the action bars of
+	 * the corresponding workbench window; the remaining flags indicate which
+	 * combination of the menu bar (<code>FILL_MENU_BAR</code>), the tool bar
+	 * (<code>FILL_COOL_BAR</code>), and the status line
+	 * (<code>FILL_STATUS_LINE</code>) are to be filled.
      * <p>
-     * If <code>flags</code> does include <code>FILL_PROXY</code>, then this
-     * is a request to describe the actions bars of the given workbench window
-     * (which will already have been filled);
-     * again, the remaining flags indicate which combination of the menu bar,
-     * the tool bar, and the status line are to be described.
-     * The actions included in the proxy action bars can be the same instances
-     * as in the actual window's action bars. Calling <code>ActionFactory</code>
-     * to create new action instances is not recommended, because these
-     * actions internally register listeners with the window and there is no
-     * opportunity to dispose of these actions.
+	 * If <code>flags</code> does include <code>FILL_PROXY</code>, then this is a
+	 * request to describe the actions bars of the given workbench window (which
+	 * will already have been filled); again, the remaining flags indicate which
+	 * combination of the menu bar, the tool bar, and the status line are to be
+	 * described. The actions included in the proxy action bars can be the same
+	 * instances as in the actual window's action bars. Calling
+	 * <code>ActionFactory</code> to create new action instances is not recommended,
+	 * because these actions internally register listeners with the window and there
+	 * is no opportunity to dispose of these actions.
      * </p>
      * <p>
-     * This method is called just after {@link WorkbenchWindowAdvisor#preWindowOpen()}.
-     * Clients must not call this method directly (although super calls are okay).
-     * The default implementation calls <code>makeActions</code> if
-     * <code>FILL_PROXY</code> is specified, then calls <code>fillMenuBar</code>,
-     * <code>fillCoolBar</code>, and <code>fillStatusLine</code>
-     * if the corresponding flags are specified.
+	 * This method is called just after
+	 * {@link WorkbenchWindowAdvisor#preWindowOpen()}. Clients must not call this
+	 * method directly (although super calls are okay). The default implementation
+	 * calls <code>makeActions</code> if <code>FILL_PROXY</code> is specified, then
+	 * calls <code>fillMenuBar</code>, <code>fillCoolBar</code>, and
+	 * <code>fillStatusLine</code> if the corresponding flags are specified.
      * </p>
      * <p>
-     * Subclasses may override, but it is recommended that they override the
-     * methods mentioned above instead.
+	 * Subclasses may override, but it is recommended that they override the methods
+	 * mentioned above instead.
      * </p>
      *
-     * @param flags bit mask composed from the constants
-     * {@link #FILL_MENU_BAR FILL_MENU_BAR},
-     * {@link #FILL_COOL_BAR FILL_COOL_BAR},
-     * {@link #FILL_STATUS_LINE FILL_STATUS_LINE},
-     * and {@link #FILL_PROXY FILL_PROXY}
+	 * @param flags bit mask composed from the constants {@link #FILL_MENU_BAR
+	 *              FILL_MENU_BAR}, {@link #FILL_COOL_BAR FILL_COOL_BAR},
+	 *              {@link #FILL_STATUS_LINE FILL_STATUS_LINE}, and
+	 *              {@link #FILL_PROXY FILL_PROXY}
      */
     public void fillActionBars(int flags) {
         if ((flags & FILL_PROXY) == 0) {
@@ -166,9 +161,10 @@ public class ActionBarAdvisor {
     }
 
     /**
-     * Instantiates the actions used in the fill methods.
-     * Use {@link #register(IAction)} to register the action with the key binding service
-     * and add it to the list of actions to be disposed when the window is closed.
+	 * Instantiates the actions used in the fill methods. Use
+	 * {@link #register(IAction)} to register the action with the key binding
+	 * service and add it to the list of actions to be disposed when the window is
+	 * closed.
      *
      * @param window the window containing the action bars
      */
@@ -177,14 +173,14 @@ public class ActionBarAdvisor {
     }
 
     /**
-     * Registers the given action with the key binding service
-     * (by calling {@link IActionBarConfigurer#registerGlobalAction(IAction)}),
-     * and adds it to the list of actions to be disposed when the window is closed.
+	 * Registers the given action with the key binding service (by calling
+	 * {@link IActionBarConfigurer#registerGlobalAction(IAction)}), and adds it to
+	 * the list of actions to be disposed when the window is closed.
      * <p>
      * In order to participate in key bindings, the action must have an action
-     * definition id (aka command id), and a corresponding command extension.
-     * See the <code>org.eclipse.ui.commands</code> extension point documentation
-     * for more details.
+	 * definition id (aka command id), and a corresponding command extension. See
+	 * the <code>org.eclipse.ui.commands</code> extension point documentation for
+	 * more details.
      * </p>
      *
      * @param action the action to register, this cannot be <code>null</code>
@@ -199,8 +195,7 @@ public class ActionBarAdvisor {
 		if (action instanceof RetargetAction) {
 			String definitionId = action.getActionDefinitionId();
 			if (definitionId != null) {
-				IActionCommandMappingService mapping = getActionBarConfigurer()
-						.getWindowConfigurer().getWindow()
+				IActionCommandMappingService mapping = getActionBarConfigurer().getWindowConfigurer().getWindow()
 						.getService(IActionCommandMappingService.class);
 				if (mapping != null) {
 					mapping.map(id, definitionId);
@@ -220,14 +215,13 @@ public class ActionBarAdvisor {
      * @see IAction#getId()
      */
     protected IAction getAction(String id) {
-        return (IAction) actions.get(id);
+		return actions.get(id);
     }
 
     /**
      * Fills the menu bar with the main menus for the window.
      * <p>
-     * The default implementation does nothing.
-     * Subclasses may override.
+	 * The default implementation does nothing. Subclasses may override.
      * </p>
      *
      * @param menuBar the menu manager for the menu bar
@@ -239,8 +233,7 @@ public class ActionBarAdvisor {
     /**
      * Fills the cool bar with the main toolbars for the window.
      * <p>
-     * The default implementation does nothing.
-     * Subclasses may override.
+	 * The default implementation does nothing. Subclasses may override.
      * </p>
      *
      * @param coolBar the cool bar manager
@@ -250,11 +243,9 @@ public class ActionBarAdvisor {
     }
 
     /**
-     * Fills the status line with the main status line contributions
-     * for the window.
+	 * Fills the status line with the main status line contributions for the window.
      * <p>
-     * The default implementation does nothing.
-     * Subclasses may override.
+	 * The default implementation does nothing. Subclasses may override.
      * </p>
      *
      * @param statusLine the status line manager
@@ -265,16 +256,16 @@ public class ActionBarAdvisor {
 
     /**
      * Returns whether the menu with the given id is an application menu of the
-     * given window. This is used during OLE "in place" editing.  Application
-     * menus should be preserved during menu merging. All other menus may be
-     * removed from the window.
+	 * given window. This is used during OLE "in place" editing. Application menus
+	 * should be preserved during menu merging. All other menus may be removed from
+	 * the window.
      * <p>
      * The default implementation returns false. Subclasses may override.
      * </p>
      *
      * @param menuId the menu id
-     * @return <code>true</code> for application menus, and <code>false</code>
-     * for part-specific menus
+	 * @return <code>true</code> for application menus, and <code>false</code> for
+	 *         part-specific menus
      */
     public boolean isApplicationMenu(String menuId) {
         // default: not an application menu
@@ -301,12 +292,12 @@ public class ActionBarAdvisor {
     }
 
     /**
-     * Disposes all actions added via <code>register(IAction)</code>
-     * using <code>disposeAction(IAction)</code>.
+	 * Disposes all actions added via <code>register(IAction)</code> using
+	 * <code>disposeAction(IAction)</code>.
      */
     protected void disposeActions() {
-        for (Iterator i = actions.values().iterator(); i.hasNext();) {
-            IAction action = (IAction) i.next();
+		for (Iterator<IAction> i = actions.values().iterator(); i.hasNext();) {
+			IAction action = i.next();
             disposeAction(action);
         }
         actions.clear();
@@ -315,10 +306,9 @@ public class ActionBarAdvisor {
     /**
      * Disposes the given action.
      * <p>
-     * The default implementation checks whether the action is an instance
-     * of <code>ActionFactory.IWorkbenchAction</code> and calls its
-     * <code>dispose()</code> method if so.
-     * Subclasses may extend.
+	 * The default implementation checks whether the action is an instance of
+	 * <code>ActionFactory.IWorkbenchAction</code> and calls its
+	 * <code>dispose()</code> method if so. Subclasses may extend.
      * </p>
      *
      * @param action the action to dispose
@@ -330,11 +320,11 @@ public class ActionBarAdvisor {
     }
 
 	/**
-	 * Saves arbitrary application-specific state information
-     * for this action bar advisor.
+	 * Saves arbitrary application-specific state information for this action bar
+	 * advisor.
      * <p>
-     * The default implementation simply returns an OK status.
-     * Subclasses may extend or override.
+	 * The default implementation simply returns an OK status. Subclasses may extend
+	 * or override.
      * </p>
 	 *
 	 * @param memento the memento in which to save the advisor's state
@@ -346,11 +336,11 @@ public class ActionBarAdvisor {
 	}
 
 	/**
-	 * Restores arbitrary application-specific state information
-     * for this action bar advisor.
+	 * Restores arbitrary application-specific state information for this action bar
+	 * advisor.
      * <p>
-     * The default implementation simply returns an OK status.
-     * Subclasses may extend or override.
+	 * The default implementation simply returns an OK status. Subclasses may extend
+	 * or override.
      * </p>
 	 *
      * @param memento the memento from which to restore the advisor's state

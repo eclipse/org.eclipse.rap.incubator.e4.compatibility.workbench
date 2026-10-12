@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.commands.contexts.Context;
 import org.eclipse.core.commands.contexts.ContextManager;
@@ -36,27 +35,26 @@ import org.eclipse.ui.contexts.IContextManagerListener;
  *
  * @since 3.1
  */
-public final class ContextManagerLegacyWrapper implements
-		org.eclipse.core.commands.contexts.IContextManagerListener,
-		IContextManager {
+public final class ContextManagerLegacyWrapper
+		implements org.eclipse.core.commands.contexts.IContextManagerListener, IContextManager {
 
 	/**
 	 * A comparator between context identifiers, that sorts them based on depth
-	 * within the tree. Context identifiers representing deeper items (i.e.,
-	 * items with more ancestors), have lesser values (i.e., would appear
-	 * earlier in a set).
+	 * within the tree. Context identifiers representing deeper items (i.e., items
+	 * with more ancestors), have lesser values (i.e., would appear earlier in a
+	 * set).
 	 *
 	 * @since 3.0
 	 */
-	private class ContextIdDepthComparator implements Comparator {
+	private class ContextIdDepthComparator implements Comparator<String> {
 
 		/**
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
 		@Override
-		public final int compare(final Object object1, final Object object2) {
-			final String contextId1 = (String) object1;
-			final String contextId2 = (String) object2;
+		public final int compare(final String object1, final String object2) {
+			final String contextId1 = object1;
+			final String contextId2 = object2;
 			Context context;
 			String parentId;
 
@@ -99,14 +97,13 @@ public final class ContextManagerLegacyWrapper implements
 	}
 
 	/**
-	 * A set that contains context identifiers (strings). The set is sorted
-	 * based on how many ancestors the corresponding contexts have. Contexts
-	 * with no parents appear last, while contexts with the most ancestors
-	 * appear first.
+	 * A set that contains context identifiers (strings). The set is sorted based on
+	 * how many ancestors the corresponding contexts have. Contexts with no parents
+	 * appear last, while contexts with the most ancestors appear first.
 	 *
 	 * @since 3.0
 	 */
-	private class DepthSortedContextIdSet extends TreeSet {
+	private class DepthSortedContextIdSet extends TreeSet<String> {
 
 		/**
 		 * Generated serial version UID for this class.
@@ -116,15 +113,14 @@ public final class ContextManagerLegacyWrapper implements
 		private static final long serialVersionUID = 3257291326872892465L;
 
 		/**
-		 * Constructs a new instance of <code>DepthSortedContextIdSet</code>
-		 * with the set to be sorted.
+		 * Constructs a new instance of <code>DepthSortedContextIdSet</code> with the
+		 * set to be sorted.
 		 *
-		 * @param contextIds
-		 *            A set of context identifiers (strings); this may contain
+		 * @param contextIds A set of context identifiers (strings); this may contain
 		 *            <code>null</code> values. The set may not be
 		 *            <code>null</code>, but may be empty.
 		 */
-		private DepthSortedContextIdSet(final Set contextIds) {
+		private DepthSortedContextIdSet(final Set<String> contextIds) {
 			super(new ContextIdDepthComparator());
 			addAll(contextIds);
 		}
@@ -132,15 +128,14 @@ public final class ContextManagerLegacyWrapper implements
 
 	private final ContextManager contextManager;
 
-	private List contextManagerListeners;
+	private List<IContextManagerListener> contextManagerListeners;
 
 	/**
-	 * Constructs a new instance of <code>MutableContextManager</code>. The
-	 * registry is created on the platform's extension registry.
+	 * Constructs a new instance of <code>MutableContextManager</code>. The registry
+	 * is created on the platform's extension registry.
 	 *
-	 * @param contextManager
-	 *            The manager which will provided the real support; must not be
-	 *            <code>null</code>.
+	 * @param contextManager The manager which will provided the real support; must
+	 *                       not be <code>null</code>.
 	 */
 	public ContextManagerLegacyWrapper(ContextManager contextManager) {
 
@@ -153,14 +148,13 @@ public final class ContextManagerLegacyWrapper implements
 	}
 
 	@Override
-	public void addContextManagerListener(
-			IContextManagerListener contextManagerListener) {
+	public void addContextManagerListener(IContextManagerListener contextManagerListener) {
 		if (contextManagerListener == null) {
 			throw new NullPointerException();
 		}
 
 		if (contextManagerListeners == null) {
-			contextManagerListeners = new ArrayList();
+			contextManagerListeners = new ArrayList<>();
 		}
 
 		if (!contextManagerListeners.contains(contextManagerListener)) {
@@ -169,19 +163,17 @@ public final class ContextManagerLegacyWrapper implements
 	}
 
 	@Override
-	public void contextManagerChanged(
-			org.eclipse.core.commands.contexts.ContextManagerEvent contextManagerEvent) {
+	public void contextManagerChanged(org.eclipse.core.commands.contexts.ContextManagerEvent contextManagerEvent) {
 		final String contextId = contextManagerEvent.getContextId();
 		final boolean definedContextsChanged;
-		final Set previouslyDefinedContextIds;
+		final Set<String> previouslyDefinedContextIds;
 		if (contextId == null) {
 			definedContextsChanged = false;
 			previouslyDefinedContextIds = null;
 		} else {
 			definedContextsChanged = true;
-			previouslyDefinedContextIds = new HashSet();
-			previouslyDefinedContextIds.addAll(contextManager
-					.getDefinedContextIds());
+			previouslyDefinedContextIds = new HashSet<>();
+			previouslyDefinedContextIds.addAll(contextManager.getDefinedContextIds());
 			if (contextManagerEvent.isContextDefined()) {
 				previouslyDefinedContextIds.remove(contextId);
 			} else {
@@ -189,38 +181,32 @@ public final class ContextManagerLegacyWrapper implements
 			}
 		}
 
-		fireContextManagerChanged(new ContextManagerEvent(this,
-				definedContextsChanged, contextManagerEvent
-						.isActiveContextsChanged(),
-				previouslyDefinedContextIds, contextManagerEvent
-						.getPreviouslyActiveContextIds()));
+		fireContextManagerChanged(
+				new ContextManagerEvent(this, definedContextsChanged, contextManagerEvent.isActiveContextsChanged(),
+						previouslyDefinedContextIds, contextManagerEvent.getPreviouslyActiveContextIds()));
 
 	}
 
-	protected void fireContextManagerChanged(
-			ContextManagerEvent contextManagerEvent) {
+	protected void fireContextManagerChanged(ContextManagerEvent contextManagerEvent) {
 		if (contextManagerEvent == null) {
 			throw new NullPointerException();
 		}
 
 		if (contextManagerListeners != null) {
-			for (int i = 0; i < contextManagerListeners.size(); i++) {
-				((IContextManagerListener) contextManagerListeners.get(i))
-						.contextManagerChanged(contextManagerEvent);
+			for (IContextManagerListener contextManagerListener : contextManagerListeners) {
+				contextManagerListener.contextManagerChanged(contextManagerEvent);
 			}
 		}
 	}
 
 	@Override
 	public IContext getContext(String contextId) {
-		return new ContextLegacyWrapper(contextManager.getContext(contextId),
-				contextManager);
+		return new ContextLegacyWrapper(contextManager.getContext(contextId), contextManager);
 	}
 
 	@Override
 	public SortedSet getDefinedContextIds() {
-		return new DepthSortedContextIdSet(contextManager
-				.getDefinedContextIds());
+		return new DepthSortedContextIdSet(contextManager.getDefinedContextIds());
 	}
 
 	@Override
@@ -229,8 +215,7 @@ public final class ContextManagerLegacyWrapper implements
 	}
 
 	@Override
-	public void removeContextManagerListener(
-			IContextManagerListener contextManagerListener) {
+	public void removeContextManagerListener(IContextManagerListener contextManagerListener) {
 		if (contextManagerListener == null) {
 			throw new NullPointerException();
 		}

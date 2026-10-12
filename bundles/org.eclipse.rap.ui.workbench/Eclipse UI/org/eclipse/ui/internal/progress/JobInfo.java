@@ -33,6 +33,7 @@ public class JobInfo extends JobTreeElement {
     private IStatus blockedStatus;
 
 	private volatile boolean canceled;
+	private volatile boolean reported;
 	private final Queue<JobTreeElement> children = new ConcurrentLinkedQueue<>();
 
 	private final Job job;
@@ -156,10 +157,9 @@ public class JobInfo extends JobTreeElement {
         return 1;
     }
 
-    @Override
 	public int compareTo(JobTreeElement other) {
 		if (!(other instanceof JobInfo)) {
-			return super.compareTo(other);
+			return 0;
 		}
 		JobInfo element = (JobInfo) other;
 
@@ -362,6 +362,14 @@ public class JobInfo extends JobTreeElement {
         return getBlockedStatus() != null;
     }
 
+	boolean isReported() {
+		return reported;
+	}
+
+	void setReported(boolean reported) {
+		this.reported = reported;
+	}
+
     /**
 	 * Returns whether or not the job was cancelled in the UI.
 	 *
@@ -420,3 +428,4 @@ public class JobInfo extends JobTreeElement {
         this.ticks = ticks;
     }
 }
+

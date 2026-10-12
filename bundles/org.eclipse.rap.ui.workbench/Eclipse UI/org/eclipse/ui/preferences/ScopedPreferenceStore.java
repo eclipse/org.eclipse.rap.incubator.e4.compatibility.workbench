@@ -14,6 +14,7 @@
 package org.eclipse.ui.preferences;
 
 import java.io.IOException;
+
 import org.eclipse.core.commands.common.EventManager;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
@@ -108,11 +109,15 @@ public class ScopedPreferenceStore extends EventManager implements
 	 * node looked up by qualifier. <strong>NOTE:</strong> Any instance of
 	 * ScopedPreferenceStore should call
 	 *
-	 * @param context              the scope to store to
-	 * @param qualifier            the qualifier used to look up the preference node
-	 * @param defaultQualifierPath the qualifier used when looking up the defaults
+	 * @param context
+	 *            the scope to store to
+	 * @param qualifier
+	 *            the qualifier used to look up the preference node
+	 * @param defaultQualifierPath
+	 *            the qualifier used when looking up the defaults
 	 */
-	public ScopedPreferenceStore(IScopeContext context, String qualifier, String defaultQualifierPath) {
+	public ScopedPreferenceStore(IScopeContext context, String qualifier,
+			String defaultQualifierPath) {
 		this(context, qualifier);
 		this.defaultQualifier = defaultQualifierPath;
 	}
@@ -121,8 +126,10 @@ public class ScopedPreferenceStore extends EventManager implements
 	 * Create a new instance of the receiver. Store the values in context in the
 	 * node looked up by qualifier.
 	 *
-	 * @param context   the scope to store to
-	 * @param qualifier the qualifer used to look up the preference node
+	 * @param context
+	 *            the scope to store to
+	 * @param qualifier
+	 *            the qualifer used to look up the preference node
 	 */
 	public ScopedPreferenceStore(IScopeContext context, String qualifier) {
 		// RAP [fappel]:
@@ -138,11 +145,14 @@ public class ScopedPreferenceStore extends EventManager implements
 	}
 
 // RAP [fappel]:	
-	private void createScopedPreferenceStoreCore(final IScopeContext context, final String qualifier,
-			final String defaultQualifier) {
+	  private void createScopedPreferenceStoreCore( final IScopeContext context,
+	                                                final String qualifier,
+	                                                final String defaultQualifier )
+	  {
 		// The defaultScopedPrefStore instance is used for non session scope
 		// contexts and the default values settings
-		defaultScopedPrefStore = new ScopedPreferenceStoreCore(context, qualifier, defaultQualifier);
+	    defaultScopedPrefStore
+	      = new ScopedPreferenceStoreCore( context, qualifier, defaultQualifier );
 	}
 
 // RAP [fappel]:
@@ -152,10 +162,13 @@ public class ScopedPreferenceStore extends EventManager implements
 		// an own ScopedPreferenceStore for each session
 		if (scopeContext instanceof SessionScope) {
 			UISession uiSession = RWT.getUISession();
-			String key = KEY_SCOPED_PREF_CORE + "/" + nodeQualifier + "/" + defaultQualifier;
+	      String key
+	        = KEY_SCOPED_PREF_CORE + "/" + nodeQualifier + "/" + defaultQualifier;
 			result = (ScopedPreferenceStoreCore) uiSession.getAttribute(key);
 			if (result == null) {
-				result = new ScopedPreferenceStoreCore(scopeContext, nodeQualifier, defaultQualifier);
+	        result = new ScopedPreferenceStoreCore( scopeContext, 
+	                                                nodeQualifier, 
+	                                                defaultQualifier );
 				uiSession.setAttribute(key, result);
 			}
 		}
@@ -230,13 +243,15 @@ public class ScopedPreferenceStore extends EventManager implements
 //	}
 
 	/**
-	 * Does its best at determining the default value for the given key. Checks the
-	 * given object's type and then looks in the list of defaults to see if a value
-	 * exists. If not or if there is a problem converting the value, the default
-	 * default value for that type is returned.
-	 *
-	 * @param key the key to search
-	 * @param obj the object who default we are looking for
+	 * Does its best at determining the default value for the given key. Checks
+	 * the given object's type and then looks in the list of defaults to see if
+	 * a value exists. If not or if there is a problem converting the value, the
+	 * default default value for that type is returned.
+	 * 
+	 * @param key
+	 *            the key to search
+	 * @param obj
+	 *            the object who default we are looking for
 	 * @return Object or <code>null</code>
 	 */
 	Object getDefault(String key, Object obj) {
@@ -285,11 +300,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#addPropertyChangeListener(org.
-	 * eclipse.jface.util.IPropertyChangeListener)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#addPropertyChangeListener(org.eclipse.jface.util.IPropertyChangeListener)
 	 */
-	@Override
 	public void addPropertyChangeListener(IPropertyChangeListener listener) {
 // RAP [fappel]: moved to core
 //		initializePreferencesListener();// Create the preferences listener if it
@@ -300,15 +312,16 @@ public class ScopedPreferenceStore extends EventManager implements
 
 	/**
 	 * Return the preference path to search preferences on. This is the list of
-	 * preference nodes based on the scope contexts for this store. If there are no
-	 * search contexts set, then return this store's context.
+	 * preference nodes based on the scope contexts for this store. If there are
+	 * no search contexts set, then return this store's context.
 	 * <p>
-	 * Whether or not the default context should be included in the resulting list
-	 * is specified by the <code>includeDefault</code> parameter.
+	 * Whether or not the default context should be included in the resulting
+	 * list is specified by the <code>includeDefault</code> parameter.
 	 * </p>
 	 *
-	 * @param includeDefault <code>true</code> if the default context should be
-	 *                       included and <code>false</code> otherwise
+	 * @param includeDefault
+	 *            <code>true</code> if the default context should be included
+	 *            and <code>false</code> otherwise
 	 * @return IEclipsePreferences[]
 	 */
 	public IEclipsePreferences[] getPreferenceNodes(boolean includeDefault) {
@@ -340,20 +353,21 @@ public class ScopedPreferenceStore extends EventManager implements
 	}
 
 	/**
-	 * Set the search contexts to scopes. When searching for a value the seach will
-	 * be done in the order of scope contexts and will not search the storeContext
-	 * unless it is in this list.
+	 * Set the search contexts to scopes. When searching for a value the seach
+	 * will be done in the order of scope contexts and will not search the
+	 * storeContext unless it is in this list.
 	 * <p>
 	 * If the given list is <code>null</code>, then clear this store's search
-	 * contexts. This means that only this store's scope context and default scope
-	 * will be used during preference value searching.
+	 * contexts. This means that only this store's scope context and default
+	 * scope will be used during preference value searching.
 	 * </p>
 	 * <p>
-	 * The defaultContext will be added to the end of this list automatically and
-	 * <em>MUST NOT</em> be included by the user.
+	 * The defaultContext will be added to the end of this list automatically
+	 * and <em>MUST NOT</em> be included by the user.
 	 * </p>
 	 *
-	 * @param scopes a list of scope contexts to use when searching, or
+	 * @param scopes
+	 *            a list of scope contexts to use when searching, or
 	 *               <code>null</code>
 	 */
 	public void setSearchContexts(IScopeContext[] scopes) {
@@ -370,7 +384,7 @@ public class ScopedPreferenceStore extends EventManager implements
 //				Assert
 //						.isTrue(
 //								false,
-//								WorkbenchMessages.ScopedPreferenceStore_DefaultAddedError);
+//								WorkbenchMessages.get().ScopedPreferenceStore_DefaultAddedError);
 //			}
 //		}
 		getCore().setSearchContexts(scopes);
@@ -381,7 +395,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 *
 	 * @see org.eclipse.jface.preference.IPreferenceStore#contains(java.lang.String)
 	 */
-	@Override
 	public boolean contains(String name) {
 // RAP [fappel]: moved to core
 //		if (name == null) {
@@ -395,12 +408,11 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#firePropertyChangeEvent(java.
-	 * lang.String, java.lang.Object, java.lang.Object)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#firePropertyChangeEvent(java.lang.String,
+	 *      java.lang.Object, java.lang.Object)
 	 */
-	@Override
-	public void firePropertyChangeEvent(String name, Object oldValue, Object newValue) {
+	public void firePropertyChangeEvent(String name, Object oldValue,
+			Object newValue) {
 // RAP [fappel]: moved to core
 //		// important: create intermediate array to protect against listeners
 //		// being added/removed during the notification
@@ -425,10 +437,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#getBoolean(java.lang.String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#getBoolean(java.lang.String)
 	 */
-	@Override
 	public boolean getBoolean(String name) {
 // RAP [fappel]: moved to core
 //		String value = internalGet(name);
@@ -440,11 +450,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#getDefaultBoolean(java.lang.
-	 * String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#getDefaultBoolean(java.lang.String)
 	 */
-	@Override
 	public boolean getDefaultBoolean(String name) {
 // RAP [fappel]: moved to core
 //		return getDefaultPreferences()
@@ -455,11 +462,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#getDefaultDouble(java.lang.
-	 * String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#getDefaultDouble(java.lang.String)
 	 */
-	@Override
 	public double getDefaultDouble(String name) {
 // RAP [fappel]: moved to core
 //		return getDefaultPreferences().getDouble(name, DOUBLE_DEFAULT_DEFAULT);
@@ -469,10 +473,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see org.eclipse.jface.preference.IPreferenceStore#getDefaultFloat(java.lang.
-	 * String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#getDefaultFloat(java.lang.String)
 	 */
-	@Override
 	public float getDefaultFloat(String name) {
 // RAP [fappel]: moved to core
 //		return getDefaultPreferences().getFloat(name, FLOAT_DEFAULT_DEFAULT);
@@ -482,10 +484,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#getDefaultInt(java.lang.String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#getDefaultInt(java.lang.String)
 	 */
-	@Override
 	public int getDefaultInt(String name) {
 // RAP [fappel]: moved to core
 //		return getDefaultPreferences().getInt(name, INT_DEFAULT_DEFAULT);
@@ -495,10 +495,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see org.eclipse.jface.preference.IPreferenceStore#getDefaultLong(java.lang.
-	 * String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#getDefaultLong(java.lang.String)
 	 */
-	@Override
 	public long getDefaultLong(String name) {
 // RAP [fappel]: moved to core
 //		return getDefaultPreferences().getLong(name, LONG_DEFAULT_DEFAULT);
@@ -508,11 +506,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#getDefaultString(java.lang.
-	 * String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#getDefaultString(java.lang.String)
 	 */
-	@Override
 	public String getDefaultString(String name) {
 // RAP [fappel]: moved to core
 //		return getDefaultPreferences().get(name, STRING_DEFAULT_DEFAULT);
@@ -522,10 +517,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#getDouble(java.lang.String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#getDouble(java.lang.String)
 	 */
-	@Override
 	public double getDouble(String name) {
 // RAP [fappel]: moved to core
 //		String value = internalGet(name);
@@ -560,7 +553,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 *
 	 * @see org.eclipse.jface.preference.IPreferenceStore#getFloat(java.lang.String)
 	 */
-	@Override
 	public float getFloat(String name) {
 // RAP [fappel] moved to core
 //		String value = internalGet(name);
@@ -580,7 +572,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 *
 	 * @see org.eclipse.jface.preference.IPreferenceStore#getInt(java.lang.String)
 	 */
-	@Override
 	public int getInt(String name) {
 // RAP [fappel] moved to core
 //		String value = internalGet(name);
@@ -600,7 +591,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 *
 	 * @see org.eclipse.jface.preference.IPreferenceStore#getLong(java.lang.String)
 	 */
-	@Override
 	public long getLong(String name) {
 // RAP [fappel] moved to core
 //		String value = internalGet(name);
@@ -618,10 +608,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#getString(java.lang.String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#getString(java.lang.String)
 	 */
-	@Override
 	public String getString(String name) {
 // RAP [fappel] moved to core
 //		String value = internalGet(name);
@@ -632,10 +620,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#isDefault(java.lang.String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#isDefault(java.lang.String)
 	 */
-	@Override
 	public boolean isDefault(String name) {
 // RAP [fappel] moved to core
 //		if (name == null) {
@@ -651,7 +637,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 *
 	 * @see org.eclipse.jface.preference.IPreferenceStore#needsSaving()
 	 */
-	@Override
 	public boolean needsSaving() {
 // RAP [fappel] moved to core
 //		return dirty;
@@ -664,7 +649,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 * @see org.eclipse.jface.preference.IPreferenceStore#putValue(java.lang.String,
 	 * java.lang.String)
 	 */
-	@Override
 	public void putValue(String name, String value) {
 // RAP [fappel] moved to core
 //		try {
@@ -682,11 +666,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#removePropertyChangeListener(
-	 * org.eclipse.jface.util.IPropertyChangeListener)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#removePropertyChangeListener(org.eclipse.jface.util.IPropertyChangeListener)
 	 */
-	@Override
 	public void removePropertyChangeListener(IPropertyChangeListener listener) {
 // RAP [fappel] moved to core
 //		removeListenerObject(listener);
@@ -699,11 +680,9 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
+	 * @see org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
 	 * double)
 	 */
-	@Override
 	public void setDefault(String name, double value) {
 // RAP [fappel] moved to core
 //		getDefaultPreferences().putDouble(name, value);
@@ -713,11 +692,9 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
+	 * @see org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
 	 * float)
 	 */
-	@Override
 	public void setDefault(String name, float value) {
 // RAP [fappel] moved to core
 //		getDefaultPreferences().putFloat(name, value);
@@ -727,11 +704,9 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
+	 * @see org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
 	 * int)
 	 */
-	@Override
 	public void setDefault(String name, int value) {
 // RAP [fappel] moved to core
 //		getDefaultPreferences().putInt(name, value);
@@ -741,11 +716,9 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
+	 * @see org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
 	 * long)
 	 */
-	@Override
 	public void setDefault(String name, long value) {
 // RAP [fappel] moved to core
 //		getDefaultPreferences().putLong(name, value);
@@ -755,11 +728,9 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
+	 * @see org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
 	 * java.lang.String)
 	 */
-	@Override
 	public void setDefault(String name, String defaultObject) {
 // RAP [fappel] moved to core
 //		getDefaultPreferences().put(name, defaultObject);
@@ -769,11 +740,9 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
+	 * @see org.eclipse.jface.preference.IPreferenceStore#setDefault(java.lang.String,
 	 * boolean)
 	 */
-	@Override
 	public void setDefault(String name, boolean value) {
 // RAP [fappel] moved to core
 //		getDefaultPreferences().putBoolean(name, value);
@@ -783,10 +752,8 @@ public class ScopedPreferenceStore extends EventManager implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.jface.preference.IPreferenceStore#setToDefault(java.lang.String)
+	 * @see org.eclipse.jface.preference.IPreferenceStore#setToDefault(java.lang.String)
 	 */
-	@Override
 	public void setToDefault(String name) {
 // RAP [fappel] moved to core
 //		String oldValue = getString(name);
@@ -813,7 +780,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 * @see org.eclipse.jface.preference.IPreferenceStore#setValue(java.lang.String,
 	 * double)
 	 */
-	@Override
 	public void setValue(String name, double value) {
 // RAP [fappel] moved to core
 //		double oldValue = getDouble(name);
@@ -842,7 +808,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 * @see org.eclipse.jface.preference.IPreferenceStore#setValue(java.lang.String,
 	 * float)
 	 */
-	@Override
 	public void setValue(String name, float value) {
 // RAP [fappel] moved to core
 //		float oldValue = getFloat(name);
@@ -870,7 +835,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 * @see org.eclipse.jface.preference.IPreferenceStore#setValue(java.lang.String,
 	 * int)
 	 */
-	@Override
 	public void setValue(String name, int value) {
 // RAP [fappel] moved to core
 //		int oldValue = getInt(name);
@@ -899,7 +863,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 * @see org.eclipse.jface.preference.IPreferenceStore#setValue(java.lang.String,
 	 * long)
 	 */
-	@Override
 	public void setValue(String name, long value) {
 // RAP [fappel] moved to core
 //		long oldValue = getLong(name);
@@ -927,7 +890,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 * @see org.eclipse.jface.preference.IPreferenceStore#setValue(java.lang.String,
 	 * java.lang.String)
 	 */
-	@Override
 	public void setValue(String name, String value) {
 // RAP [fappel] moved to core
 //		// Do not turn on silent running here as Strings are propagated
@@ -946,7 +908,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 * @see org.eclipse.jface.preference.IPreferenceStore#setValue(java.lang.String,
 	 * boolean)
 	 */
-	@Override
 	public void setValue(String name, boolean value) {
 // RAP [fappel] moved to core
 //		boolean oldValue = getBoolean(name);
@@ -974,7 +935,6 @@ public class ScopedPreferenceStore extends EventManager implements
 	 *
 	 * @see org.eclipse.jface.preference.IPersistentPreferenceStore#save()
 	 */
-	@Override
 	public void save() throws IOException {
 // RAP [fappel] moved to core
 //		try {

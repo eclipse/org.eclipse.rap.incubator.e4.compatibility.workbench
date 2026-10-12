@@ -31,7 +31,6 @@ import org.eclipse.ui.IKeyBindingService;
 import org.eclipse.ui.INestableKeyBindingService;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.LegacyHandlerSubmissionExpression;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.actions.CommandAction;
@@ -47,8 +46,8 @@ import org.eclipse.ui.internal.handlers.CommandLegacyActionWrapper;
  */
 public final class KeyBindingService implements INestableKeyBindingService {
     /**
-     * Whether this key binding service has been disposed.  A disposed key
-     * binding service should not be used again.
+	 * Whether this key binding service has been disposed. A disposed key binding
+	 * service should not be used again.
      */
     private boolean disposed;
 
@@ -61,26 +60,24 @@ public final class KeyBindingService implements INestableKeyBindingService {
      */
 	private Set<String> enabledContextIds = Collections.EMPTY_SET;
 
-
     /**
-     * The site within the workbench at which this service is provided. This
-     * value should not be <code>null</code>.
+	 * The site within the workbench at which this service is provided. This value
+	 * should not be <code>null</code>.
      */
-    private IWorkbenchPartSite workbenchPartSite;
+	private final IWorkbenchPartSite workbenchPartSite;
 
-	private KeyBindingService parent;
+	private final KeyBindingService parent;
 
 	private IKeyBindingService activeService;
 
-	private Map<IAction, IHandlerActivation> actionToProxy = new HashMap<>();
+	private final Map<IAction, IHandlerActivation> actionToProxy = new HashMap<>();
 
     /**
      * Constructs a new instance of <code>KeyBindingService</code> on a given
      * workbench site. This instance is not nested.
      *
-     * @param workbenchPartSite
-     *            The site for which this service will be responsible; should
-     *            not be <code>null</code>.
+	 * @param workbenchPartSite The site for which this service will be responsible;
+	 *                          should not be <code>null</code>.
      */
     public KeyBindingService(IWorkbenchPartSite workbenchPartSite) {
         this(workbenchPartSite, null);
@@ -90,15 +87,12 @@ public final class KeyBindingService implements INestableKeyBindingService {
      * Constructs a new instance of <code>KeyBindingService</code> on a given
      * workbench site.
      *
-     * @param workbenchPartSite
-     *            The site for which this service will be responsible; should
-     *            not be <code>null</code>.
-     * @param parent
-     *            The parent key binding service, if any; <code>null</code> if
-     *            none.
+	 * @param workbenchPartSite The site for which this service will be responsible;
+	 *                          should not be <code>null</code>.
+	 * @param parent            The parent key binding service, if any;
+	 *                          <code>null</code> if none.
      */
-    KeyBindingService(IWorkbenchPartSite workbenchPartSite,
-            KeyBindingService parent) {
+	KeyBindingService(IWorkbenchPartSite workbenchPartSite, KeyBindingService parent) {
         this.workbenchPartSite = workbenchPartSite;
 		this.parent = parent;
     }
@@ -138,8 +132,8 @@ public final class KeyBindingService implements INestableKeyBindingService {
 
 	private void activateNestedService(IKeyBindingService service) {
 		/*
-		 * If I have a parent, and I'm the active service, then deactivate so
-		 * that I can make changes.
+		 * If I have a parent, and I'm the active service, then deactivate so that I can
+		 * make changes.
 		 */
 		boolean active = false;
 		boolean haveParent = (parent != null);
@@ -214,9 +208,9 @@ public final class KeyBindingService implements INestableKeyBindingService {
 				cs.deactivateContext(id);
 			}
 			/*
-			 * Remove all of the nested handler submissions. The handlers here
-			 * weren't created by this instance (but by the nest instance), and
-			 * hence can't be disposed here.
+			 * Remove all of the nested handler submissions. The handlers here weren't
+			 * created by this instance (but by the nest instance), and hence can't be
+			 * disposed here.
 			 */
 			IHandlerService hs = ((KeyBindingService) activeService).workbenchPartSite
 					.getService(IHandlerService.class);
@@ -240,25 +234,22 @@ public final class KeyBindingService implements INestableKeyBindingService {
 		if (!disposed) {
 			disposed = true;
 			deactivateNestedService();
-			EContextService cs = workbenchPartSite
-					.getService(EContextService.class);
+			EContextService cs = workbenchPartSite.getService(EContextService.class);
 			for (String id : enabledContextIds) {
 				cs.deactivateContext(id);
 			}
 			enabledContextIds.clear();
 			/*
-			 * Remove all of the nested handler submissions. The handlers here
-			 * weren't created by this instance (but by the nest instance), and
-			 * hence can't be disposed here.
+			 * Remove all of the nested handler submissions. The handlers here weren't
+			 * created by this instance (but by the nest instance), and hence can't be
+			 * disposed here.
 			 */
-			IHandlerService hs = workbenchPartSite
-					.getService(IHandlerService.class);
+			IHandlerService hs = workbenchPartSite.getService(IHandlerService.class);
 			hs.deactivateHandlers(actionToProxy.values());
 			actionToProxy.clear();
 		}
 
 	}
-
 
 	@Override
 	public IKeyBindingService getKeyBindingService(IWorkbenchSite nestedSite) {
@@ -311,8 +302,7 @@ public final class KeyBindingService implements INestableKeyBindingService {
         if (action instanceof CommandLegacyActionWrapper) {
         	// this is a registration of a fake action for an already
 			// registered handler
-			WorkbenchPlugin
-					.log("Cannot register a CommandLegacyActionWrapper back into the system"); //$NON-NLS-1$
+			WorkbenchPlugin.log("Cannot register a CommandLegacyActionWrapper back into the system"); //$NON-NLS-1$
 			return;
         }
 
@@ -323,15 +313,6 @@ public final class KeyBindingService implements INestableKeyBindingService {
         }
 
         unregisterAction(action);
-
-		IWorkbenchPartSite partSite = workbenchPartSite;
-		if (parent != null) {
-			KeyBindingService currentParent = parent;
-			while (currentParent != null) {
-				partSite = currentParent.workbenchPartSite;
-				currentParent = currentParent.parent;
-			}
-		}
 
 		String commandId = action.getActionDefinitionId();
 		if (commandId != null) {
@@ -344,11 +325,8 @@ public final class KeyBindingService implements INestableKeyBindingService {
 				}
 			}
 
-			IHandlerService hs = workbenchPartSite
-					.getService(IHandlerService.class);
-			actionToProxy.put(action, hs.activateHandler(commandId, new ActionHandler(action),
-					new LegacyHandlerSubmissionExpression(null, partSite.getShell(), partSite)));
-
+			IHandlerService hs = workbenchPartSite.getService(IHandlerService.class);
+			actionToProxy.put(action, hs.activateHandler(commandId, new ActionHandler(action)));
 		}
     }
 
@@ -392,10 +370,6 @@ public final class KeyBindingService implements INestableKeyBindingService {
 		}
     }
 
-    /**
-	 * @param cs
-	 * @param scopes
-	 */
 	private void addParents(EContextService cs, String[] scopes) {
 		for (String id : scopes) {
 			try {

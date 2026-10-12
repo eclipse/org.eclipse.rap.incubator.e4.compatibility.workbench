@@ -1,16 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     James Blackburn (Broadcom Corp.) - Bug 294628 multiple selection
  *******************************************************************************/
 package org.eclipse.ui.dialogs;
 
@@ -73,7 +69,6 @@ public class PropertyDialogAction extends SelectionProviderAction {
 	 *            describe
      * @deprecated use PropertyDialogAction(IShellProvider, ISelectionProvider)
 	 */
-	@Deprecated
 	public PropertyDialogAction(Shell shell, ISelectionProvider provider) {
         this(new SameShellProvider(shell), provider);
 	}
@@ -87,7 +82,6 @@ public class PropertyDialogAction extends SelectionProviderAction {
      * @param provider
      *            the selection provider whose elements the property dialog will
      *            describe
-     * @since 3.1
      */
     public PropertyDialogAction(IShellProvider shell, ISelectionProvider provider) {
         super(provider, WorkbenchMessages.get().PropertyDialog_text);
@@ -99,13 +93,13 @@ public class PropertyDialogAction extends SelectionProviderAction {
     }
 
 	/**
-	 * Returns whether the provided selection has pages registered in the property
+	 * Returns whether the provided object has pages registered in the property
 	 * page manager.
 	 *
 	 * @param object
 	 * @return boolean
 	 */
-	private boolean hasPropertyPagesFor(IStructuredSelection object) {
+	private boolean hasPropertyPagesFor(Object object) {
 		return PropertyPageContributorManager.getManager().getApplicableContributors(object).size() != 0;
 	}
 
@@ -120,7 +114,7 @@ public class PropertyDialogAction extends SelectionProviderAction {
 	 * state of the action on each selection change.
 	 * </p>
 	 *
-	 * @return <code>true</code> if the selection is not empty and there are
+	 * @return <code>true</code> if the selection is of size 1 and there are
 	 *         property pages for the selected element, and <code>false</code>
 	 *         otherwise
 	 */
@@ -133,7 +127,7 @@ public class PropertyDialogAction extends SelectionProviderAction {
 
 	/**
 	 * Returns whether this action is applicable to the current selection. This
-	 * checks that the selection is not empty, and checks with the workbench's
+	 * checks that the selection is of size 1, and checks with the workbench's
 	 * property page manager to see if there are any property pages registered
 	 * for the selected element's type.
 	 * <p>
@@ -143,16 +137,18 @@ public class PropertyDialogAction extends SelectionProviderAction {
 	 *
 	 * @param selection
 	 *            The selection to test
-	 * @return <code>true</code> if the selection is of not empty and there are
+	 * @return <code>true</code> if the selection is of size 1 and there are
 	 *         property pages for the selected element, and <code>false</code>
 	 *         otherwise
 	 */
 	public boolean isApplicableForSelection(IStructuredSelection selection) {
-		return !selection.isEmpty() && hasPropertyPagesFor(selection);
+		return selection.size() == 1 && hasPropertyPagesFor(selection.getFirstElement());
 	}
 
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.action.IAction#run()
+	 */
 	public void run() {
 
 		PreferenceDialog dialog = createDialog();
@@ -170,16 +166,20 @@ public class PropertyDialogAction extends SelectionProviderAction {
 	 * @since 3.1
 	 */
 	public PreferenceDialog createDialog() {
-		if (getStructuredSelection().isEmpty())
-			return null;
 
+		Object element = getStructuredSelection().getFirstElement();
+		if (element == null) {
+			return null;
+		}
 		return PropertyDialog
-				.createDialogOn(shellProvider.getShell(), initialPageId, getStructuredSelection());
+				.createDialogOn(shellProvider.getShell(), initialPageId, element);
 	}
 
 
-	@Override
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.actions.SelectionProviderAction#selectionChanged(org.eclipse.jface.viewers.IStructuredSelection)
+	 */
 	public void selectionChanged(IStructuredSelection selection) {
-		setEnabled(!selection.isEmpty());
+		setEnabled(selection.size() == 1 && selection.getFirstElement() != null);
 	}
 }

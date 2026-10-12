@@ -1,43 +1,37 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Benjamin Muskalla  - bug 77710
- *     Lars Vogel <Lars.Vogel@vogella.com> - Bug 430603, 472654
- *     Simon Scholz <simon.scholz@vogella.com> - Bug 455527
  *******************************************************************************/
 package org.eclipse.ui.internal.dialogs;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.e4.core.contexts.IEclipseContext;
-import org.eclipse.e4.ui.model.application.MApplicationElement;
 import org.eclipse.e4.ui.model.application.descriptor.basic.MPartDescriptor;
-import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
-import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.e4.ui.workbench.IResourceUtilities;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.swt.util.ISWTResourceUtilities;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.internal.WorkbenchMessages;
+import org.osgi.framework.Bundle;
 
 /**
- * Provides labels for view children.
+ * Based on org.eclipse.ui.internal.dialogs.ViewLabelProvider.
  */
 public class ViewLabelProvider extends ColumnLabelProvider {
 
@@ -46,34 +40,32 @@ public class ViewLabelProvider extends ColumnLabelProvider {
 	 */
 	private static final String FOLDER_ICON = "org.eclipse.e4.descriptor.folder"; //$NON-NLS-1$
 
-	private Map<String, Image> imageMap = new HashMap<>();
+	/**
+	 * Get image descriptors for the clear button.
+	 */
+	static {
+		Bundle bundle = org.eclipse.e4.ui.internal.workbench.swt.WorkbenchSWTActivator
+				.getDefault().getBundle();
+		IPath path = new Path("$nl$/icons/full/obj16/fldr_obj.gif");
+		URL url = FileLocator.find(bundle, path, null);
+		ImageDescriptor enabledDesc = ImageDescriptor.createFromURL(url);
+		if (enabledDesc != null)
+			JFaceResources.getImageRegistry().put(FOLDER_ICON, enabledDesc);
+	}
+
+	private Map<String, Image> imageMap = new HashMap<String, Image>();
+
 	private IEclipseContext context;
-	private final Color dimmedForeground;
-
-	private EModelService modelService;
-
-	private MWindow window;
-
-	private EPartService partService;
 
 	/**
-	 * @param context
-	 * @param modelService
-	 * @param partService
 	 * @param window
 	 *            the workbench window
 	 * @param dimmedForeground
 	 *            the dimmed foreground color to use for views that are already
 	 *            open
 	 */
-	public ViewLabelProvider(IEclipseContext context, EModelService modelService, EPartService partService,
-			MWindow window,
-			Color dimmedForeground) {
+	public ViewLabelProvider(IEclipseContext context) {
 		this.context = context;
-		this.modelService = modelService;
-		this.partService = partService;
-		this.window = window;
-		this.dimmedForeground = dimmedForeground;
 	}
 
 	@Override
@@ -92,8 +84,9 @@ public class ViewLabelProvider extends ColumnLabelProvider {
 				Image image = imageMap.get(iconURI);
 				if (image == null) {
 					ISWTResourceUtilities resUtils = (ISWTResourceUtilities) context
-							.get(IResourceUtilities.class);
-					image = resUtils.imageDescriptorFromURI(URI.createURI(iconURI)).createImage();
+							.get(IResourceUtilities.class.getName());
+					image = resUtils.imageDescriptorFromURI(
+							URI.createURI(iconURI)).createImage();
 					imageMap.put(iconURI, image);
 				}
 				return image;
@@ -102,10 +95,9 @@ public class ViewLabelProvider extends ColumnLabelProvider {
 		} else if (element instanceof String) {
 			Image image = imageMap.get(FOLDER_ICON);
 			if (image == null) {
-				ImageDescriptor desc = WorkbenchImages
-						.getImageDescriptor(ISharedImages.IMG_OBJ_FOLDER);
-				image = desc.createImage();
-				imageMap.put(FOLDER_ICON, desc.createImage());
+				image = JFaceResources.getImageRegistry()
+						.getDescriptor(FOLDER_ICON).createImage();
+				imageMap.put(FOLDER_ICON, image);
 			}
 			return image;
 		}
@@ -124,15 +116,8 @@ public class ViewLabelProvider extends ColumnLabelProvider {
 	}
 
 	@Override
-	public Color getForeground(Object element) {
-		if (element instanceof MApplicationElement) {
-			String elementId = ((MApplicationElement) element).getElementId();
-			MPerspective activePerspective = modelService.getActivePerspective(window);
-			if(partService.isPartOrPlaceholderInPerspective(elementId, activePerspective)){
-				return dimmedForeground;
-			}
-		}
-
+	public Color getBackground(Object element) {
 		return null;
 	}
+
 }

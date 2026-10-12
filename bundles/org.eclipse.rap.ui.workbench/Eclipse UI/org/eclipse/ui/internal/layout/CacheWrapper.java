@@ -23,22 +23,22 @@ import org.eclipse.swt.widgets.Layout;
 
 /**
  * This class wraps a control with a complex computeSize method. It uses caching
- * to reduce the number of times the control's computeSize method is called. This
- * allows controls (such as Coolbars and wrapping text) with slow computeSize
- * operations to be used inside layouts and composites that use inefficient caching.
+ * to reduce the number of times the control's computeSize method is called.
+ * This allows controls (such as Coolbars and wrapping text) with slow
+ * computeSize operations to be used inside layouts and composites that use
+ * inefficient caching.
  * <p>
- * For example, you want to use Coolbar A inside composite B. Rather than making A
- * a direct child of B, place it inside a CacheWrapper and insert the CacheWrapper
- * into B. Any layout data that would normally be attached to the control itself
- * should be attached to the wrapper instead:
+ * For example, you want to use Coolbar A inside composite B. Rather than making
+ * A a direct child of B, place it inside a CacheWrapper and insert the
+ * CacheWrapper into B. Any layout data that would normally be attached to the
+ * control itself should be attached to the wrapper instead:
  * </p>
  * <code>
  *
  *   // Unoptimized code
  *   Toolbar myToolbar = new Toolbar(someParent, SWT.WRAP);
  *   myToolbar.setLayoutData(someLayoutData);
- * </code>
- * <code>
+ * </code> <code>
  *
  *   // Optimized code
  *   CacheWrapper myWrapper = new CacheWrapper(someParent);
@@ -46,13 +46,14 @@ import org.eclipse.swt.widgets.Layout;
  *   myWrapper.getControl().setLayoutData(someLayoutData);
  * </code>
  * <p>
- * CacheWrapper creates a Composite which should have exactly one child: the control
- * whose size should be cached. Note that CacheWrapper does NOT respect the flushCache
- * argument to layout() and computeSize(). This is intentional, since the whole point of
- * this class is to workaround layouts with poor caching, and such layouts will typically
- * be too eager about flushing the caches of their children. However, this means that you
- * MUST manually call flushCache() whenver the child's preferred size changes (and before
- * the parent is layed out).
+ * CacheWrapper creates a Composite which should have exactly one child: the
+ * control whose size should be cached. Note that CacheWrapper does NOT respect
+ * the flushCache argument to layout() and computeSize(). This is intentional,
+ * since the whole point of this class is to workaround layouts with poor
+ * caching, and such layouts will typically be too eager about flushing the
+ * caches of their children. However, this means that you MUST manually call
+ * flushCache() whenver the child's preferred size changes (and before the
+ * parent is layed out).
  * </p>
  *
  * @since 3.0
@@ -60,14 +61,13 @@ import org.eclipse.swt.widgets.Layout;
 public class CacheWrapper {
     private Composite proxy;
 
-    private SizeCache cache = new SizeCache();
+	private final SizeCache cache = new SizeCache();
 
     private Rectangle lastBounds = new Rectangle(0, 0, 0, 0);
 
     private class WrapperLayout extends Layout implements ICachingLayout {
         @Override
-		protected Point computeSize(Composite composite, int wHint, int hHint,
-                boolean flushCache) {
+		protected Point computeSize(Composite composite, int wHint, int hHint, boolean flushCache) {
             Control[] children = composite.getChildren();
             if (children.length != 1) {
                 return new Point(0, 0);
@@ -102,8 +102,6 @@ public class CacheWrapper {
 
     /**
      * Creates a <code>CacheWrapper</code> with the given parent
-     *
-     * @param parent
      */
     public CacheWrapper(Composite parent) {
         proxy = new Composite(parent, SWT.NONE);
@@ -112,8 +110,8 @@ public class CacheWrapper {
     }
 
     /**
-     * Flush the cache. Call this when the child has changed in order to force
-     * the size to be recomputed in the next resize event.
+	 * Flush the cache. Call this when the child has changed in order to force the
+	 * size to be recomputed in the next resize event.
      */
     public void flushCache() {
         cache.flush();

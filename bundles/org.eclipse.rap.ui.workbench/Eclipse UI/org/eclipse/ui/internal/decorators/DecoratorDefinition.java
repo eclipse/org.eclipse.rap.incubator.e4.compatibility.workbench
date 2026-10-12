@@ -23,9 +23,8 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.RegistryReader;
 
 /**
- * The DecoratorDefinition is the class that holds onto
- * the label decorator, the name and the name of the
- * class a decorator definition applies to,
+ * The DecoratorDefinition is the class that holds onto the label decorator, the
+ * name and the name of the class a decorator definition applies to,
  */
 
 public abstract class DecoratorDefinition implements IPluginContribution {
@@ -46,7 +45,7 @@ public abstract class DecoratorDefinition implements IPluginContribution {
 
     private boolean defaultEnabled;
 
-    private String id;
+	private final String id;
 
     protected IConfigurationElement definingElement;
 
@@ -58,8 +57,7 @@ public abstract class DecoratorDefinition implements IPluginContribution {
 	static final String ATT_CLASS = "class";//$NON-NLS-1$
 
     /**
-     * Create a new instance of the receiver with the
-     * supplied values.
+	 * Create a new instance of the receiver with the supplied values.
      */
 
     DecoratorDefinition(String identifier, IConfigurationElement element) {
@@ -67,14 +65,14 @@ public abstract class DecoratorDefinition implements IPluginContribution {
         this.id = identifier;
         this.definingElement = element;
 
-        this.enabled = this.defaultEnabled = Boolean.valueOf(element.getAttribute(ATT_ENABLED)).booleanValue();
+		this.enabled = this.defaultEnabled = Boolean.parseBoolean(element.getAttribute(ATT_ENABLED));
     }
 
     /**
 	 * Gets the name.
 	 *
-	 * @return Returns the label attribute from the decorator contribution, or
-	 *         null if the underlined definition is not valid anymore
+	 * @return Returns the label attribute from the decorator contribution, or null
+	 *         if the underlined definition is not valid anymore
 	 */
     public String getName() {
 		if (!definingElement.isValid()) {
@@ -87,8 +85,8 @@ public abstract class DecoratorDefinition implements IPluginContribution {
     /**
 	 * Returns the description
 	 *
-	 * @return Returns the label attribute from the decorator contribution, or
-	 *         null if the underlined definition is not valid anymore
+	 * @return Returns the label attribute from the decorator contribution, or null
+	 *         if the underlined definition is not valid anymore
 	 */
     public String getDescription() {
 		if (!definingElement.isValid()) {
@@ -100,6 +98,7 @@ public abstract class DecoratorDefinition implements IPluginContribution {
 
     /**
      * Gets the enabled.
+	 *
      * @return Returns a boolean
      */
     public boolean isEnabled() {
@@ -107,8 +106,9 @@ public abstract class DecoratorDefinition implements IPluginContribution {
     }
 
     /**
-     * Sets the enabled flag and adds or removes the decorator
-     * manager as a listener as appropriate.
+	 * Sets the enabled flag and adds or removes the decorator manager as a listener
+	 * as appropriate.
+	 *
      * @param newState The enabled to set
      */
     public void setEnabled(boolean newState) {
@@ -126,40 +126,35 @@ public abstract class DecoratorDefinition implements IPluginContribution {
     }
 
     /**
-     * Refresh the current decorator based on our enable
-     * state.
+	 * Refresh the current decorator based on our enable state.
      */
     protected abstract void refreshDecorator() throws CoreException;
 
     /**
-     * Dispose the decorator instance and remove listeners
-     * as appropirate.
-     * @param disposedDecorator
+	 * Dispose the decorator instance and remove listeners as appropirate.
      */
     protected void disposeCachedDecorator(IBaseLabelProvider disposedDecorator) {
-        disposedDecorator.removeListener(WorkbenchPlugin.getDefault()
-                .getDecoratorManager());
+		disposedDecorator.removeListener(WorkbenchPlugin.getDefault().getDecoratorManager());
         disposedDecorator.dispose();
 
     }
 
     /**
-     * Return whether or not this decorator should be
-     * applied to adapted types.
+	 * Return whether or not this decorator should be applied to adapted types.
      *
-     * @return whether or not this decorator should be
-     * applied to adapted types
+	 * @return whether or not this decorator should be applied to adapted types
      */
     public boolean isAdaptable() {
 		if (!definingElement.isValid()) {
 			crashDisable();
 			return false;
 		}
-    	return Boolean.valueOf(definingElement.getAttribute(ATT_ADAPTABLE)).booleanValue();
+		return Boolean.parseBoolean(definingElement.getAttribute(ATT_ADAPTABLE));
     }
 
     /**
      * Gets the id.
+	 *
      * @return Returns a String
      */
     public String getId() {
@@ -167,11 +162,11 @@ public abstract class DecoratorDefinition implements IPluginContribution {
     }
 
     /**
-     * Return the default value for this type - this value
-     * is the value read from the element description.
+	 * Return the default value for this type - this value is the value read from
+	 * the element description.
      *
-     * @return the default value for this type - this value
-     * is the value read from the element description
+	 * @return the default value for this type - this value is the value read from
+	 *         the element description
      */
     public boolean getDefaultValue() {
         return defaultEnabled;
@@ -179,6 +174,7 @@ public abstract class DecoratorDefinition implements IPluginContribution {
 
     /**
      * Returns the enablement.
+	 *
      * @return ActionExpression
      */
     protected ActionExpression getEnablement() {
@@ -201,8 +197,7 @@ public abstract class DecoratorDefinition implements IPluginContribution {
         if (elements.length == 0) {
             String className = definingElement.getAttribute(ATT_OBJECT_CLASS);
             if (className != null) {
-				enablement = new ActionExpression(ATT_OBJECT_CLASS,
-                        className);
+				enablement = new ActionExpression(ATT_OBJECT_CLASS, className);
 			}
         } else {
 			enablement = new ActionExpression(elements[0]);
@@ -210,10 +205,9 @@ public abstract class DecoratorDefinition implements IPluginContribution {
     }
 
     /**
-     * Add a listener for the decorator.If there is an exception
-     * then inform the user and disable the receiver.
-     * This method should not be called unless a check for
-     * isEnabled() has been done first.
+	 * Add a listener for the decorator.If there is an exception then inform the
+	 * user and disable the receiver. This method should not be called unless a
+	 * check for isEnabled() has been done first.
      */
     void addListener(ILabelProviderListener listener) {
         try {
@@ -228,10 +222,9 @@ public abstract class DecoratorDefinition implements IPluginContribution {
     }
 
     /**
-     * Return whether or not the decorator registered for element
-     * has a label property called property name. If there is an
-     * exception disable the receiver and return false.
-     * This method should not be called unless a check for
+	 * Return whether or not the decorator registered for element has a label
+	 * property called property name. If there is an exception disable the receiver
+	 * and return false. This method should not be called unless a check for
      * isEnabled() has been done first.
      */
     boolean isLabelProperty(Object element, String property) {
@@ -248,19 +241,16 @@ public abstract class DecoratorDefinition implements IPluginContribution {
     }
 
     /**
-     * Gets the label provider and creates it if it does not exist yet.
-     * Throws a CoreException if there is a problem
-     * creating the labelProvider.
-     * This method should not be called unless a check for
-     * enabled to be true is done first.
+	 * Gets the label provider and creates it if it does not exist yet. Throws a
+	 * CoreException if there is a problem creating the labelProvider. This method
+	 * should not be called unless a check for enabled to be true is done first.
+	 *
      * @return Returns a ILabelDecorator
      */
-    protected abstract IBaseLabelProvider internalGetLabelProvider()
-            throws CoreException;
+	protected abstract IBaseLabelProvider internalGetLabelProvider() throws CoreException;
 
     /**
-     * A CoreException has occured. Inform the user and disable
-     * the receiver.
+	 * A CoreException has occurred. Inform the user and disable the receiver.
      */
 
     protected void handleCoreException(CoreException exception) {
@@ -271,7 +261,7 @@ public abstract class DecoratorDefinition implements IPluginContribution {
     }
 
     /**
-     * A crash has occured. Disable the receiver without notification.
+	 * A crash has occurred. Disable the receiver without notification.
      */
     public void crashDisable() {
         this.enabled = false;
@@ -279,6 +269,7 @@ public abstract class DecoratorDefinition implements IPluginContribution {
 
     /**
      * Return whether or not this is a full or lightweight definition.
+	 *
      * @return <code>true</code> if this is not a lightweight decorator.
      */
     public abstract boolean isFull();
@@ -295,6 +286,7 @@ public abstract class DecoratorDefinition implements IPluginContribution {
 
     /**
      * Return whether the decorator is applicable to the given element
+	 *
      * @param element the element to be decorated
      * @return whether the decorator w=should be applied to the element
      */

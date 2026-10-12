@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2014 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -36,13 +33,17 @@ public class EditorActionBuilder extends PluginActionBuilder {
     public EditorActionBuilder() {
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PluginActionBuilder.
+     */
 	protected ActionDescriptor createActionDescriptor(
             IConfigurationElement element) {
         return new ActionDescriptor(element, ActionDescriptor.T_EDITOR);
     }
 
-    @Override
+    /* (non-Javadoc)
+     * Method declared on PluginActionBuilder.
+     */
 	protected BasicContribution createContribution() {
         return new EditorContribution();
     }
@@ -68,7 +69,6 @@ public class EditorActionBuilder extends PluginActionBuilder {
      * contribution element.
      */
     private static class EditorContribution extends BasicContribution {
-        @Override
 		public void dispose() {
 			disposeActions();
 			super.dispose();
@@ -98,7 +98,6 @@ public class EditorActionBuilder extends PluginActionBuilder {
             this.cache = cache;
         }
 
-        @Override
 		public void dispose() {
             for (int i = 0; i < cache.size(); i++) {
                 ((EditorContribution) cache.get(i)).dispose();
@@ -117,7 +116,6 @@ public class EditorActionBuilder extends PluginActionBuilder {
                     .toArray(new ActionDescriptor[results.size()]);
         }
 
-        @Override
 		public void init(IActionBars bars, IWorkbenchPage page) {
             for (int i = 0; i < cache.size(); i++) {
                 ((EditorContribution) cache.get(i)).contribute(bars
@@ -126,7 +124,6 @@ public class EditorActionBuilder extends PluginActionBuilder {
             }
         }
 
-        @Override
 		public void setActiveEditor(IEditorPart editor) {
             for (int i = 0; i < cache.size(); i++) {
                 ((EditorContribution) cache.get(i)).editorChanged(editor);
